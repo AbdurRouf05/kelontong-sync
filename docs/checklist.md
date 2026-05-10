@@ -43,11 +43,11 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 *Target: Frontend terhubung ke Supabase dan fitur lintas modul berfungsi.*
 
 - [x] **Abdur Rouf**: Membuat API / Server Actions untuk koneksi ke Supabase.
-- [ ] **Semua Anggota**: Menghubungkan UI Modul ke Database (Fetch & Post data).
+- [x] **Semua Anggota**: Menghubungkan UI Modul ke Database (Fetch & Post data).
 - [ ] **Abdur Rouf**: Implementasi Row Level Security (RLS) agar data antar toko tidak bocor.
-- [ ] **Abdur Rouf**: Membuat Trigger SQL untuk pemotongan stok otomatis saat transaksi.
-- [ ] **Rafi**: Implementasi fitur cetak struk (Thermal/PDF).
-- [ ] **Akmal**: Implementasi notifikasi "Early Warning" jika stok di bawah limit.
+- [x] **Abdur Rouf**: Membuat Trigger SQL untuk pemotongan stok otomatis saat transaksi.
+- [x] **Rafi**: Implementasi fitur cetak struk (Thermal/PDF).
+- [x] **Akmal**: Implementasi notifikasi "Early Warning" jika stok di bawah limit.
 
 ---
 
