@@ -21,48 +21,56 @@ export default function SalesChart({ data = [] }: { data?: any[] }) {
         <span className="bg-blue-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase">Statistik</span>
       </div>
 
-      <div className="flex-1 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
-          >
-            <CartesianGrid
-              strokeDasharray="3 3"
-              stroke="#000"
-              vertical={false}
-            />
-            <XAxis
-              dataKey="name"
-              axisLine={{ stroke: '#000', strokeWidth: 2 }}
-              tickLine={{ stroke: '#000', strokeWidth: 2 }}
-              tick={{ fill: '#000', fontWeight: 'bold' }}
-            />
-            <YAxis
-              axisLine={{ stroke: '#000', strokeWidth: 2 }}
-              tickLine={{ stroke: '#000', strokeWidth: 2 }}
-              tick={{ fill: '#000', fontWeight: 'bold' }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#fff',
-                border: '3px solid #000',
-                boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)',
-                fontWeight: 'bold'
-              }}
-            />
-            <Bar
-              dataKey="sales"
-              stroke="#000"
-              strokeWidth={2}
+      <div className="flex-1 w-full flex items-center justify-center">
+        {data.length > 0 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={data}
+              margin={{ top: 20, right: 20, left: 0, bottom: 0 }}
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#000"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="name"
+                axisLine={{ stroke: '#000', strokeWidth: 2 }}
+                tickLine={{ stroke: '#000', strokeWidth: 2 }}
+                tick={{ fill: '#000', fontWeight: 'bold' }}
+              />
+              <YAxis
+                axisLine={{ stroke: '#000', strokeWidth: 2 }}
+                tickLine={{ stroke: '#000', strokeWidth: 2 }}
+                tick={{ fill: '#000', fontWeight: 'bold' }}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#fff',
+                  border: '3px solid #000',
+                  boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)',
+                  fontWeight: 'bold'
+                }}
+              />
+              <Bar
+                dataKey="sales"
+                stroke="#000"
+                strokeWidth={2}
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="text-center space-y-2">
+            <div className="text-4xl">📉</div>
+            <p className="font-bold italic text-slate-500">Belum ada data penjualan minggu ini.</p>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

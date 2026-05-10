@@ -128,3 +128,53 @@ export async function getTopProducts() {
       color: ["bg-yellow-400", "bg-green-400", "bg-blue-400", "bg-pink-400"][i % 4]
     }));
 }
+
+export async function getDetailedSalesReport() {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("total_amount, created_at")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching detailed reports:", error);
+    return [];
+  }
+
+  // Group by date
+  const grouped: Record<string, number> = {};
+  data.forEach(t => {
+    const date = t.created_at.split('T')[0];
+    grouped[date] = (grouped[date] || 0) + Number(t.total_amount);
+  });
+
+  return Object.entries(grouped).map(([date, sales]) => ({
+    date,
+    sales,
+    profit: sales * 0.2 // Simplified profit calculation (20% margin)
+  }));
+}
+
+export async function getCategoryDistribution() {
+  const { data, error } = await supabase
+    .from("transaction_items")
+    .select(`
+      quantity,
+      products (
+        categories (name)
+      )
+    `);
+
+  if (error) {
+    console.error("Error fetching category distribution:", error);
+    return [];
+  }
+
+  const distribution: Record<string, number> = {};
+  data.forEach(item => {
+    const categoryName = item.products?.[0]?.categories?.[0]?.name || "Lainnya";
+    distribution[categoryName] = (distribution[categoryName] || 0) + item.quantity;
+  });
+
+  return Object.entries(distribution).map(([name, value]) => ({ name, value }));
+}
+
