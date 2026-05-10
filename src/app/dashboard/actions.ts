@@ -7,13 +7,19 @@ export async function getDashboardStats() {
     .from("transactions")
     .select("total_amount, created_at");
 
-  if (transError) throw transError;
+  if (transError) {
+    console.error("Error fetching transactions:", transError);
+    return { totalSales: 0, todayTransactions: 0, lowStockCount: 0, totalProducts: 0 };
+  }
 
   const { data: products, error: prodError } = await supabase
     .from("products")
     .select("stock, min_stock");
 
-  if (prodError) throw prodError;
+  if (prodError) {
+    console.error("Error fetching products:", prodError);
+    return { totalSales: 0, todayTransactions: 0, lowStockCount: 0, totalProducts: 0 };
+  }
 
   // Calculate metrics
   const totalSales = transactions?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
@@ -43,7 +49,10 @@ export async function getRecentTransactions() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error fetching recent transactions:", error);
+    return [];
+  }
 
   return data.map(t => ({
     id: t.id,
@@ -61,7 +70,10 @@ export async function getSalesData() {
     .select("total_amount, created_at")
     .order("created_at", { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error fetching sales data:", error);
+    return [];
+  }
 
   // Group by day for the last 7 days
   const last7Days = [...Array(7)].map((_, i) => {
@@ -90,7 +102,10 @@ export async function getTopProducts() {
       products (name, category_id)
     `);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error fetching top products:", error);
+    return [];
+  }
 
   // Manual aggregation because Supabase join grouping is tricky with basic client
   const aggregation: Record<string, { name: string, sales: number }> = {};
