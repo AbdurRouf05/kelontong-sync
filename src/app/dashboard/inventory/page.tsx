@@ -865,18 +865,9 @@ export default function InventoryPage() {
                       />
                     </td>
                     <td className="p-4 border-r-[2px] border-black">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 border-[2px] border-black bg-slate-100 flex-shrink-0 overflow-hidden">
-                          {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-black uppercase leading-tight">{product.name}</p>
-                          <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
-                        </div>
+                      <div>
+                        <p className="font-black uppercase leading-tight">{product.name}</p>
+                        <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
                       </div>
                     </td>
                     <td className="p-4 border-r-[2px] border-black">
@@ -1085,32 +1076,6 @@ export default function InventoryPage() {
                     value={formData.selling_price}
                     onChange={(e) => setFormData({...formData, selling_price: e.target.value})}
                   />
-                </div>
-                <div className="space-y-4 col-span-full">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Foto Produk</label>
-                  <div 
-                    onClick={() => imageInputRef.current?.click()}
-                    className="border-[3px] border-dashed border-black p-4 bg-slate-50 flex items-center gap-6 cursor-pointer hover:bg-slate-100 transition-all"
-                  >
-                    <input 
-                      type="file" 
-                      ref={imageInputRef}
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                    <div className="w-24 h-24 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shrink-0">
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <Plus className="text-slate-300" size={32} />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-black uppercase text-sm">Klik untuk upload foto</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">PNG, JPG, atau WEBP (Maks 2MB)</p>
-                    </div>
-                  </div>
                 </div>
               </div>
 
