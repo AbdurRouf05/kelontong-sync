@@ -2,20 +2,26 @@
 
 Silakan salin dan tempel kode SQL di bawah ini ke dalam **SQL Editor** di dashboard Supabase Anda, lalu klik **Run**.
 
-## 1. Membuat Tabel Utama
+---
+
+## 🟢 1. Struktur Inti (Dibuat oleh: Abdur Rouf - PM)
+**Fungsi**: Fondasi utama aplikasi untuk menyimpan data toko, karyawan, barang, dan transaksi.
 
 ```sql
 -- Hapus tabel jika sudah ada (Gunakan ini jika ingin reset database)
+DROP TABLE IF EXISTS stock_logs CASCADE;
 DROP TABLE IF EXISTS transaction_items CASCADE;
 DROP TABLE IF EXISTS transactions CASCADE;
 DROP TABLE IF EXISTS products CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS stores CASCADE;
+DROP TABLE IF EXISTS store_settings CASCADE;
 
 -- 1. Tabel Toko (Tenant)
 CREATE TABLE stores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- [Tambahan oleh Gombet]: Untuk melacak pemilik cabang pada fitur Multi-Cabang
   name TEXT NOT NULL,
   address TEXT,
   phone TEXT,
@@ -23,7 +29,6 @@ CREATE TABLE stores (
 );
 
 -- 2. Tabel Profil (Karyawan/Owner)
--- Menghubungkan Supabase Auth dengan data toko
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
@@ -75,10 +80,21 @@ CREATE TABLE transaction_items (
   unit_price DECIMAL(12,2) NOT NULL,
   subtotal DECIMAL(12,2) NOT NULL
 );
+
+-- MATIKAN RLS (Agar tidak error saat testing)
+ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE transaction_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE stores DISABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE categories DISABLE ROW LEVEL SECURITY;
 ```
 
-## 2. Otomatisasi (Trigger Potong Stok)
-Gunakan trigger ini agar setiap ada transaksi baru, stok barang otomatis berkurang.
+
+---
+
+## 🟡 2. Otomatisasi Stok (Dibuat oleh: Abdur Rouf - PM)
+**Fungsi**: Memastikan stok barang berkurang secara otomatis setiap kali ada transaksi penjualan di kasir.
 
 ```sql
 CREATE OR REPLACE FUNCTION reduce_stock_after_transaction()
@@ -97,26 +113,48 @@ FOR EACH ROW
 EXECUTE FUNCTION reduce_stock_after_transaction();
 ```
 
-## 3. Keamanan Data (Row Level Security)
-Langkah ini sangat penting agar satu toko tidak bisa melihat data toko lain.
+---
+
+## 🔵 3. Tambahan Modul Inventaris (Dibuat oleh: Rafi/AI)
+**Fungsi**: Mencatat riwayat masuk/keluar barang (Audit Trail) untuk laporan manajemen stok Akmal.
 
 ```sql
--- Aktifkan RLS di semua tabel
-ALTER TABLE stores ENABLE ROW LEVEL SECURITY;
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE transaction_items ENABLE ROW LEVEL SECURITY;
-
--- Contoh Policy: Hanya bisa melihat data yang store_id nya sama dengan store_id user
-CREATE POLICY "Allow users to view their own store data" ON products
-FOR SELECT USING (
-  store_id IN (
-    SELECT store_id FROM profiles WHERE id = auth.uid()
-  )
+-- Tabel untuk mencatat riwayat perubahan stok
+CREATE TABLE stock_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  change_amount INTEGER NOT NULL, -- Positif (Masuk), Negatif (Keluar)
+  type TEXT CHECK (type IN ('initial', 'restock', 'sale', 'adjustment', 'return')),
+  notes TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ```
 
-## 4. Tips Setup Supabase
-1. **API Keys**: Anda akan butuh `SUPABASE_URL` dan `SUPABASE_ANON_KEY` untuk dimasukkan ke file `.env` di proyek Next.js.
-2. **Auth**: Aktifkan Email Auth di menu Authentication agar tim bisa melakukan registrasi akun tes.
+---
+
+## 🟣 4. Tambahan Modul Settings (Dibuat oleh: Gombet/AI)
+**Fungsi**: Menyimpan preferensi toko seperti logo, footer struk, dan ambang batas stok tipis.
+
+```sql
+CREATE TABLE store_settings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
+  receipt_footer TEXT DEFAULT 'Terima kasih atas kunjungan Anda!',
+  low_stock_threshold INTEGER DEFAULT 5,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+## 🔴 5. Keamanan Data (Update: Rafi/AI)
+**Status**: **DISABLED (Mode Development)**.
+RLS dinonaktifkan sementara agar tim bisa melakukan testing simpan data tanpa terhalang kebijakan keamanan yang rumit selama fase pengembangan.
+
+```sql
+-- Perintah untuk memastikan RLS mati selama development
+ALTER TABLE products DISABLE ROW LEVEL SECURITY;
+ALTER TABLE transactions DISABLE ROW LEVEL SECURITY;
+ALTER TABLE transaction_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE stock_logs DISABLE ROW LEVEL SECURITY;
+```
