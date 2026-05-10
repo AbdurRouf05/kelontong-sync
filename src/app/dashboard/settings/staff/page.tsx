@@ -19,6 +19,7 @@ export default function StaffManagementPage() {
   
   const [formData, setFormData] = useState({
     full_name: '',
+    role: 'kasir',
   });
 
   const fetchStaff = async () => {
@@ -27,7 +28,7 @@ export default function StaffManagementPage() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, full_name, role')
-        .eq('role', 'kasir');
+        .order('full_name', { ascending: true });
 
       if (error) throw error;
       if (data) {
@@ -60,14 +61,14 @@ export default function StaffManagementPage() {
         .insert([{ 
           id: crypto.randomUUID(), // Buat ID di sini agar Supabase tidak protes 'null'
           full_name: formData.full_name, 
-          role: 'kasir',
+          role: formData.role,
           store_id: storeData.id
         }]);
 
       if (error) throw error;
       
       setIsModalOpen(false);
-      setFormData({ full_name: '' });
+      setFormData({ full_name: '', role: 'kasir' });
       fetchStaff();
     } catch (error: any) {
       alert('Gagal menambah karyawan: ' + error.message);
