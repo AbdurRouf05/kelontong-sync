@@ -18,7 +18,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 *Target: Antarmuka dan logika utama modul selesai di masing-masing branch.*
 
 ### Modul POS (Rafi)
-- [ ] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
+- [x] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
 - [ ] **Rafi**: Implementasi logika keranjang (Tambah, Kurang, Hapus barang).
 - [ ] **Rafi**: Implementasi fitur pencarian barang & hitung kembalian.
 
