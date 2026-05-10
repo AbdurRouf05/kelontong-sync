@@ -9,6 +9,8 @@ Sesuai dengan kebutuhan arsitektur cloud SaaS modern yang cepat, ringan, dan han
 - **Styling**: Tailwind CSS
 - **Package Manager**: pnpm
 - **Backend & Database**: Supabase (PostgreSQL, Auth)
+- **Gaya Visual**: **Neobrutalism** (Border tebal, warna kontras, hard shadow, ikon lucu).
+- **Alur Navigasi**: Landing Page -> Login/Register -> Dashboard (Internal).
 
 ## 3. Pembagian Modul dan Peran (5 Anggota Tim)
 

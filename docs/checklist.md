@@ -9,8 +9,8 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [x] **Abdur Rouf**: Konfigurasi Branching Git (`dev`, `staging`, `feature/*`).
 - [x] **Abdur Rouf**: Setup Proyek Supabase & Vercel.
 - [x] **Abdur Rouf**: Membuat Skema Database (Tabel Toko, Barang, Karyawan, Transaksi) di Supabase.
-- [ ] **Semua Anggota**: Melakukan `git clone` dan `pnpm install` di komputer masing-masing.
-- [ ] **Semua Anggota**: Berpindah ke branch modul masing-masing (contoh: `git checkout feature/pos`).
+- [x] **Semua Anggota**: Melakukan `git clone` dan `pnpm install` di komputer masing-masing.
+- [x] **Semua Anggota**: Berpindah ke branch modul masing-masing (contoh: `git checkout feature/pos`).
 
 ---
 
@@ -18,43 +18,43 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 *Target: Antarmuka dan logika utama modul selesai di masing-masing branch.*
 
 ### Modul POS (Rafi)
-- [ ] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
-- [ ] **Rafi**: Implementasi logika keranjang (Tambah, Kurang, Hapus barang).
-- [ ] **Rafi**: Implementasi fitur pencarian barang & hitung kembalian.
+- [x] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
+- [x] **Rafi**: Implementasi logika keranjang (Tambah, Kurang, Hapus barang).
+- [x] **Rafi**: Implementasi fitur pencarian barang & hitung kembalian.
 
 ### Modul Inventaris (Akmal)
-- [ ] **Akmal**: Membuat UI Katalog Barang (Tabel & Grid).
-- [ ] **Akmal**: Membuat Form Tambah/Edit Barang.
-- [ ] **Akmal**: Implementasi fitur kategori dan filter stok.
+- [x] **Akmal**: Membuat UI Katalog Barang (Tabel & Grid).
+- [x] **Akmal**: Membuat Form Tambah/Edit Barang.
+- [x] **Akmal**: Implementasi fitur kategori dan filter stok.
 
 ### Modul Dasbor (Adam)
-- [ ] **Adam**: Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi).
-- [ ] **Adam**: Integrasi library Chart.js/Recharts untuk grafik penjualan.
-- [ ] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
+- [x] **Adam**: Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi).
+- [x] **Adam**: Integrasi library Chart.js/Recharts untuk grafik penjualan.
+- [x] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
 
 ### Modul Settings & Multi-Cabang (Gombet)
-- [ ] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
-- [ ] **Gombet**: Membuat halaman manajemen akun karyawan/kasir.
-- [ ] **Gombet**: Implementasi UI untuk fitur perpindahan antar cabang.
+- [x] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
+- [x] **Gombet**: Membuat halaman manajemen akun karyawan/kasir.
+- [x] **Gombet**: Implementasi UI untuk fitur perpindahan antar cabang.
 
 ---
 
 ## 🔵 FASE 3: Integrasi & Fitur Lanjutan
 *Target: Frontend terhubung ke Supabase dan fitur lintas modul berfungsi.*
 
-- [ ] **Abdur Rouf**: Membuat API / Server Actions untuk koneksi ke Supabase.
-- [ ] **Semua Anggota**: Menghubungkan UI Modul ke Database (Fetch & Post data).
+- [x] **Abdur Rouf**: Membuat API / Server Actions untuk koneksi ke Supabase.
+- [x] **Semua Anggota**: Menghubungkan UI Modul ke Database (Fetch & Post data).
 - [ ] **Abdur Rouf**: Implementasi Row Level Security (RLS) agar data antar toko tidak bocor.
-- [ ] **Abdur Rouf**: Membuat Trigger SQL untuk pemotongan stok otomatis saat transaksi.
-- [ ] **Rafi**: Implementasi fitur cetak struk (Thermal/PDF).
-- [ ] **Akmal**: Implementasi notifikasi "Early Warning" jika stok di bawah limit.
+- [x] **Abdur Rouf**: Membuat Trigger SQL untuk pemotongan stok otomatis saat transaksi.
+- [x] **Rafi**: Implementasi fitur cetak struk (Thermal/PDF).
+- [x] **Akmal**: Implementasi notifikasi "Early Warning" jika stok di bawah limit.
 
 ---
 
 ## 🔴 FASE 4: Testing & Deployment Final
 *Target: Aplikasi stabil dan siap rilis.*
 
-- [ ] **Semua Anggota**: Melakukan Merge PR dari branch feature ke branch `dev`.
+- [x] **Semua Anggota**: Melakukan Merge PR dari branch feature ke branch `dev`.
 - [ ] **Abdur Rouf**: Melakukan Code Review dan penyelesaian konflik kode.
 - [ ] **Abdur Rouf & Adam**: Testing menyeluruh (UAT) di branch `staging`.
 - [ ] **Semua Anggota**: Perbaikan bug hasil testing.
