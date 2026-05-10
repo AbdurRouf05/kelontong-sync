@@ -1,0 +1,921 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { 
+  Package, 
+  Search, 
+  Plus, 
+  Filter, 
+  MoreVertical, 
+  Edit3, 
+  Trash2, 
+  AlertTriangle,
+  ArrowUpDown,
+  Download,
+  Loader2,
+  X,
+  CheckCircle2,
+  XCircle
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import Papa from "papaparse";
+import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+import { useRef } from "react";
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  barcode: string;
+  buy_price: number;
+  selling_price: number;
+  stock: number;
+  category_id?: string;
+  category_name?: string;
+  min_stock: number;
+}
+
+export default function InventoryPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    barcode: "",
+    category_id: "",
+    buy_price: "",
+    selling_price: "",
+    stock: "",
+    min_stock: "5"
+  });
+
+  // Fetch categories
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name")
+        .order("name", { ascending: true });
+      if (error) throw error;
+      setCategories(data || []);
+      if (data && data.length > 0 && !formData.category_id) {
+        setFormData(prev => ({ ...prev, category_id: data[0].id }));
+      }
+    } catch (err: any) {
+      console.error("Error fetching categories:", err.message);
+    }
+  };
+
+  // Fetch products
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
+        .order("name", { ascending: true });
+
+      if (error) throw error;
+
+      setProducts((data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        barcode: p.barcode || "-",
+        buy_price: Number(p.cost_price) || 0,
+        selling_price: Number(p.selling_price) || 0,
+        stock: p.stock || 0,
+        category_id: p.category_id,
+        category_name: p.categories?.name || "Tanpa Kategori",
+        min_stock: p.min_stock || 5
+      })));
+    } catch (err: any) {
+      console.error("Error:", err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchProducts();
+  }, []);
+
+  const handleOpenModal = (product?: Product) => {
+    if (product) {
+      setEditingProduct(product);
+      setFormData({
+        name: product.name,
+        barcode: product.barcode,
+        category_id: product.category_id || (categories[0]?.id || ""),
+        buy_price: product.buy_price.toString(),
+        selling_price: product.selling_price.toString(),
+        stock: product.stock.toString(),
+        min_stock: product.min_stock.toString()
+      });
+    } else {
+      setEditingProduct(null);
+      setFormData({
+        name: "",
+        barcode: "",
+        category_id: categories[0]?.id || "",
+        buy_price: "",
+        selling_price: "",
+        stock: "",
+        min_stock: "5"
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const showToast = (message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    try {
+      setIsCategorySubmitting(true);
+      const { data: stores } = await supabase.from("stores").select("id").limit(1);
+      const storeId = stores?.[0]?.id;
+
+      const { error } = await supabase
+        .from("categories")
+        .insert([{ name: newCategoryName, store_id: storeId }]);
+      
+      if (error) throw error;
+      
+      setNewCategoryName("");
+      showToast("Kategori berhasil ditambahkan!");
+      fetchCategories();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsCategorySubmitting(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!confirm(`Hapus kategori "${name}"? Barang dengan kategori ini akan berubah menjadi 'Tanpa Kategori'.`)) return;
+    try {
+      const { error } = await supabase.from("categories").delete().eq("id", id);
+      if (error) throw error;
+      showToast(`Kategori "${name}" berhasil dihapus!`);
+      fetchCategories();
+      fetchProducts(); // Refresh products to update category_name in table
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        name: formData.name,
+        barcode: formData.barcode,
+        cost_price: Number(formData.buy_price),
+        selling_price: Number(formData.selling_price),
+        stock: Number(formData.stock),
+        min_stock: Number(formData.min_stock),
+        category_id: formData.category_id || null
+      };
+
+      if (editingProduct) {
+        const { error } = await supabase
+          .from("products")
+          .update(payload)
+          .eq("id", editingProduct.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("products")
+          .insert([payload]);
+        if (error) throw error;
+      }
+
+      setIsModalOpen(false);
+      showToast(editingProduct ? "Barang berhasil diperbarui!" : "Barang berhasil ditambahkan!");
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Hapus barang ini?")) return;
+    try {
+      const { error } = await supabase.from("products").delete().eq("id", id);
+      if (error) throw error;
+      showToast("Barang berhasil dihapus!");
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
+  };
+
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          p.barcode.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchCategory = selectedCategory === "Semua" || p.category_id === selectedCategory;
+      return matchSearch && matchCategory;
+    });
+  }, [searchQuery, selectedCategory, products]);
+
+  // Selection Logic
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredProducts.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredProducts.map(p => p.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    const next = new Set(selectedIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    setSelectedIds(next);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (!confirm(`Hapus ${selectedIds.size} barang yang dipilih?`)) return;
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .in("id", Array.from(selectedIds));
+      
+      if (error) throw error;
+      
+      showToast(`${selectedIds.size} barang berhasil dihapus!`);
+      setSelectedIds(new Set());
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    const confirm1 = confirm("PERINGATAN KRITIS: Hapus SEMUA barang di inventaris?");
+    if (!confirm1) return;
+    const confirm2 = confirm("Data yang dihapus tidak bisa dikembalikan. Kamu yakin banget?");
+    if (!confirm2) return;
+
+    try {
+      setIsLoading(true);
+      const { error } = await supabase
+        .from("products")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Standard way to delete all rows
+      
+      if (error) throw error;
+      
+      showToast("Seluruh inventaris berhasil dibersihkan!");
+      setSelectedIds(new Set());
+      fetchProducts();
+    } catch (err: any) {
+      showToast(err.message, "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Export Logic
+  const handleExport = (format: "csv" | "xlsx" | "json" | "pdf") => {
+    const exportData = filteredProducts.map(p => ({
+      Nama: p.name,
+      Barcode: p.barcode,
+      Kategori: p.category_name,
+      "Harga Beli": p.buy_price,
+      "Harga Jual": p.selling_price,
+      Stok: p.stock,
+      "Min Stok": p.min_stock
+    }));
+
+    if (format === "csv") {
+      const csv = Papa.unparse(exportData);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `inventaris_export_${new Date().toLocaleDateString()}.csv`;
+      link.click();
+    } else if (format === "xlsx") {
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Inventaris");
+      XLSX.writeFile(wb, `inventaris_export_${new Date().toLocaleDateString()}.xlsx`);
+    } else if (format === "json") {
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `inventaris_export_${new Date().toLocaleDateString()}.json`;
+      link.click();
+    } else if (format === "pdf") {
+      try {
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("LAPORAN INVENTARIS KELONTONGSYNC", 14, 15);
+        doc.setFontSize(10);
+        doc.text(`Dicetak pada: ${new Date().toLocaleString("id-ID")}`, 14, 22);
+        
+        autoTable(doc, {
+          head: [["Nama", "Barcode", "Kategori", "Harga", "Stok"]],
+          body: filteredProducts.map(p => [
+            p.name || "-", 
+            p.barcode || "-", 
+            p.category_name || "Tanpa Kategori", 
+            `Rp ${p.selling_price.toLocaleString("id-ID")}`, 
+            p.stock.toString()
+          ]),
+          startY: 25,
+          theme: "grid",
+          headStyles: { fillColor: [250, 204, 21] }, // Yellow-400
+          styles: { fontStyle: "bold" }
+        });
+        
+        doc.save(`laporan_inventaris_${new Date().toISOString().split('T')[0]}.pdf`);
+      } catch (err: any) {
+        showToast("Gagal export PDF: " + err.message, "error");
+      }
+    }
+    setIsExportMenuOpen(false);
+    showToast(`Produk berhasil diekspor ke ${format.toUpperCase()}`);
+  };
+
+  // Import Logic
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    const reader = new FileReader();
+
+    reader.onload = async (evt) => {
+      try {
+        const results: any[] = [];
+        const fileName = file.name.toLowerCase();
+
+        if (fileName.endsWith(".csv")) {
+          const csvData = Papa.parse(evt.target?.result as string, { header: true }).data;
+          results.push(...csvData);
+        } else if (fileName.endsWith(".xlsx")) {
+          const ab = evt.target?.result;
+          const wb = XLSX.read(ab, { type: "array" });
+          const firstSheetName = wb.SheetNames[0];
+          const ws = wb.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(ws);
+          results.push(...jsonData);
+        } else if (fileName.endsWith(".json")) {
+          results.push(...JSON.parse(evt.target?.result as string));
+        }
+
+        if (results.length === 0) throw new Error("File kosong atau tidak valid.");
+
+        // Process data to match Supabase schema
+        const toInsert = results.filter(r => r.Nama || r.name).map(r => ({
+          name: r.Nama || r.name,
+          barcode: r.Barcode || r.barcode || "",
+          cost_price: Number(r["Harga Beli"] || r.cost_price || 0),
+          selling_price: Number(r["Harga Jual"] || r.selling_price || 0),
+          stock: Number(r.Stok || r.stock || 0),
+          min_stock: Number(r["Min Stok"] || r.min_stock || 5)
+        }));
+
+        const { error } = await supabase.from("products").insert(toInsert);
+        if (error) throw error;
+
+        showToast(`${toInsert.length} barang berhasil diimport!`);
+        setIsImportModalOpen(false);
+        fetchProducts();
+      } catch (err: any) {
+        showToast(err.message, "error");
+      } finally {
+        setIsImporting(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
+    };
+
+    if (file.name.endsWith(".xlsx")) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
+  };
+
+  const lowStockCount = products.filter(p => p.stock < (p.min_stock || 5)).length;
+  const totalValue = products.reduce((acc, p) => acc + (p.selling_price * p.stock), 0);
+
+  return (
+    <div className="space-y-6 pb-12 relative">
+      {/* Header & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black uppercase tracking-tight">Inventaris</h1>
+          <p className="font-bold text-slate-500 uppercase text-sm tracking-widest">Manajemen Stok & Katalog Barang</p>
+        </div>
+        <div className="flex gap-4 relative">
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="neo-btn-primary bg-blue-400 flex items-center gap-2 px-4 py-2 text-sm font-black"
+          >
+            <Download className="rotate-180" size={18} /> IMPORT
+          </button>
+
+          <div className="relative">
+            <button 
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              className="neo-btn-primary bg-slate-100 flex items-center gap-2 px-4 py-2 text-sm font-black uppercase"
+            >
+              <Download size={18} /> EXPORT
+            </button>
+            
+            {isExportMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-40 bg-white border-[3px] border-black z-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-2 duration-200">
+                <button onClick={() => handleExport("csv")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-yellow-400 border-b-[2px] border-black transition-colors">CSV Format</button>
+                <button onClick={() => handleExport("xlsx")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-green-400 border-b-[2px] border-black transition-colors">Excel (XLSX)</button>
+                <button onClick={() => handleExport("pdf")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-red-400 border-b-[2px] border-black transition-colors">PDF Report</button>
+                <button onClick={() => handleExport("json")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-blue-400 border-b-[2px] border-black transition-colors">JSON Data</button>
+                <button onClick={handleDeleteAll} className="w-full text-left p-3 font-black uppercase text-[10px] text-red-600 hover:bg-red-50 transition-colors">Hapus Semua Data</button>
+              </div>
+            )}
+          </div>
+
+          <button 
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="neo-btn-primary bg-yellow-400 flex items-center gap-2 px-4 py-2 text-sm font-black"
+          >
+            <Plus size={18} /> KATEGORI
+          </button>
+          <button 
+            onClick={() => handleOpenModal()}
+            className="neo-btn-primary bg-green-400 flex items-center gap-2 px-4 py-2 text-sm font-black uppercase"
+          >
+            <Plus size={20} /> TAMBAH BARANG
+          </button>
+        </div>
+      </div>
+
+      {/* Low Stock Alert Banner */}
+      {lowStockCount > 0 && (
+        <div className="neo-card bg-red-500 text-white flex items-center justify-between p-4 animate-bounce">
+          <div className="flex items-center gap-4">
+            <div className="bg-white p-2 border-[2px] border-black text-red-600">
+              <AlertTriangle size={24} />
+            </div>
+            <div>
+              <p className="font-black uppercase text-lg">Peringatan Stok Kritis!</p>
+              <p className="font-bold text-sm opacity-90">Ada {lowStockCount} barang yang hampir habis. Segera restock!</p>
+            </div>
+          </div>
+          <button className="bg-white text-black px-4 py-2 font-black border-[3px] border-black hover:bg-slate-100 transition-all text-sm">
+            CEK SEKARANG
+          </button>
+        </div>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="neo-card bg-white flex items-center gap-6">
+          <div className="w-16 h-16 bg-blue-100 border-[3px] border-black flex items-center justify-center">
+            <Package className="text-blue-600" size={32} />
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Produk</p>
+            <p className="text-3xl font-black">{products.length}</p>
+          </div>
+        </div>
+        <div className={`neo-card flex items-center gap-6 ${lowStockCount > 0 ? "bg-red-50 border-red-500 shadow-red-900" : "bg-white"}`}>
+          <div className={`w-16 h-16 border-[3px] border-black flex items-center justify-center ${lowStockCount > 0 ? "bg-red-400" : "bg-slate-100"}`}>
+            <AlertTriangle className={lowStockCount > 0 ? "text-white" : "text-slate-400"} size={32} />
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Stok Menipis</p>
+            <p className={`text-3xl font-black ${lowStockCount > 0 ? "text-red-600" : ""}`}>{lowStockCount}</p>
+          </div>
+        </div>
+        <div className="neo-card bg-white flex items-center gap-6">
+          <div className="w-16 h-16 bg-green-100 border-[3px] border-black flex items-center justify-center">
+            <span className="text-2xl font-black text-green-600">Rp</span>
+          </div>
+          <div>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Nilai Stok</p>
+            <p className="text-2xl font-black">Rp {totalValue.toLocaleString("id-ID")}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters & Table */}
+      <div className="neo-card bg-white p-0 overflow-hidden">
+        {/* Table Toolbar */}
+        <div className="p-6 border-b-[4px] border-black flex flex-col md:flex-row gap-4 items-center bg-slate-50">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <input 
+              type="text" 
+              placeholder="Cari nama atau barcode..."
+              className="w-full pl-12 pr-4 py-3 bg-white border-[3px] border-black font-bold focus:outline-none focus:shadow-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-2 border-[3px] border-black bg-white px-3 py-3 font-bold w-full md:w-48">
+              <Filter size={18} />
+              <select 
+                className="bg-transparent focus:outline-none w-full cursor-pointer"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                <option value="Semua">Semua Kategori</option>
+                {categories.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Table Content */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-yellow-400 border-b-[4px] border-black">
+                <th className="p-4 border-r-[2px] border-black w-10">
+                  <input 
+                    type="checkbox"
+                    className="w-5 h-5 accent-black cursor-pointer"
+                    checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
+                    onChange={toggleSelectAll}
+                  />
+                </th>
+                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Produk</th>
+                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Kategori</th>
+                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Harga Jual</th>
+                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black text-center">Stok</th>
+                <th className="p-4 font-black uppercase text-sm text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="p-20 text-center text-black">
+                    <Loader2 className="animate-spin mx-auto mb-4" size={48} />
+                    <p className="font-black uppercase tracking-widest">Memuat Inventaris...</p>
+                  </td>
+                </tr>
+              ) : filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <tr key={product.id} className={`border-b-[2px] border-black hover:bg-slate-50 transition-colors ${selectedIds.has(product.id) ? "bg-yellow-50" : ""}`}>
+                    <td className="p-4 border-r-[2px] border-black">
+                      <input 
+                        type="checkbox"
+                        className="w-5 h-5 accent-black cursor-pointer"
+                        checked={selectedIds.has(product.id)}
+                        onChange={() => toggleSelectOne(product.id)}
+                      />
+                    </td>
+                    <td className="p-4 border-r-[2px] border-black">
+                      <p className="font-black uppercase">{product.name}</p>
+                      <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
+                    </td>
+                    <td className="p-4 border-r-[2px] border-black">
+                      <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-xs font-black uppercase">
+                        {product.category_name}
+                      </span>
+                    </td>
+                    <td className="p-4 border-r-[2px] border-black font-bold">
+                      Rp {product.selling_price.toLocaleString("id-ID")}
+                    </td>
+                    <td className="p-4 border-r-[2px] border-black text-center">
+                      <div className={`inline-block px-3 py-1 border-[2px] border-black font-black ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
+                        {product.stock}
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => handleOpenModal(product)}
+                          className="p-2 hover:bg-yellow-100 border-[2px] border-transparent hover:border-black transition-all"
+                        >
+                          <Edit3 size={18} />
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          className="p-2 hover:bg-red-100 border-[2px] border-transparent hover:border-black transition-all text-red-600"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="p-20 text-center text-slate-400 italic font-bold">
+                    Barang tidak ditemukan.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[90] animate-in slide-in-from-bottom-10 duration-300 w-full max-w-2xl px-4">
+          <div className="neo-card bg-black text-white flex flex-col md:flex-row items-center justify-between gap-6 px-8 py-6 shadow-[8px_8px_0px_0px_rgba(255,255,255,0.2)]">
+            <div className="flex items-center gap-4">
+              <div className="bg-yellow-400 text-black px-4 py-1 font-black text-2xl border-[3px] border-white">
+                {selectedIds.size}
+              </div>
+              <p className="font-black uppercase tracking-tighter text-sm">Barang Dipilih</p>
+            </div>
+            
+            <div className="flex gap-6">
+              <button 
+                onClick={handleDeleteSelected}
+                className="bg-red-500 hover:bg-red-600 text-white px-8 py-3 font-black uppercase text-sm border-[3px] border-white shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] transition-all flex items-center gap-2"
+              >
+                <Trash2 size={20} /> HAPUS {selectedIds.size} BARANG
+              </button>
+              <button 
+                onClick={() => setSelectedIds(new Set())}
+                className="text-white/50 hover:text-white font-black uppercase text-xs tracking-widest"
+              >
+                BATAL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="neo-card bg-white w-full max-w-2xl p-0 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b-[4px] border-black bg-blue-400 flex items-center justify-between">
+              <h3 className="text-2xl font-black uppercase tracking-tight">
+                {editingProduct ? "Edit Barang" : "Tambah Barang Baru"}
+              </h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 hover:bg-blue-500 border-[2px] border-transparent hover:border-black transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Nama Barang</label>
+                  <input 
+                    type="text" required
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Barcode / SN</label>
+                  <input 
+                    type="text"
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                    value={formData.barcode}
+                    onChange={(e) => setFormData({...formData, barcode: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Kategori</label>
+                  <select 
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                    value={formData.category_id}
+                    onChange={(e) => setFormData({...formData, category_id: e.target.value})}
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Stok Awal</label>
+                  <input 
+                    type="number" required
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2 col-span-full">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Limit Stok Minimum (Early Warning)</label>
+                  <input 
+                    type="number" required
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none bg-red-50"
+                    value={formData.min_stock}
+                    onChange={(e) => setFormData({...formData, min_stock: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Harga Beli (Rp)</label>
+                  <input 
+                    type="number" required
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none bg-slate-50"
+                    value={formData.buy_price}
+                    onChange={(e) => setFormData({...formData, buy_price: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Harga Jual (Rp)</label>
+                  <input 
+                    type="number" required
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none bg-yellow-50"
+                    value={formData.selling_price}
+                    onChange={(e) => setFormData({...formData, selling_price: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 flex gap-4">
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-4 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all"
+                >
+                  BATAL
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-4 font-black uppercase bg-green-400 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? "MENYIMPAN..." : editingProduct ? "SIMPAN PERUBAHAN" : "TAMBAH BARANG"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="neo-card bg-white w-full max-w-lg p-0 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b-[4px] border-black bg-blue-400 flex items-center justify-between">
+              <h3 className="text-xl font-black uppercase tracking-tight">Import Data Barang</h3>
+              <button 
+                onClick={() => setIsImportModalOpen(false)}
+                className="p-1 hover:bg-blue-500 border-[2px] border-transparent hover:border-black transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-8 text-center space-y-6">
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-[4px] border-dashed border-slate-300 p-12 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer group"
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  onChange={handleImport}
+                  accept=".csv, .xlsx, .json"
+                  className="hidden"
+                />
+                <div className="w-20 h-20 bg-blue-100 border-[3px] border-black flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Download className="rotate-180 text-blue-600" size={40} />
+                </div>
+                <p className="font-black uppercase text-sm">Pilih File untuk Upload</p>
+                <p className="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Mendukung: CVS, Excel, JSON</p>
+              </div>
+              
+              {isImporting && (
+                <div className="flex items-center justify-center gap-3 font-black uppercase text-sm">
+                  <Loader2 className="animate-spin" size={20} />
+                  <span>Sedang memproses file...</span>
+                </div>
+              )}
+
+              <div className="bg-yellow-50 border-[2px] border-black p-4 text-left">
+                <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Tips Format CSV/Excel:</p>
+                <p className="text-[10px] font-bold">Pastikan header kolom berisi: <span className="bg-yellow-200 px-1">Nama</span>, <span className="bg-yellow-200 px-1">Barcode</span>, <span className="bg-yellow-200 px-1">Harga Beli</span>, <span className="bg-yellow-200 px-1">Harga Jual</span>, <span className="bg-yellow-200 px-1">Stok</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Category Modal */}
+      {isCategoryModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="neo-card bg-white w-full max-w-md p-0 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b-[4px] border-black bg-yellow-400 flex items-center justify-between">
+              <h3 className="text-xl font-black uppercase tracking-tight">Tambah Kategori</h3>
+              <button 
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="p-1 hover:bg-yellow-500 border-[2px] border-transparent hover:border-black transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6 space-y-6">
+              {/* Existing Categories List */}
+              <div className="space-y-3">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Daftar Kategori</label>
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  {categories.length > 0 ? (
+                    categories.map((cat) => (
+                      <div key={cat.id} className="flex items-center justify-between p-3 border-[2px] border-black bg-slate-50 font-bold group">
+                        <span className="uppercase text-sm">{cat.name}</span>
+                        <button 
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          className="text-red-500 hover:bg-red-50 p-1 opacity-0 group-hover:opacity-100 transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm italic text-slate-400 text-center py-4">Belum ada kategori.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="h-[2px] bg-black/10 my-6" />
+
+              <form onSubmit={handleAddCategory} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Nama Kategori Baru</label>
+                  <input 
+                    type="text" required
+                    placeholder="Contoh: Snack, Alat Tulis..."
+                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                  />
+                </div>
+                <button 
+                  type="submit"
+                  disabled={isCategorySubmitting}
+                  className="w-full py-4 font-black uppercase bg-green-400 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                >
+                  {isCategorySubmitting ? "MENYIMPAN..." : "TAMBAH KATEGORI"}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom duration-300">
+          <div className={`neo-card flex items-center gap-4 px-6 py-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${toast.type === "success" ? "bg-green-400" : "bg-red-400 text-white"}`}>
+            {toast.type === "success" ? <CheckCircle2 size={24} /> : <XCircle size={24} />}
+            <p className="font-black uppercase tracking-tight">{toast.message}</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
