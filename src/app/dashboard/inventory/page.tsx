@@ -15,7 +15,11 @@ import {
   Loader2,
   X,
   CheckCircle2,
-  XCircle
+  XCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Papa from "papaparse";
@@ -23,10 +27,42 @@ import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useRef } from "react";
+import { useEffect as useAutoSuggest } from "react";
+
+const CATEGORY_ICONS = [
+  { icon: "🛍️", label: "Belanja" },
+  { icon: "🍕", label: "Makanan" },
+  { icon: "🥤", label: "Minuman" },
+  { icon: "📦", label: "Stok" },
+  { icon: "🧼", label: "Sabun" },
+  { icon: "💊", label: "Obat" },
+  { icon: "🚬", label: "Rokok" },
+  { icon: "🍙", label: "Snack" },
+  { icon: "🧹", label: "Alat Bersih" },
+  { icon: "🔋", label: "Baterai" },
+  { icon: "📱", label: "Pulsa" },
+  { icon: "🕯️", label: "Lilin" },
+  { icon: "🧂", label: "Bumbu" },
+  { icon: "🥚", label: "Telur" },
+  { icon: "🍚", label: "Beras" },
+  { icon: "🧴", label: "Kosmetik" },
+  { icon: "☕", label: "Kopi" },
+  { icon: "🍞", label: "Roti" },
+  { icon: "🍗", label: "Ayam" },
+  { icon: "🐟", label: "Ikan" },
+  { icon: "🥬", label: "Sayur" },
+  { icon: "🍎", label: "Buah" },
+  { icon: "🍦", label: "Es Krim" },
+  { icon: "👕", label: "Pakaian" },
+  { icon: "🚗", label: "Otomotif" },
+  { icon: "🛠️", label: "Perkakas" },
+  { icon: "📚", label: "Buku" },
+];
 
 interface Category {
   id: string;
   name: string;
+  icon?: string;
 }
 
 interface Product {
@@ -38,7 +74,9 @@ interface Product {
   stock: number;
   category_id?: string;
   category_name?: string;
+  category_icon?: string;
   min_stock: number;
+  image_url?: string;
 }
 
 export default function InventoryPage() {
@@ -54,10 +92,15 @@ export default function InventoryPage() {
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [newCategoryIcon, setNewCategoryIcon] = useState("📦");
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showOnlyLowStock, setShowOnlyLowStock] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
@@ -67,15 +110,19 @@ export default function InventoryPage() {
     buy_price: "",
     selling_price: "",
     stock: "",
-    min_stock: "5"
+    min_stock: "5",
+    image_url: ""
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch categories
   const fetchCategories = async () => {
     try {
       const { data, error } = await supabase
         .from("categories")
-        .select("id, name")
+        .select("id, name, icon")
         .order("name", { ascending: true });
       if (error) throw error;
       setCategories(data || []);
@@ -107,12 +154,14 @@ export default function InventoryPage() {
         id: p.id,
         name: p.name,
         barcode: p.barcode || "-",
-        buy_price: Number(p.cost_price) || 0,
-        selling_price: Number(p.selling_price) || 0,
+        buy_price: p.buy_price || 0,
+        selling_price: p.selling_price || 0,
         stock: p.stock || 0,
         category_id: p.category_id,
         category_name: p.categories?.name || "Tanpa Kategori",
-        min_stock: p.min_stock || 5
+        category_icon: p.categories?.icon || "📦",
+        min_stock: p.min_stock || 0,
+        image_url: p.image_url
       })));
     } catch (err: any) {
       console.error("Error:", err.message);
@@ -126,31 +175,182 @@ export default function InventoryPage() {
     fetchProducts();
   }, []);
 
-  const handleOpenModal = (product?: Product) => {
+  // Auto-suggest icon based on name
+  const handleCategoryNameChange = (name: string) => {
+    setNewCategoryName(name);
+    const lowerName = name.toLowerCase();
+    
+    const mapping: { [key: string]: string } = {
+      "makan": "🍕",
+      "snack": "🍙",
+      "camil": "🍙",
+      "minum": "🥤",
+      "haus": "🥤",
+      "botol": "🥤",
+      "susu": "🥤",
+      "kopi": "☕",
+      "teh": "☕",
+      "roti": "🍞",
+      "sembako": "🍚",
+      "beras": "🍚",
+      "telur": "🥚",
+      "bumbu": "🧂",
+      "dapur": "🧂",
+      "sabun": "🧼",
+      "shampoo": "🧴",
+      "cuci": "🧼",
+      "bersih": "🧹",
+      "pel": "🧹",
+      "sapu": "🧹",
+      "obat": "💊",
+      "sakit": "💊",
+      "sehat": "💊",
+      "rokok": "🚬",
+      "listrik": "⚡",
+      "baterai": "🔋",
+      "pulsa": "📱",
+      "kuota": "📱",
+      "baju": "👕",
+      "pakaian": "👕",
+      "celana": "👕",
+      "sayur": "🥬",
+      "buah": "🍎",
+      "daging": "🍗",
+      "ikan": "🐟",
+      "beku": "🍦",
+      "es": "🍦",
+      "oli": "🚗",
+      "motor": "🚗",
+      "mobil": "🚗",
+      "alat": "🛠️",
+      "tulis": "📚",
+      "buku": "📚"
+    };
+
+    for (const key in mapping) {
+      if (lowerName.includes(key)) {
+        setNewCategoryIcon(mapping[key]);
+        break;
+      }
+    }
+  };
+
+  const handleOpenModal = (product: Product | null = null) => {
     if (product) {
       setEditingProduct(product);
       setFormData({
         name: product.name,
         barcode: product.barcode,
-        category_id: product.category_id || (categories[0]?.id || ""),
+        category_id: product.category_id || "",
         buy_price: product.buy_price.toString(),
         selling_price: product.selling_price.toString(),
         stock: product.stock.toString(),
-        min_stock: product.min_stock.toString()
+        min_stock: product.min_stock.toString(),
+        image_url: product.image_url || ""
       });
+      setImagePreview(product.image_url || null);
     } else {
       setEditingProduct(null);
       setFormData({
         name: "",
         barcode: "",
-        category_id: categories[0]?.id || "",
+        category_id: categories.length > 0 ? categories[0].id : "",
         buy_price: "",
         selling_price: "",
         stock: "",
-        min_stock: "5"
+        min_stock: "5",
+        image_url: ""
       });
+      setImagePreview(null);
     }
+    setImageFile(null);
     setIsModalOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const compressImage = (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Set dimensions (Max 1000px width/height)
+          const MAX_WIDTH = 1000;
+          const MAX_HEIGHT = 1000;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Canvas compression failed"));
+            },
+            'image/webp',
+            0.8 // Quality
+          );
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const uploadImage = async (file: File) => {
+    try {
+      // Compress to WebP
+      const compressedBlob = await compressImage(file);
+      
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.webp`;
+      const filePath = `products/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, compressedBlob, {
+          contentType: 'image/webp'
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (err: any) {
+      console.error("Compression/Upload error:", err);
+      throw new Error("Gagal memproses gambar: " + err.message);
+    }
   };
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -166,14 +366,24 @@ export default function InventoryPage() {
       const { data: stores } = await supabase.from("stores").select("id").limit(1);
       const storeId = stores?.[0]?.id;
 
-      const { error } = await supabase
-        .from("categories")
-        .insert([{ name: newCategoryName, store_id: storeId }]);
-      
-      if (error) throw error;
+      if (editingCategory) {
+        const { error } = await supabase
+          .from("categories")
+          .update({ name: newCategoryName, icon: newCategoryIcon })
+          .eq("id", editingCategory.id);
+        if (error) throw error;
+        showToast("Kategori berhasil diperbarui!");
+      } else {
+        const { error } = await supabase
+          .from("categories")
+          .insert([{ name: newCategoryName, store_id: storeId, icon: newCategoryIcon }]);
+        if (error) throw error;
+        showToast("Kategori berhasil ditambahkan!");
+      }
       
       setNewCategoryName("");
-      showToast("Kategori berhasil ditambahkan!");
+      setNewCategoryIcon("📦");
+      setEditingCategory(null);
       fetchCategories();
     } catch (err: any) {
       showToast(err.message, "error");
@@ -199,31 +409,40 @@ export default function InventoryPage() {
     e.preventDefault();
     try {
       setIsSubmitting(true);
-      const payload = {
+      
+      let finalImageUrl = formData.image_url;
+      
+      if (imageFile) {
+        finalImageUrl = await uploadImage(imageFile);
+      }
+
+      const productData = {
         name: formData.name,
         barcode: formData.barcode,
-        cost_price: Number(formData.buy_price),
-        selling_price: Number(formData.selling_price),
-        stock: Number(formData.stock),
-        min_stock: Number(formData.min_stock),
-        category_id: formData.category_id || null
+        category_id: formData.category_id || null,
+        buy_price: parseFloat(formData.buy_price),
+        selling_price: parseFloat(formData.selling_price),
+        stock: parseInt(formData.stock),
+        min_stock: parseInt(formData.min_stock),
+        image_url: finalImageUrl
       };
 
       if (editingProduct) {
         const { error } = await supabase
           .from("products")
-          .update(payload)
+          .update(productData)
           .eq("id", editingProduct.id);
         if (error) throw error;
+        showToast("Barang berhasil diperbarui!");
       } else {
         const { error } = await supabase
           .from("products")
-          .insert([payload]);
+          .insert([productData]);
         if (error) throw error;
+        showToast("Barang berhasil ditambahkan!");
       }
 
       setIsModalOpen(false);
-      showToast(editingProduct ? "Barang berhasil diperbarui!" : "Barang berhasil ditambahkan!");
       fetchProducts();
     } catch (err: any) {
       showToast(err.message, "error");
@@ -245,13 +464,27 @@ export default function InventoryPage() {
   };
 
   const filteredProducts = useMemo(() => {
+    setCurrentPage(1); // Reset page on search/filter
     return products.filter(p => {
       const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           p.barcode.toLowerCase().includes(searchQuery.toLowerCase());
       const matchCategory = selectedCategory === "Semua" || p.category_id === selectedCategory;
-      return matchSearch && matchCategory;
+      const matchLowStock = !showOnlyLowStock || p.stock < (p.min_stock || 5);
+      return matchSearch && matchCategory && matchLowStock;
     });
-  }, [searchQuery, selectedCategory, products]);
+  }, [searchQuery, selectedCategory, products, showOnlyLowStock]);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [filteredProducts, currentPage, itemsPerPage]);
+
+  const goToPage = (page: number) => {
+    const pageNumber = Math.max(1, Math.min(page, totalPages));
+    setCurrentPage(pageNumber);
+  };
 
   // Selection Logic
   const toggleSelectAll = () => {
@@ -505,8 +738,26 @@ export default function InventoryPage() {
               <p className="font-bold text-sm opacity-90">Ada {lowStockCount} barang yang hampir habis. Segera restock!</p>
             </div>
           </div>
-          <button className="bg-white text-black px-4 py-2 font-black border-[3px] border-black hover:bg-slate-100 transition-all text-sm">
+          <button 
+            onClick={() => setShowOnlyLowStock(true)}
+            className="bg-white text-black px-4 py-2 font-black border-[3px] border-black hover:bg-slate-100 transition-all text-sm"
+          >
             CEK SEKARANG
+          </button>
+        </div>
+      )}
+
+      {showOnlyLowStock && (
+        <div className="flex items-center gap-4 bg-yellow-100 border-[3px] border-black p-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="text-red-600" size={20} />
+            <p className="font-black uppercase text-sm tracking-tight">Menampilkan Stok Kritis Saja</p>
+          </div>
+          <button 
+            onClick={() => setShowOnlyLowStock(false)}
+            className="bg-black text-white px-3 py-1 font-black text-xs uppercase hover:bg-slate-800 transition-all"
+          >
+            Tampilkan Semua Barang
           </button>
         </div>
       )}
@@ -566,10 +817,11 @@ export default function InventoryPage() {
               >
                 <option value="Semua">Semua Kategori</option>
                 {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>{c.icon || "📦"} {c.name}</option>
                 ))}
               </select>
             </div>
+            
           </div>
         </div>
 
@@ -601,8 +853,8 @@ export default function InventoryPage() {
                     <p className="font-black uppercase tracking-widest">Memuat Inventaris...</p>
                   </td>
                 </tr>
-              ) : filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              ) : paginatedProducts.length > 0 ? (
+                paginatedProducts.map((product) => (
                   <tr key={product.id} className={`border-b-[2px] border-black hover:bg-slate-50 transition-colors ${selectedIds.has(product.id) ? "bg-yellow-50" : ""}`}>
                     <td className="p-4 border-r-[2px] border-black">
                       <input 
@@ -613,12 +865,24 @@ export default function InventoryPage() {
                       />
                     </td>
                     <td className="p-4 border-r-[2px] border-black">
-                      <p className="font-black uppercase">{product.name}</p>
-                      <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 border-[2px] border-black bg-slate-100 flex-shrink-0 overflow-hidden">
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-black uppercase leading-tight">{product.name}</p>
+                          <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-4 border-r-[2px] border-black">
-                      <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-xs font-black uppercase">
-                        {product.category_name}
+                      <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-xs font-black uppercase flex items-center gap-1">
+                        <span>{product.category_icon || "📦"}</span>
+                        <span>{product.category_name}</span>
                       </span>
                     </td>
                     <td className="p-4 border-r-[2px] border-black font-bold">
@@ -657,6 +921,55 @@ export default function InventoryPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="p-6 border-t-[4px] border-black flex flex-col md:flex-row items-center justify-between gap-4 bg-slate-50">
+            <div className="text-xs font-black text-slate-500 uppercase tracking-widest">
+              Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredProducts.length)} Dari {filteredProducts.length} Produk
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+                className="p-2 border-[2px] border-black bg-white hover:bg-yellow-400 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <ChevronsLeft size={16} />
+              </button>
+              <button 
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 border-[2px] border-black bg-white hover:bg-yellow-400 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              
+              <div className="flex items-center gap-2 px-4">
+                <span className="font-black text-[10px] uppercase tracking-widest">Halaman</span>
+                <div className="bg-black text-white px-4 py-1 font-black text-sm border-[2px] border-black">
+                  {currentPage}
+                </div>
+                <span className="font-black text-[10px] uppercase tracking-widest">Dari {totalPages}</span>
+              </div>
+
+              <button 
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 border-[2px] border-black bg-white hover:bg-yellow-400 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <ChevronRight size={16} />
+              </button>
+              <button 
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 border-[2px] border-black bg-white hover:bg-yellow-400 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
+              >
+                <ChevronsRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bulk Action Bar */}
@@ -733,7 +1046,7 @@ export default function InventoryPage() {
                   >
                     <option value="">Pilih Kategori</option>
                     {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>{c.icon || "📦"} {c.name}</option>
                     ))}
                   </select>
                 </div>
@@ -772,6 +1085,32 @@ export default function InventoryPage() {
                     value={formData.selling_price}
                     onChange={(e) => setFormData({...formData, selling_price: e.target.value})}
                   />
+                </div>
+                <div className="space-y-4 col-span-full">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Foto Produk</label>
+                  <div 
+                    onClick={() => imageInputRef.current?.click()}
+                    className="border-[3px] border-dashed border-black p-4 bg-slate-50 flex items-center gap-6 cursor-pointer hover:bg-slate-100 transition-all"
+                  >
+                    <input 
+                      type="file" 
+                      ref={imageInputRef}
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    <div className="w-24 h-24 border-[3px] border-black bg-white flex items-center justify-center overflow-hidden shrink-0">
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <Plus className="text-slate-300" size={32} />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-black uppercase text-sm">Klik untuk upload foto</p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">PNG, JPG, atau WEBP (Maks 2MB)</p>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -865,13 +1204,28 @@ export default function InventoryPage() {
                   {categories.length > 0 ? (
                     categories.map((cat) => (
                       <div key={cat.id} className="flex items-center justify-between p-3 border-[2px] border-black bg-slate-50 font-bold group">
-                        <span className="uppercase text-sm">{cat.name}</span>
-                        <button 
-                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
-                          className="text-red-500 hover:bg-red-50 p-1 opacity-0 group-hover:opacity-100 transition-all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl bg-white w-8 h-8 flex items-center justify-center border-[2px] border-black">{cat.icon || "📦"}</span>
+                          <span className="uppercase text-sm">{cat.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button 
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setNewCategoryName(cat.name);
+                              setNewCategoryIcon(cat.icon || "📦");
+                            }}
+                            className="p-1 hover:bg-yellow-100 border-[2px] border-transparent hover:border-black transition-all"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                            className="text-red-500 hover:bg-red-50 p-1 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -882,24 +1236,70 @@ export default function InventoryPage() {
 
               <div className="h-[2px] bg-black/10 my-6" />
 
-              <form onSubmit={handleAddCategory} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-widest text-slate-400">Nama Kategori Baru</label>
-                  <input 
-                    type="text" required
-                    placeholder="Contoh: Snack, Alat Tulis..."
-                    className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
-                    value={newCategoryName}
-                    onChange={(e) => setNewCategoryName(e.target.value)}
-                  />
+              <form onSubmit={handleAddCategory} className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400">
+                      {editingCategory ? "Nama Kategori (Edit)" : "Nama Kategori Baru"}
+                    </label>
+                    <input 
+                      type="text" required
+                      placeholder="Contoh: Snack, Alat Tulis..."
+                      className="w-full p-3 border-[3px] border-black font-bold focus:outline-none"
+                      value={newCategoryName}
+                      onChange={(e) => editingCategory ? setNewCategoryName(e.target.value) : handleCategoryNameChange(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400">Pilih Ikon (Saran Otomatis)</label>
+                    <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto p-2 border-[3px] border-black bg-slate-50 custom-scrollbar">
+                      {CATEGORY_ICONS.map((item) => (
+                        <button
+                          key={item.icon}
+                          type="button"
+                          onClick={() => setNewCategoryIcon(item.icon)}
+                          className={`text-2xl p-2 border-[2px] transition-all flex items-center justify-center hover:bg-yellow-100 ${newCategoryIcon === item.icon ? "border-black bg-yellow-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] scale-110" : "border-transparent opacity-60 hover:opacity-100"}`}
+                          title={item.label}
+                        >
+                          {item.icon}
+                        </button>
+                      ))}
+                      {/* Default package icon if not in list */}
+                      {!CATEGORY_ICONS.find(i => i.icon === newCategoryIcon) && (
+                         <button
+                          type="button"
+                          className="text-2xl p-2 border-[2px] border-black bg-yellow-400 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] scale-110"
+                        >
+                          {newCategoryIcon}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <button 
-                  type="submit"
-                  disabled={isCategorySubmitting}
-                  className="w-full py-4 font-black uppercase bg-green-400 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
-                >
-                  {isCategorySubmitting ? "MENYIMPAN..." : "TAMBAH KATEGORI"}
-                </button>
+
+                <div className="flex gap-3">
+                  {editingCategory && (
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setNewCategoryName("");
+                        setNewCategoryIcon("📦");
+                      }}
+                      className="flex-1 py-4 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all"
+                    >
+                      BATAL
+                    </button>
+                  )}
+                  <button 
+                    type="submit"
+                    disabled={isCategorySubmitting}
+                    className="flex-[2] py-4 font-black uppercase bg-green-400 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50"
+                  >
+                    {isCategorySubmitting ? "MENYIMPAN..." : editingCategory ? "SIMPAN PERUBAHAN" : "TAMBAH KATEGORI"}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

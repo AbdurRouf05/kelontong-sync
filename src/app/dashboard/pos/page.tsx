@@ -68,7 +68,8 @@ export default function POSPage() {
             name: p.name,
             price: Number(p.selling_price),
             category: "Umum",
-            stock: p.stock
+            stock: p.stock,
+            image: p.image_url
           }));
           setProducts(mappedProducts);
         }
@@ -184,7 +185,8 @@ export default function POSPage() {
           name: p.name,
           price: Number(p.selling_price),
           category: "Umum",
-          stock: p.stock
+          stock: p.stock,
+          image: p.image_url
         })));
       }
 
@@ -315,11 +317,15 @@ export default function POSPage() {
                   className={`neo-card flex flex-col group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"}`}
                   onClick={() => addToCart(product)}
                 >
-                  <div className="mb-4 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center text-4xl">
-                    📦
+                  <div className="mb-4 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden">
+                    {product.image ? (
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl">📦</span>
+                    )}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-black leading-tight uppercase">{product.name}</h3>
+                    <h3 className="text-lg font-black leading-tight uppercase line-clamp-1">{product.name}</h3>
                     <p className="text-xl font-bold text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
                   </div>
                   <div className="mt-4 flex items-center justify-between">
