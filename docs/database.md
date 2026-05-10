@@ -29,8 +29,9 @@ CREATE TABLE stores (
 );
 
 -- 2. Tabel Profil (Karyawan/Owner)
+-- Menghubungkan Supabase Auth dengan data toko
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- [Disederhanakan oleh Gombet]: Untuk mempermudah testing CRUD tanpa Auth User beneran
   store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
   full_name TEXT,
   role TEXT CHECK (role IN ('owner', 'kasir')),
