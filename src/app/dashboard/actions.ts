@@ -208,11 +208,23 @@ export async function getCategoryDistribution() {
   }
 
   const distribution: Record<string, number> = {};
-  data.forEach(item => {
-    const categoryName = item.products?.[0]?.categories?.[0]?.name || "Lainnya";
+  
+  data?.forEach(item => {
+    // Handle both object and array formats from Supabase join
+    const products = item.products as any;
+    const product = Array.isArray(products) ? products[0] : products;
+    
+    const categories = product?.categories as any;
+    const category = Array.isArray(categories) ? categories[0] : categories;
+    
+    const categoryName = category?.name || "Tanpa Kategori";
+    
     distribution[categoryName] = (distribution[categoryName] || 0) + item.quantity;
   });
 
-  return Object.entries(distribution).map(([name, value]) => ({ name, value }));
+  // Return formatted data for Recharts
+  return Object.entries(distribution)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
 }
 
