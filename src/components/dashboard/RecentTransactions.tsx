@@ -1,5 +1,6 @@
-export default function RecentTransactions({ transactions = [] }: { transactions?: any[] }) {
+import Link from "next/link";
 
+export default function RecentTransactions({ transactions = [] }: { transactions?: any[] }) {
   return (
     <div className="neo-card space-y-6">
       <div className="flex justify-between items-center">
@@ -32,9 +33,9 @@ export default function RecentTransactions({ transactions = [] }: { transactions
         </div>
       </div>
 
-      <button className="w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors">
+      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center">
         Lihat Semua Laporan 📋
-      </button>
+      </Link>
     </div>
   );
 }

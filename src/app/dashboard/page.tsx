@@ -1,3 +1,4 @@
+import Link from "next/link";
 import SummaryMetrics from "@/components/dashboard/SummaryMetrics";
 import SalesChart from "@/components/dashboard/SalesChart";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
@@ -25,9 +26,9 @@ export default async function DashboardPage() {
           <h1 className="text-4xl font-black uppercase tracking-tight">Halo, Juragan Rouf! 👋</h1>
           <p className="text-xl font-bold italic">Tokomu hari ini rame banget, lho. Cuan makin kenceng!</p>
         </div>
-        <button className="neo-btn-primary !bg-white whitespace-nowrap">
+        <Link href="/dashboard/reports" className="neo-btn-primary !bg-white whitespace-nowrap">
           Lihat Detail Hari Ini 🚀
-        </button>
+        </Link>
       </div>
 
       {/* Stats Grid */}

@@ -1,5 +1,6 @@
-export default function TopProducts({ products = [] }: { products?: any[] }) {
+import Link from "next/link";
 
+export default function TopProducts({ products = [] }: { products?: any[] }) {
   return (
     <div className="neo-card space-y-6">
       <div className="flex justify-between items-center">
@@ -29,9 +30,9 @@ export default function TopProducts({ products = [] }: { products?: any[] }) {
         ))}
       </div>
 
-      <button className="w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors">
+      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center">
         Analisis Produk Lengkap 📈
-      </button>
+      </Link>
     </div>
   );
 }

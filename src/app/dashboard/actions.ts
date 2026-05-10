@@ -154,6 +154,32 @@ export async function getDetailedSalesReport() {
   }));
 }
 
+export async function getDailyProductSales() {
+  const { data, error } = await supabase
+    .from("transaction_items")
+    .select(`
+      quantity,
+      subtotal,
+      created_at,
+      products (name, categories (name))
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching daily product sales:", error);
+    return [];
+  }
+
+  return data.map(item => ({
+    date: new Date(item.created_at).toLocaleDateString('id-ID'),
+    productName: item.products?.[0]?.name || "Produk Tak Dikenal",
+    category: item.products?.[0]?.categories?.[0]?.name || "Umum",
+    quantity: item.quantity,
+    total: item.subtotal
+  }));
+}
+
+
 export async function getCategoryDistribution() {
   const { data, error } = await supabase
     .from("transaction_items")
