@@ -16,6 +16,7 @@ DROP TABLE IF EXISTS stores CASCADE;
 -- 1. Tabel Toko (Tenant)
 CREATE TABLE stores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- [Tambahan oleh Gombet]: Untuk melacak pemilik cabang pada fitur Multi-Cabang
   name TEXT NOT NULL,
   address TEXT,
   phone TEXT,
