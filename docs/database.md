@@ -43,6 +43,7 @@ CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
+  icon TEXT DEFAULT '📦', -- [Tambahan: Akmal]: Ikon kategori dalam bentuk Emoji
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -57,6 +58,7 @@ CREATE TABLE products (
   selling_price DECIMAL(12,2) NOT NULL DEFAULT 0,
   stock INTEGER NOT NULL DEFAULT 0,
   min_stock INTEGER DEFAULT 5,
+  image_url TEXT, -- [Tambahan: Inventory]: URL foto produk dari Supabase Storage
   created_at TIMESTAMPTZ DEFAULT NOW(),
   CONSTRAINT stock_non_negative CHECK (stock >= 0)
 );
@@ -159,4 +161,17 @@ ALTER TABLE products DISABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions DISABLE ROW LEVEL SECURITY;
 ALTER TABLE transaction_items DISABLE ROW LEVEL SECURITY;
 ALTER TABLE stock_logs DISABLE ROW LEVEL SECURITY;
+
+-- 6. Storage Bucket
+-- HARUS DIBUAT MANUAL DI DASHBOARD: 'product-images' (Set to Public)
+
+---
+
+## 🟢 6. Update Fitur Kategori (Dibuat oleh: Akmal/AI)
+**Fungsi**: Menambahkan dukungan ikon pada kategori untuk visualisasi yang lebih baik di Dashboard & POS.
+
+```sql
+-- Jalankan ini jika tabel categories sudah ada:
+ALTER TABLE categories ADD COLUMN IF NOT EXISTS icon TEXT DEFAULT '📦';
+```
 ```
