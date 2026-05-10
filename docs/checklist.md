@@ -18,14 +18,14 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 *Target: Antarmuka dan logika utama modul selesai di masing-masing branch.*
 
 ### Modul POS (Rafi)
-- [ ] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
-- [ ] **Rafi**: Implementasi logika keranjang (Tambah, Kurang, Hapus barang).
-- [ ] **Rafi**: Implementasi fitur pencarian barang & hitung kembalian.
+- [x] **Rafi**: Membuat UI Halaman Kasir (Daftar Barang & Keranjang).
+- [x] **Rafi**: Implementasi logika keranjang (Tambah, Kurang, Hapus barang).
+- [x] **Rafi**: Implementasi fitur pencarian barang & hitung kembalian.
 
 ### Modul Inventaris (Akmal)
-- [ ] **Akmal**: Membuat UI Katalog Barang (Tabel & Grid).
-- [ ] **Akmal**: Membuat Form Tambah/Edit Barang.
-- [ ] **Akmal**: Implementasi fitur kategori dan filter stok.
+- [x] **Akmal**: Membuat UI Katalog Barang (Tabel & Grid).
+- [x] **Akmal**: Membuat Form Tambah/Edit Barang.
+- [x] **Akmal**: Implementasi fitur kategori dan filter stok.
 
 ### Modul Dasbor (Adam)
 - [ ] **Adam**: Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi).

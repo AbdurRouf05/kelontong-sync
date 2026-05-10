@@ -51,12 +51,13 @@ Dokumen ini berisi aturan main (Rules of Engagement) yang harus dipatuhi oleh ke
 ## 6. Manajemen Tugas (Task Management)
 - Menggunakan papan Kanban (seperti Trello, Jira, atau GitHub Projects).
 - **Alur Kolom**: `To Do` -> `In Progress` -> `In Review` -> `Done`.
-- **Aturan Batas (WIP Limit)**: Setiap anggota tim maksimal hanya boleh memiliki **2 tugas** di kolom `In Progress`.
+- **Aturan Batas (WIP Limit)**: Setiap anggota tim maksimal hanya boleh memiliki **2 tugas** di kolom `In Progress` pada waktu yang bersamaan agar tetap fokus menyelesaikan pekerjaan.
+- Pindahkan tiket ke kolom `In Review` saat sudah membuat Pull Request.
 
 ## 7. Deployment dan Pengujian (QA Rules)
 - Lingkungan (*Environment*):
-  - **Local**: `localhost:3000`
-  - **Staging**: `staging-kelontongsync.vercel.app`
-  - **Production**: `kelontongsync.com`
-- **Adam (sebagai QA)** berhak me-*reject* Pull Request jika ditemukan bug kritis.
-- Tidak boleh ada perubahan *Environment Variables* tanpa sepengetahuan tim DevOps dan PM.
+  - **Local**: `localhost:3000` (untuk ngoding di komputer masing-masing)
+  - **Staging**: `staging-kelontongsync.vercel.app` (untuk testing bersama)
+  - **Production**: `kelontongsync.com` (Sistem Final / Rilis)
+- **Adam (sebagai QA)** berhak me-*reject* Pull Request atau menunda rilis ke Production jika ditemukan bug kritis (seperti salah hitung total transaksi atau bocornya data antar cabang).
+- Tidak boleh ada perubahan *Environment Variables* (seperti API Keys Supabase) tanpa sepengetahuan tim DevOps dan PM.
