@@ -12,7 +12,7 @@ import {
 
 export default async function DashboardPage() {
   const [stats, recentTransactions, salesData, topProducts] = await Promise.all([
-    getDashboardStats(),
+    getDashboardStats("daily"),
     getRecentTransactions(),
     getSalesData(),
     getTopProducts()

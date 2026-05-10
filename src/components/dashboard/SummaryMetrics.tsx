@@ -14,7 +14,7 @@ export default function SummaryMetrics({
 }: { data?: any }) {
   const stats = [
     { 
-      name: "Total Penjualan (All Time)", 
+      name: "Total Penjualan", 
       value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(data.totalSales), 
       icon: <TrendingUp className="text-blue-500" />, 
       trend: "+100%", 
