@@ -48,12 +48,20 @@ export default function StaffManagementPage() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // MOCK: Karena belum ada fitur create auth user, kita insert langsung ke tabel profiles
-      // Harus menggunakan ID dummy yang berbentuk UUID yang valid
-      const dummyUUID = crypto.randomUUID();
+      // Ambil ID toko pertama untuk dihubungkan ke karyawan baru (Mock)
+      const { data: storeData } = await supabase.from('stores').select('id').limit(1).single();
+      
+      if (!storeData) {
+        throw new Error('Tidak ada toko terdaftar. Silakan buat cabang toko dulu!');
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .insert([{ id: dummyUUID, full_name: formData.full_name, role: 'kasir' }]);
+        .insert([{ 
+          full_name: formData.full_name, 
+          role: 'kasir',
+          store_id: storeData.id
+        }]);
 
       if (error) throw error;
       
