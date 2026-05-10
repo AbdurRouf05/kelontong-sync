@@ -28,9 +28,9 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [x] **Akmal**: Implementasi fitur kategori dan filter stok.
 
 ### Modul Dasbor (Adam)
-- [ ] **Adam**: Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi).
-- [ ] **Adam**: Integrasi library Chart.js/Recharts untuk grafik penjualan.
-- [ ] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
+- [x] **Adam**: Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi).
+- [x] **Adam**: Integrasi library Chart.js/Recharts untuk grafik penjualan.
+- [x] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
 
 ### Modul Settings & Multi-Cabang (Gombet)
 - [x] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
@@ -54,7 +54,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 ## 🔴 FASE 4: Testing & Deployment Final
 *Target: Aplikasi stabil dan siap rilis.*
 
-- [ ] **Semua Anggota**: Melakukan Merge PR dari branch feature ke branch `dev`.
+- [x] **Semua Anggota**: Melakukan Merge PR dari branch feature ke branch `dev`.
 - [ ] **Abdur Rouf**: Melakukan Code Review dan penyelesaian konflik kode.
 - [ ] **Abdur Rouf & Adam**: Testing menyeluruh (UAT) di branch `staging`.
 - [ ] **Semua Anggota**: Perbaikan bug hasil testing.
