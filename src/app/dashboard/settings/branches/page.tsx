@@ -18,7 +18,16 @@ export default function BranchesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
-  
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Auto-hide toast
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
+
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -88,11 +97,12 @@ export default function BranchesPage() {
           }]);
         if (error) throw error;
       }
-      
+
       setIsModalOpen(false);
       fetchBranches();
+      setToast({ message: editingBranch ? 'Cabang diperbarui!' : 'Cabang baru dibuka!', type: 'success' });
     } catch (error: any) {
-      alert('Gagal menyimpan cabang: ' + error.message);
+      setToast({ message: error.message, type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -103,19 +113,19 @@ export default function BranchesPage() {
       setIsLoading(true);
       // Simulasi proses perpindahan data
       await new Promise(resolve => setTimeout(resolve, 800));
-      
+
       // Update state secara visual
       setBranches(prev => prev.map(b => ({
         ...b,
         isActive: b.id === id
       })));
-      
+
       // Simpan ke localStorage agar modul lain (POS/Inventory) tahu cabang mana yang aktif
       localStorage.setItem('active_store_id', id);
-      
-      alert('Berhasil pindah cabang! Data POS dan Inventaris akan menyesuaikan.');
+
+      setToast({ message: 'Berhasil pindah cabang! Data POS & Inventaris telah disesuaikan.', type: 'success' });
     } catch (error) {
-      alert('Gagal pindah cabang.');
+      setToast({ message: 'Gagal pindah cabang.', type: 'error' });
     } finally {
       setIsLoading(false);
     }
@@ -127,8 +137,9 @@ export default function BranchesPage() {
       const { error } = await supabase.from('stores').delete().eq('id', id);
       if (error) throw error;
       fetchBranches();
+      setToast({ message: 'Cabang berhasil dihapus.', type: 'success' });
     } catch (error: any) {
-      alert('Gagal menghapus cabang: ' + error.message);
+      setToast({ message: error.message, type: 'error' });
     }
   };
 
@@ -141,7 +152,7 @@ export default function BranchesPage() {
             Kelola dan pindah antar cabang toko yang Anda miliki.
           </p>
         </div>
-        <button 
+        <button
           onClick={() => handleOpenModal()}
           className="neo-btn-primary flex items-center gap-2 bg-[#FFE800]"
         >
@@ -160,20 +171,19 @@ export default function BranchesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {branches.map((branch) => (
-            <div 
-              key={branch.id} 
-              className={`neo-card transition-all relative group ${
-                branch.isActive 
-                  ? 'bg-[#23A094] text-white' 
-                  : 'bg-white text-black hover:bg-slate-50'
-              }`}
+            <div
+              key={branch.id}
+              className={`neo-card transition-all relative group ${branch.isActive
+                ? 'bg-[#23A094] text-white'
+                : 'bg-white text-black hover:bg-slate-50'
+                }`}
             >
               {branch.isActive && (
                 <div className="absolute -top-4 -right-4 bg-[#FF6B6B] text-white px-4 py-1 border-[3px] border-black font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-12 z-10">
                   Aktif
                 </div>
               )}
-              
+
               <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onClick={() => handleOpenModal(branch)} className="p-2 bg-white text-black border-[2px] border-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
                   <Edit3 size={16} />
@@ -187,13 +197,13 @@ export default function BranchesPage() {
 
               <h2 className="text-2xl font-black uppercase mb-2 pr-20">{branch.name}</h2>
               <p className={`font-bold mb-6 text-sm ${branch.isActive ? 'text-green-100' : 'text-slate-500'}`}>
-                📍 {branch.address || 'Belum ada alamat'} <br/>
+                📍 {branch.address || 'Belum ada alamat'} <br />
                 📞 {branch.phone || 'Belum ada nomor telepon'}
               </p>
-              
+
               <div className="flex gap-3">
                 {!branch.isActive && (
-                  <button 
+                  <button
                     onClick={() => handleSwitchBranch(branch.id)}
                     className="flex-1 py-3 bg-[#FF90E8] text-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all font-black uppercase text-sm"
                   >
@@ -202,7 +212,7 @@ export default function BranchesPage() {
                 )}
                 {branch.isActive && (
                   <div className="w-full text-center py-3 bg-white/20 border-[3px] border-transparent font-black uppercase text-sm">
-                    SEDEANG DIGUNAKAN
+                    SEDANG DIGUNAKAN
                   </div>
                 )}
               </div>
@@ -222,33 +232,33 @@ export default function BranchesPage() {
                 <X size={24} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-8 space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Nama Cabang</label>
-                <input 
+                <input
                   type="text" required
                   className="w-full p-3 neo-box font-bold focus:outline-none"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Nomor Telepon</label>
-                <input 
+                <input
                   type="text"
                   className="w-full p-3 neo-box font-bold focus:outline-none"
                   value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Alamat Lengkap</label>
-                <textarea 
+                <textarea
                   rows={3}
                   className="w-full p-3 neo-box font-bold focus:outline-none resize-none"
                   value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 ></textarea>
               </div>
 
@@ -262,6 +272,16 @@ export default function BranchesPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* Custom Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-8 right-8 z-[100] px-6 py-4 border-[3px] border-black font-black uppercase tracking-wider animate-in slide-in-from-right-full duration-300 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${
+          toast.type === 'success' ? 'bg-[#4ade80] text-black' : 'bg-[#FF6B6B] text-white'
+        }`}>
+          {toast.type === 'success' ? '✅ ' : '❌ '}
+          {toast.message}
         </div>
       )}
     </div>
