@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Banknote
+  Banknote,
+  Download,
+  Printer
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
@@ -39,6 +41,7 @@ export default function POSPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [lastTransaction, setLastTransaction] = useState<any>(null);
   
   // Payment States
   const [cashAmount, setCashAmount] = useState<number>(0);
@@ -158,6 +161,16 @@ export default function POSPage() {
 
       if (itemsError) throw itemsError;
 
+      // Prepare data for receipt
+      setLastTransaction({
+        id: transaction.id,
+        date: new Date().toLocaleString("id-ID"),
+        items: [...cart],
+        total: total,
+        cash: cashAmount,
+        change: changeAmount
+      });
+
       // Success
       setShowSuccess(true);
       setCart([]);
@@ -175,7 +188,8 @@ export default function POSPage() {
         })));
       }
 
-      setTimeout(() => setShowSuccess(false), 3000);
+      // We don't auto-hide the modal if we want them to click print
+      // setTimeout(() => setShowSuccess(false), 5000);
     } catch (err: any) {
       console.error("Checkout failed:", err.message);
       setError("Gagal menyimpan transaksi: " + err.message);
@@ -184,10 +198,86 @@ export default function POSPage() {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="flex flex-col lg:flex-row gap-8 h-full max-h-[calc(100vh-140px)]">
-      {/* Left Column */}
-      <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+      {/* Hidden Receipt for Printing (Refined 80mm Thermal Version) */}
+      <div id="receipt-content" className="hidden print:block w-[80mm] mx-auto p-6 text-black font-mono leading-relaxed bg-white">
+        {/* Header: Centered without Icon */}
+        <div className="text-center mb-8">
+          <h2 className="text-[20px] font-black uppercase tracking-tighter m-0">KELONTONGSYNC</h2>
+          <p className="text-[14px] m-0 font-bold uppercase text-slate-600">Manajemen Warung Modern</p>
+          <div className="border-t border-dashed border-black my-4"></div>
+          <h1 className="text-[16px] font-black m-0 tracking-[0.2em] underline">INVOICE</h1>
+          <p className="text-[12px] m-0 mt-2 font-bold">INV: #{lastTransaction?.id?.substring(0, 8).toUpperCase()}</p>
+          <p className="text-[12px] m-0 text-slate-500 uppercase">{lastTransaction?.date}</p>
+        </div>
+
+        {/* Table: Item List */}
+        <div className="mb-6">
+          <table className="w-full text-[14px] border-collapse">
+            <thead>
+              <tr className="border-b-2 border-black">
+                <th className="py-3 text-left w-[45%] font-black">ITEM</th>
+                <th className="py-3 text-center w-[15%] font-black">QTY</th>
+                <th className="py-3 text-right w-[40%] font-black">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y border-b border-black">
+              {lastTransaction?.items.map((item: any) => (
+                <tr key={item.id}>
+                  <td className="py-3 text-left align-top uppercase leading-tight">
+                    {item.name}
+                    <div className="text-[12px] font-normal text-slate-500">@ {item.price.toLocaleString("id-ID")}</div>
+                  </td>
+                  <td className="py-3 text-center align-top font-bold">{item.quantity}</td>
+                  <td className="py-3 text-right align-top font-black">{(item.price * item.quantity).toLocaleString("id-ID")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Summary Area */}
+        <div className="space-y-2 mb-8">
+          <div className="flex justify-between text-[14px] font-bold">
+            <span className="text-slate-500">SUBTOTAL</span>
+            <span>{lastTransaction?.total.toLocaleString("id-ID")}</span>
+          </div>
+          <div className="flex justify-between text-[18px] font-black border-y-2 border-black py-2 my-2 bg-slate-50 px-1">
+            <span>TOTAL</span>
+            <span>Rp {lastTransaction?.total.toLocaleString("id-ID")}</span>
+          </div>
+          <div className="flex justify-between text-[14px]">
+            <span className="font-bold text-slate-500 uppercase">Tunai</span>
+            <span className="font-bold">{lastTransaction?.cash.toLocaleString("id-ID")}</span>
+          </div>
+          <div className="flex justify-between text-[16px] font-black text-green-600">
+            <span className="uppercase">Kembalian</span>
+            <span>Rp {lastTransaction?.change.toLocaleString("id-ID")}</span>
+          </div>
+        </div>
+
+        {/* Footer: Authentic Feel */}
+        <div className="text-center space-y-4">
+          <div className="border-t border-dashed border-black pt-4">
+            <p className="m-0 text-[12px] font-black uppercase">*** TERIMA KASIH ***</p>
+            <p className="m-0 text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">Barang tidak dapat ditukar/dikembalikan</p>
+          </div>
+          
+          <div className="pt-2 flex flex-col items-center border-t border-dashed border-black">
+            <p className="text-[10px] m-0 font-black uppercase tracking-widest text-slate-300">ADMIN: KASIR UTAMA</p>
+            <p className="text-[8px] m-0 font-bold opacity-30 mt-1">KELONTONGSYNC.CLOUD</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main UI */}
+      <div className="flex-1 flex flex-col gap-6 overflow-hidden print:hidden">
+        {/* Search Bar Area */}
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -253,7 +343,7 @@ export default function POSPage() {
       </div>
 
       {/* Right Column: Cart */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-6">
+      <div className="w-full lg:w-[400px] flex flex-col gap-6 print:hidden">
         <div className="flex-1 flex flex-col neo-card bg-white p-0 overflow-hidden">
           <div className="p-6 border-b-[4px] border-black bg-pink-400 flex items-center justify-between">
             <h3 className="text-xl font-black uppercase flex items-center gap-2">
@@ -335,13 +425,46 @@ export default function POSPage() {
       <AnimatePresence>
         {showSuccess && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 print:hidden"
           >
-            <div className="neo-card bg-green-400 max-w-sm w-full text-center py-10">
-              <CheckCircle2 size={64} className="mx-auto mb-4 text-white" />
-              <h2 className="text-3xl font-black uppercase mb-2">TERSIMPAN!</h2>
-              <p className="font-bold text-white uppercase tracking-widest">Transaksi Masuk Database</p>
+            <div className="neo-card bg-white max-w-md w-full overflow-hidden p-0">
+              <div className="bg-green-400 p-8 text-center border-b-[4px] border-black">
+                <CheckCircle2 size={80} className="mx-auto mb-4 text-white drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]" />
+                <h2 className="text-4xl font-black uppercase text-white drop-shadow-[3px_3px_0px_rgba(0,0,0,1)]">TRANSAKSI BERHASIL</h2>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                <div className="space-y-2 border-b-[2px] border-black pb-4">
+                  <div className="flex justify-between font-bold uppercase text-slate-400 text-xs">
+                    <span>Total Belanja</span>
+                    <span>Rp {lastTransaction?.total.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between font-bold uppercase text-slate-400 text-xs">
+                    <span>Uang Bayar</span>
+                    <span>Rp {lastTransaction?.cash.toLocaleString("id-ID")}</span>
+                  </div>
+                  <div className="flex justify-between font-black text-xl uppercase">
+                    <span>Kembalian</span>
+                    <span className="text-green-600">Rp {lastTransaction?.change.toLocaleString("id-ID")}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <button 
+                    onClick={handlePrint}
+                    className="neo-btn-primary flex items-center justify-center gap-2 py-4 font-black"
+                  >
+                    <Download size={20} /> CETAK STRUK
+                  </button>
+                  <button 
+                    onClick={() => setShowSuccess(false)}
+                    className="neo-btn-secondary bg-blue-400 py-4 font-black"
+                  >
+                    TRANSAKSI BARU
+                  </button>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -351,6 +474,30 @@ export default function POSPage() {
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-left: 2px solid black; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: black; }
+
+        @media print {
+          @page {
+            margin: 0;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #receipt-content, #receipt-content * {
+            visibility: visible;
+          }
+          #receipt-content {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            display: block !important;
+          }
+          #receipt-content table {
+            width: 100% !important;
+          }
+        }
       `}</style>
     </div>
   );
