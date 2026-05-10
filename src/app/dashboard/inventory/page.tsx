@@ -103,7 +103,7 @@ export default function InventoryPage() {
 
       if (error) throw error;
 
-      setProducts((data || []).map(p => ({
+      setProducts((data || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         barcode: p.barcode || "-",
