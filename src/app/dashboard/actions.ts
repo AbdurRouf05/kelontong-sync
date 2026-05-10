@@ -43,8 +43,7 @@ export async function getRecentTransactions() {
     .select(`
       id,
       created_at,
-      total_amount,
-      profiles (full_name)
+      total_amount
     `)
     .order("created_at", { ascending: false })
     .limit(5);
@@ -57,7 +56,7 @@ export async function getRecentTransactions() {
   return data.map(t => ({
     id: t.id,
     time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    description: `Transaksi oleh ${t.profiles?.[0]?.full_name || 'Kasir'}`,
+    description: `Transaksi Selesai`,
     amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(t.total_amount)),
     status: "BERHASIL",
     statusColor: "text-green-600"
@@ -111,7 +110,8 @@ export async function getTopProducts() {
   const aggregation: Record<string, { name: string, sales: number }> = {};
   
   data?.forEach(item => {
-    const productName = item.products?.[0]?.name || "Produk Tak Dikenal";
+    const products = item.products as any;
+    const productName = Array.isArray(products) ? products[0]?.name : products?.name || "Produk Tak Dikenal";
     if (!aggregation[productName]) {
       aggregation[productName] = { name: productName, sales: 0 };
     }
@@ -161,6 +161,7 @@ export async function getDailyProductSales() {
       quantity,
       subtotal,
       created_at,
+      transactions (created_at),
       products (name, categories (name))
     `)
     .order("created_at", { ascending: false });
@@ -170,13 +171,24 @@ export async function getDailyProductSales() {
     return [];
   }
 
-  return data.map(item => ({
-    date: new Date(item.created_at).toLocaleDateString('id-ID'),
-    productName: item.products?.[0]?.name || "Produk Tak Dikenal",
-    category: item.products?.[0]?.categories?.[0]?.name || "Umum",
-    quantity: item.quantity,
-    total: item.subtotal
-  }));
+  return data.map(item => {
+    const products = item.products as any;
+    const product = Array.isArray(products) ? products[0] : products;
+    const categories = product?.categories as any;
+    const category = Array.isArray(categories) ? categories[0] : categories;
+
+    const transactions = item.transactions as any;
+    const transaction = Array.isArray(transactions) ? transactions[0] : transactions;
+    const createdAt = item.created_at || transaction?.created_at || new Date().toISOString();
+
+    return {
+      date: new Date(createdAt).toLocaleDateString('id-ID'),
+      productName: product?.name || "Produk Tak Dikenal",
+      category: category?.name || "Umum",
+      quantity: item.quantity,
+      total: item.subtotal
+    };
+  });
 }
 
 
