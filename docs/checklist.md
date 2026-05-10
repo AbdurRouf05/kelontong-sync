@@ -9,8 +9,8 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [x] **Abdur Rouf**: Konfigurasi Branching Git (`dev`, `staging`, `feature/*`).
 - [x] **Abdur Rouf**: Setup Proyek Supabase & Vercel.
 - [x] **Abdur Rouf**: Membuat Skema Database (Tabel Toko, Barang, Karyawan, Transaksi) di Supabase.
-- [ ] **Semua Anggota**: Melakukan `git clone` dan `pnpm install` di komputer masing-masing.
-- [ ] **Semua Anggota**: Berpindah ke branch modul masing-masing (contoh: `git checkout feature/pos`).
+- [x] **Semua Anggota**: Melakukan `git clone` dan `pnpm install` di komputer masing-masing.
+- [x] **Semua Anggota**: Berpindah ke branch modul masing-masing (contoh: `git checkout feature/pos`).
 
 ---
 
@@ -33,9 +33,9 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [ ] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
 
 ### Modul Settings & Multi-Cabang (Gombet)
-- [ ] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
-- [ ] **Gombet**: Membuat halaman manajemen akun karyawan/kasir.
-- [ ] **Gombet**: Implementasi UI untuk fitur perpindahan antar cabang.
+- [x] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
+- [x] **Gombet**: Membuat halaman manajemen akun karyawan/kasir.
+- [x] **Gombet**: Implementasi UI untuk fitur perpindahan antar cabang.
 
 ---
 
