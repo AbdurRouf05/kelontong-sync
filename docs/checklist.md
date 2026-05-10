@@ -8,7 +8,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [x] **Abdur Rouf**: Inisialisasi Repositori GitHub & Next.js Boilerplate.
 - [x] **Abdur Rouf**: Konfigurasi Branching Git (`dev`, `staging`, `feature/*`).
 - [x] **Abdur Rouf**: Setup Proyek Supabase & Vercel.
-- [ ] **Abdur Rouf**: Membuat Skema Database (Tabel Toko, Barang, Karyawan, Transaksi) di Supabase.
+- [x] **Abdur Rouf**: Membuat Skema Database (Tabel Toko, Barang, Karyawan, Transaksi) di Supabase.
 - [ ] **Semua Anggota**: Melakukan `git clone` dan `pnpm install` di komputer masing-masing.
 - [ ] **Semua Anggota**: Berpindah ke branch modul masing-masing (contoh: `git checkout feature/pos`).
 
