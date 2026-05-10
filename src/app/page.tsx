@@ -2,224 +2,233 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { 
   ShoppingCart, 
   Package, 
   BarChart3, 
   Store, 
-  ChevronRight, 
-  CheckCircle2,
   ArrowRight,
-  ShieldCheck,
   Zap,
-  Globe
+  Coffee,
+  Dog,
+  ShoppingBag,
+  Ticket,
+  Star,
+  Users,
+  Cat,
+  Cookie,
+  Milk,
+  Rabbit,
+  MousePointer2
 } from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-x-hidden">
+    <div className="min-h-screen bg-[#f0f0f0] text-black pb-20 selection:bg-yellow-200 cursor-default">
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 glass">
-        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white">
-              <Store size={24} />
+      <nav className="fixed top-0 w-full z-50 bg-white border-b-[4px] border-black h-20 flex items-center px-6 md:px-12">
+        <div className="container mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-yellow-400 border-[3px] border-black flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <Store size={28} />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Kelontong<span className="text-indigo-600">Sync</span></span>
+            <span className="text-3xl font-black italic tracking-tighter uppercase">Kelontong<span className="text-green-500 underline decoration-black">Sync</span></span>
           </div>
           
-          <div className="hidden md:flex items-center gap-8 font-medium">
-            <Link href="#features" className="hover:text-indigo-600 transition-colors">Fitur</Link>
-            <Link href="#solution" className="hover:text-indigo-600 transition-colors">Solusi</Link>
-            <Link href="#pricing" className="hover:text-indigo-600 transition-colors">Harga</Link>
+          <div className="hidden lg:flex gap-8 font-bold text-lg">
+            <Link href="#features" className="hover:bg-pink-400 px-2 border-black hover:border-b-2">Fitur</Link>
+            <Link href="#solution" className="hover:bg-green-400 px-2 border-black hover:border-b-2">Solusi</Link>
+            <Link href="#pricing" className="hover:bg-yellow-400 px-2 border-black hover:border-b-2">Harga</Link>
           </div>
 
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="px-6 py-2 rounded-full font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-              Masuk
+          <div className="flex gap-4">
+            <Link href="/login" className="neo-box px-6 py-2 font-bold hover:bg-slate-100 transition-all flex items-center gap-2">
+              <Users size={18} /> Masuk
             </Link>
-            <Link href="/register" className="px-6 py-2 bg-indigo-600 text-white rounded-full font-semibold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 dark:shadow-none">
-              Daftar Gratis
+            <Link href="/register" className="neo-btn-primary !py-2 flex items-center gap-2">
+              <Zap size={18} className="fill-black" /> Daftar
             </Link>
           </div>
         </div>
       </nav>
 
-      <main>
-        {/* Hero Section */}
-        <section className="relative pt-40 pb-20 px-6 hero-gradient">
-          <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className="space-y-8"
-            >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-semibold border border-indigo-100 dark:border-indigo-800">
-                <Zap size={14} />
-                <span>Modern SaaS POS System</span>
+      <main className="container mx-auto px-6 mt-32">
+        {/* Hero */}
+        <section className="grid lg:grid-cols-2 gap-12 items-center py-12">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-2 bg-pink-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] rotate-[-1deg]">
+              <Cat size={20} /> <span>Warung Sembako Era Digital</span>
+            </div>
+            <h1 className="text-6xl md:text-8xl font-black leading-[0.9] tracking-tighter uppercase">
+              Kelola Toko <br />
+              <span className="bg-yellow-400 border-[4px] border-black px-2 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">Anti Pusing!</span>
+            </h1>
+            <p className="text-2xl font-bold max-w-xl leading-snug">
+              Beralih ke sistem kasir modern dengan gaya <span className="bg-green-400 px-1 border-b-2 border-black">Neo-Brutalism</span>. Gak cuma keren, tapi bikin jualan makin sat-set!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-6 pt-4">
+              <Link href="/register" className="neo-btn-primary text-2xl flex items-center gap-3 group">
+                Mulai Sekarang! <ArrowRight strokeWidth={4} className="group-hover:translate-x-2 transition-transform" />
+              </Link>
+              <div className="flex items-center gap-4 bg-white border-[3px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:rotate-1 transition-transform">
+                <div className="w-12 h-12 bg-purple-400 border-[2px] border-black flex items-center justify-center rounded-full">
+                  <Rabbit size={24} />
+                </div>
+                <span className="font-bold text-lg leading-tight italic">Telah dipercaya <br /> 500+ Warung</span>
               </div>
-              <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-                Kelola Warung Jadi <br />
-                <span className="gradient-text">Lebih Modern & Praktis</span>
-              </h1>
-              <p className="text-xl text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
-                KelontongSync membantu Anda mengelola inventaris, penjualan, hingga multi-cabang dalam satu aplikasi cerdas. Pantau bisnis dari mana saja, kapan saja.
+            </div>
+          </div>
+
+          <div className="relative group">
+            <div className="absolute -inset-4 bg-black rotate-2 rounded-none"></div>
+            <div className="relative bg-white border-[4px] border-black p-4 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-[-4px] group-hover:translate-y-[-4px] transition-all">
+              <div className="bg-yellow-100 border-[2px] border-black mb-4 p-2 font-black uppercase text-sm flex justify-between items-center">
+                <span>🔴 Preview_Dashboard.exe</span>
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 border-2 border-black bg-white"></div>
+                  <div className="w-3 h-3 border-2 border-black bg-black"></div>
+                </div>
+              </div>
+              <Image 
+                src="/hero.png" 
+                alt="Neobrutalism Dashboard" 
+                width={800} 
+                height={600}
+                className="w-full h-auto grayscale contrast-125 border-[3px] border-black"
+              />
+              <div className="absolute -top-6 -right-6 w-24 h-24 bg-green-400 border-[3px] border-black flex items-center justify-center rotate-12 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:scale-110 transition-transform">
+                <Star size={44} className="fill-black" />
+              </div>
+              <div className="absolute bottom-4 right-4 bg-white border-[2px] border-black px-4 py-2 font-black animate-bounce">
+                KLIK DISINI! 👆
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section id="features" className="py-24">
+          <div className="flex flex-col items-center mb-20">
+            <h2 className="bg-black text-white text-4xl md:text-7xl font-black px-8 py-3 uppercase rotate-[-2deg] shadow-[10px_10px_0px_0px_rgba(74,222,128,1)]">
+              KERJAAN JADI GAMPANG!
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+            {[
+              { 
+                color: "bg-green-400", 
+                icon: <ShoppingBag size={40} />, 
+                title: "KASIR KILAT", 
+                desc: "Transaksi sat-set tinggal klik. Gak perlu pake kalkulator lagi ampe puyeng!" 
+              },
+              { 
+                color: "bg-blue-400", 
+                icon: <Milk size={40} />, 
+                title: "STOK AMAN", 
+                desc: "Susu atau beras abis? Tenang, sistem bakal teriak ngasih tau sebelum barang kosong." 
+              },
+              { 
+                color: "bg-pink-400", 
+                icon: <BarChart3 size={40} />, 
+                title: "CEK CUAN", 
+                desc: "Mau tau untung berapa hari ini? Cek grafik laba-rugi yang gampang dibaca siapa aja." 
+              },
+              { 
+                color: "bg-yellow-400", 
+                icon: <Cookie size={40} />, 
+                title: "JUALAN MANIS", 
+                desc: "Atur harga diskon atau bundling dengan gampang biar pelanggan makin seneng belanja." 
+              },
+              { 
+                color: "bg-purple-400", 
+                icon: <Users size={40} />, 
+                title: "MULTI CABANG", 
+                desc: "Punya banyak warung? Semua dipantau dalam satu layar. Juragan tinggal ngopi aja!" 
+              },
+              { 
+                color: "bg-orange-400", 
+                icon: <Coffee size={40} />, 
+                title: "TIM JAGA", 
+                desc: "Ada masalah? Tim kami standby 24 jam buat bantuin kamu. Gak bakal ditinggal sendiri!" 
+              }
+            ].map((f, i) => (
+              <div key={i} className={`neo-card ${f.color} hover:translate-x-[-8px] hover:translate-y-[-8px] transition-all cursor-pointer group`}>
+                <div className="bg-white border-[3px] border-black p-4 w-fit mb-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] group-hover:bg-black group-hover:text-white transition-colors">
+                  {f.icon}
+                </div>
+                <h3 className="text-4xl font-black mb-4 uppercase leading-none">{f.title}</h3>
+                <p className="text-xl font-bold leading-tight italic">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Mascot / Fun Section */}
+        <section className="py-20 text-center">
+          <div className="inline-block bg-white border-[4px] border-black p-8 shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] max-w-4xl">
+            <div className="flex flex-col md:flex-row items-center gap-10">
+              <div className="w-32 h-32 bg-yellow-400 border-[3px] border-black flex items-center justify-center rounded-full shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                <Dog size={60} />
+              </div>
+              <div className="text-left space-y-4">
+                <h3 className="text-4xl font-black uppercase">"Gak Pake Ribet, Gak Pake Mahal!"</h3>
+                <p className="text-xl font-bold italic">
+                  - Si Guguk, Maskot KelontongSync yang paling ngerti urusan warung.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA */}
+        <section className="bg-black text-white p-12 md:p-20 mt-20 border-[6px] border-yellow-400 shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+            <div className="space-y-6 max-w-2xl">
+              <h2 className="text-6xl md:text-8xl font-black uppercase leading-[0.8]">
+                MAU JADI <br /> <span className="text-yellow-400">JURAGAN <br /> SUKSES?</span>
+              </h2>
+              <p className="text-2xl font-bold text-slate-400 uppercase italic">
+                Daftar sekarang atau nanti keburu disalip tetangga!
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Link href="/register" className="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-indigo-700 transition-all transform hover:scale-105 shadow-xl shadow-indigo-200 dark:shadow-none">
-                  Mulai Sekarang <ArrowRight size={20} />
-                </Link>
-                <Link href="#demo" className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                  Lihat Demo
-                </Link>
-              </div>
-              <div className="flex items-center gap-6 pt-4 text-slate-500 text-sm">
-                <div className="flex items-center gap-1"><CheckCircle2 size={16} className="text-green-500" /> Tanpa Kartu Kredit</div>
-                <div className="flex items-center gap-1"><CheckCircle2 size={16} className="text-green-500" /> Gratis Selamanya (Basic)</div>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative animate-float"
-            >
-              <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border-8 border-slate-900/10">
-                <Image 
-                  src="/hero.png" 
-                  alt="KelontongSync Dashboard" 
-                  width={800} 
-                  height={600}
-                  className="w-full h-auto"
-                />
-              </div>
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-purple-500/20 blur-3xl rounded-full"></div>
-              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-500/20 blur-3xl rounded-full"></div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section id="features" className="py-24 px-6 bg-slate-50 dark:bg-slate-900/50">
-          <div className="container mx-auto">
-            <div className="text-center max-w-2xl mx-auto mb-16 space-y-4">
-              <h2 className="text-indigo-600 font-bold tracking-wider uppercase text-sm">Fitur Unggulan</h2>
-              <h3 className="text-4xl font-bold text-slate-900 dark:text-white">Semua yang Anda Butuhkan untuk <br /> Ekspansi Bisnis</h3>
             </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                { 
-                  icon: <ShoppingCart className="text-indigo-600" />, 
-                  title: "Sistem Kasir (POS)", 
-                  desc: "Transaksi cepat, scan barcode, dan cetak struk otomatis dalam hitungan detik." 
-                },
-                { 
-                  icon: <Package className="text-purple-600" />, 
-                  title: "Manajemen Stok", 
-                  desc: "Pantau stok secara realtime dan dapatkan peringatan otomatis saat barang menipis." 
-                },
-                { 
-                  icon: <BarChart3 className="text-pink-600" />, 
-                  title: "Laporan Pintar", 
-                  desc: "Analisis laba rugi dan tren penjualan harian hingga tahunan dengan grafik visual." 
-                },
-                { 
-                  icon: <Globe className="text-blue-600" />, 
-                  title: "Multi Cabang", 
-                  desc: "Kelola banyak toko atau cabang hanya dari satu akun terpusat secara efisien." 
-                }
-              ].map((feature, i) => (
-                <motion.div 
-                  key={i}
-                  whileHover={{ y: -10 }}
-                  className="p-8 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-all"
-                >
-                  <div className="w-14 h-14 bg-slate-50 dark:bg-slate-900 rounded-2xl flex items-center justify-center mb-6">
-                    {feature.icon}
-                  </div>
-                  <h4 className="text-xl font-bold mb-3">{feature.title}</h4>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">{feature.desc}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Trust/Social Proof */}
-        <section className="py-20 border-y border-slate-100 dark:border-slate-800">
-          <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-around gap-12 opacity-50 grayscale hover:grayscale-0 transition-all">
-            <span className="text-3xl font-bold">Trusted by 500+ Local Stores</span>
-            <div className="flex gap-12 flex-wrap justify-center">
-              <span className="text-xl font-medium">Warung Berkah</span>
-              <span className="text-xl font-medium">Toko Makmur</span>
-              <span className="text-xl font-medium">RetailerID</span>
-              <span className="text-xl font-medium">Kedai Digital</span>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-24 px-6">
-          <div className="container mx-auto">
-            <div className="relative rounded-[3rem] bg-indigo-600 p-12 lg:p-20 overflow-hidden">
-              <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-                <div className="max-w-2xl text-center lg:text-left space-y-6">
-                  <h2 className="text-4xl lg:text-5xl font-bold text-white leading-tight">
-                    Siap Mengubah Bisnis Kelontong Anda Hari Ini?
-                  </h2>
-                  <p className="text-indigo-100 text-xl">
-                    Gabung dengan ratusan pemilik warung lainnya yang telah bermigrasi ke KelontongSync. Gratis pendaftaran!
-                  </p>
-                </div>
-                <div className="flex shrink-0">
-                  <Link href="/register" className="px-10 py-5 bg-white text-indigo-600 rounded-2xl font-bold text-xl hover:bg-slate-100 transition-all transform hover:scale-105 shadow-2xl">
-                    Mulai Gratis Sekarang
-                  </Link>
-                </div>
-              </div>
-              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[100px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-              <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-900/20 blur-[100px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
-            </div>
+            <Link href="/register" className="bg-green-500 text-black px-12 py-8 text-4xl font-black uppercase border-[4px] border-white shadow-[10px_10px_0px_0px_rgba(255,255,255,1)] hover:shadow-none hover:translate-x-[10px] hover:translate-y-[10px] transition-all">
+              GASS DAFTAR! 🚀
+            </Link>
           </div>
         </section>
       </main>
 
-      <footer className="py-20 px-6 border-t border-slate-100 dark:border-slate-800">
-        <div className="container mx-auto grid md:grid-cols-4 gap-12">
-          <div className="col-span-2 space-y-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white">
-                <Store size={18} />
-              </div>
-              <span className="text-xl font-bold tracking-tight">KelontongSync</span>
+      <footer className="container mx-auto px-6 mt-40 grid md:grid-cols-2 gap-20 border-t-[6px] border-black pt-16">
+        <div className="space-y-8">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-pink-400 border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Zap size={28} />
             </div>
-            <p className="text-slate-500 max-w-sm">
-              Solusi manajemen warung dan retail modern terbaik di Indonesia. Membantu UMKM naik kelas dengan teknologi digital terjangkau.
-            </p>
+            <span className="text-4xl font-black tracking-tighter uppercase italic">KelontongSync</span>
           </div>
-          <div>
-            <h5 className="font-bold mb-6">Produk</h5>
-            <ul className="space-y-4 text-slate-500">
-              <li><Link href="#" className="hover:text-indigo-600">POS System</Link></li>
-              <li><Link href="#" className="hover:text-indigo-600">Inventory Management</Link></li>
-              <li><Link href="#" className="hover:text-indigo-600">Dashboard Analytics</Link></li>
-            </ul>
-          </div>
-          <div>
-            <h5 className="font-bold mb-6">Perusahaan</h5>
-            <ul className="space-y-4 text-slate-500">
-              <li><Link href="#" className="hover:text-indigo-600">Tentang Kami</Link></li>
-              <li><Link href="#" className="hover:text-indigo-600">Kontak</Link></li>
-              <li><Link href="#" className="hover:text-indigo-600">Kebijakan Privasi</Link></li>
-            </ul>
+          <p className="text-2xl font-bold leading-tight">
+            UMKM Indonesia Naik Kelas! <br />
+            Digitalisasi Warung Tanpa Pusing.
+          </p>
+          <div className="flex gap-4">
+            {[1,2,3,4].map(i => <div key={i} className="w-10 h-10 border-[2px] border-black bg-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]"></div>)}
           </div>
         </div>
-        <div className="container mx-auto mt-20 pt-8 border-t border-slate-100 dark:border-slate-800 text-center text-slate-500 text-sm">
-          © 2026 KelontongSync. Built with love by Kelompok 5 PPL.
+        <div className="flex flex-col md:items-end gap-12">
+          <div className="grid grid-cols-2 gap-12 text-2xl font-black uppercase">
+            <div className="flex flex-col gap-4">
+              <Link href="#" className="hover:bg-yellow-400 w-fit">GitHub</Link>
+              <Link href="#" className="hover:bg-green-400 w-fit">Insta</Link>
+            </div>
+            <div className="flex flex-col gap-4">
+              <Link href="#" className="hover:bg-pink-400 w-fit">Docs</Link>
+              <Link href="#" className="hover:bg-blue-400 w-fit">Contact</Link>
+            </div>
+          </div>
+          <div className="bg-black text-white px-4 py-1 text-lg font-black uppercase rotate-[-1deg]">
+            © 2026 Kelompok 5 PPL
+          </div>
         </div>
       </footer>
     </div>

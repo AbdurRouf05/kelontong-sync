@@ -32,16 +32,31 @@ Dokumen ini berisi aturan main (Rules of Engagement) yang harus dipatuhi oleh ke
   - Hapus semua `console.log()` sebelum melakukan *commit* dan membuat Pull Request.
   - Tambahkan komentar hanya pada algoritma yang rumit. Untuk kode yang mudah dibaca, biarkan kode tersebut menjelaskan dirinya sendiri.
 
-## 4. Manajemen Tugas (Task Management)
+## 4. Standar Desain (UI/UX) - Neobrutalism
+- **Konsep Utama**: **Neobrutalism** (Bold, High Contrast, Raw).
+- **Elemen Visual**:
+  - Border hitam tebal (minimal `border-2` atau `border-4` hitam pekat).
+  - Bayangan tajam / *Hard Shadows* (Gunakan `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`).
+  - Warna kontras dan cerah (Kuning, Hijau Neon, Oranye, Pink).
+  - Sudut tajam atau sedikit membulat (Gunakan `rounded-none` atau `rounded-xl`).
+- **Ikon**: Gunakan ikon yang lucu dan relevan dengan toko (hewan, sembako, dll) tanpa animasi yang berlebihan/alay.
+- **Tipografi**: Gunakan font tegas seperti **Lexend** atau **Outfit**.
+
+## 5. Alur Navigasi (User Flow)
+- **Public**: Landing Page (untuk promosi dan pendaftaran).
+- **Auth**: Halaman Login & Register dengan style Neobrutalism.
+- **Internal**: Dashboard Pemilik/Kasir muncul **HANYA setelah Login**.
+- Semua data yang ditampilkan di Dashboard harus difilter berdasarkan `store_id` user yang sedang login.
+
+## 6. Manajemen Tugas (Task Management)
 - Menggunakan papan Kanban (seperti Trello, Jira, atau GitHub Projects).
 - **Alur Kolom**: `To Do` -> `In Progress` -> `In Review` -> `Done`.
-- **Aturan Batas (WIP Limit)**: Setiap anggota tim maksimal hanya boleh memiliki **2 tugas** di kolom `In Progress` pada waktu yang bersamaan agar tetap fokus menyelesaikan pekerjaan.
-- Pindahkan tiket ke kolom `In Review` saat sudah membuat Pull Request.
+- **Aturan Batas (WIP Limit)**: Setiap anggota tim maksimal hanya boleh memiliki **2 tugas** di kolom `In Progress`.
 
-## 5. Deployment dan Pengujian (QA Rules)
+## 7. Deployment dan Pengujian (QA Rules)
 - Lingkungan (*Environment*):
-  - **Local**: `localhost:3000` (untuk ngoding di komputer masing-masing)
-  - **Staging**: `staging-kelontongsync.vercel.app` (untuk testing bersama)
-  - **Production**: `kelontongsync.com` (Sistem Final / Rilis)
-- **Adam (sebagai QA)** berhak me-*reject* Pull Request atau menunda rilis ke Production jika ditemukan bug kritis (seperti salah hitung total transaksi atau bocornya data antar cabang).
-- Tidak boleh ada perubahan *Environment Variables* (seperti API Keys Supabase) tanpa sepengetahuan tim DevOps dan PM.
+  - **Local**: `localhost:3000`
+  - **Staging**: `staging-kelontongsync.vercel.app`
+  - **Production**: `kelontongsync.com`
+- **Adam (sebagai QA)** berhak me-*reject* Pull Request jika ditemukan bug kritis.
+- Tidak boleh ada perubahan *Environment Variables* tanpa sepengetahuan tim DevOps dan PM.
