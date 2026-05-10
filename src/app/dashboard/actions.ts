@@ -161,6 +161,7 @@ export async function getDailyProductSales() {
       quantity,
       subtotal,
       created_at,
+      transactions (created_at),
       products (name, categories (name))
     `)
     .order("created_at", { ascending: false });
@@ -176,8 +177,12 @@ export async function getDailyProductSales() {
     const categories = product?.categories as any;
     const category = Array.isArray(categories) ? categories[0] : categories;
 
+    const transactions = item.transactions as any;
+    const transaction = Array.isArray(transactions) ? transactions[0] : transactions;
+    const createdAt = item.created_at || transaction?.created_at || new Date().toISOString();
+
     return {
-      date: new Date(item.created_at).toLocaleDateString('id-ID'),
+      date: new Date(createdAt).toLocaleDateString('id-ID'),
       productName: product?.name || "Produk Tak Dikenal",
       category: category?.name || "Umum",
       quantity: item.quantity,

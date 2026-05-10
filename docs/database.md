@@ -79,7 +79,8 @@ CREATE TABLE transaction_items (
   product_id UUID REFERENCES products(id) ON DELETE SET NULL,
   quantity INTEGER NOT NULL CHECK (quantity > 0),
   unit_price DECIMAL(12,2) NOT NULL,
-  subtotal DECIMAL(12,2) NOT NULL
+  subtotal DECIMAL(12,2) NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- MATIKAN RLS (Agar tidak error saat testing)
