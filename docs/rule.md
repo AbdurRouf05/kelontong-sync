@@ -40,7 +40,7 @@ Dokumen ini berisi aturan main (Rules of Engagement) yang harus dipatuhi oleh ke
 
 ## 5. Deployment dan Pengujian (QA Rules)
 - Lingkungan (*Environment*):
-  - **Local**: `pnpm dev` (untuk ngoding di komputer masing-masing)
+  - **Local**: `localhost:3000` (untuk ngoding di komputer masing-masing)
   - **Staging**: `staging-kelontongsync.vercel.app` (untuk testing bersama)
   - **Production**: `kelontongsync.com` (Sistem Final / Rilis)
 - **Adam (sebagai QA)** berhak me-*reject* Pull Request atau menunda rilis ke Production jika ditemukan bug kritis (seperti salah hitung total transaksi atau bocornya data antar cabang).
