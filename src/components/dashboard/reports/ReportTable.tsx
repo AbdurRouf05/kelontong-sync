@@ -3,7 +3,14 @@
 export default function ReportTable({ data = [] }: { data?: any[] }) {
   return (
     <div className="neo-card space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header Laporan Khusus Print */}
+      <div className="hidden print:block mb-8 border-b-[4px] border-black pb-4">
+        <h1 className="text-4xl font-black uppercase">Laporan Penjualan Produk</h1>
+        <p className="text-xl font-bold">Toko Berkah Utama 🏪</p>
+        <p className="text-sm font-bold text-slate-500">Tanggal Cetak: {new Date().toLocaleDateString('id-ID')}</p>
+      </div>
+
+      <div className="flex justify-between items-center print:hidden">
         <h3 className="text-2xl font-black uppercase tracking-tight">Rincian Penjualan Produk</h3>
         <button 
           onClick={() => window.print()}

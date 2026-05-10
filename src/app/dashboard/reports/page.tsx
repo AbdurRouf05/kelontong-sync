@@ -25,7 +25,7 @@ export default async function ReportsPage() {
       </div>
 
       {/* Reports Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 print:hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="neo-card bg-blue-100">
           <p className="font-bold text-slate-500 uppercase text-xs tracking-widest">Total Penjualan (All Time)</p>
           <h3 className="text-3xl font-black tracking-tight">
