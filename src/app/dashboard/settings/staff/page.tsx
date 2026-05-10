@@ -58,6 +58,7 @@ export default function StaffManagementPage() {
       const { error } = await supabase
         .from('profiles')
         .insert([{ 
+          id: crypto.randomUUID(), // Buat ID di sini agar Supabase tidak protes 'null'
           full_name: formData.full_name, 
           role: 'kasir',
           store_id: storeData.id
