@@ -98,6 +98,29 @@ export default function BranchesPage() {
     }
   };
 
+  const handleSwitchBranch = async (id: string) => {
+    try {
+      setIsLoading(true);
+      // Simulasi proses perpindahan data
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Update state secara visual
+      setBranches(prev => prev.map(b => ({
+        ...b,
+        isActive: b.id === id
+      })));
+      
+      // Simpan ke localStorage agar modul lain (POS/Inventory) tahu cabang mana yang aktif
+      localStorage.setItem('active_store_id', id);
+      
+      alert('Berhasil pindah cabang! Data POS dan Inventaris akan menyesuaikan.');
+    } catch (error) {
+      alert('Gagal pindah cabang.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus cabang ini secara permanen? Semua data stok akan hilang!')) return;
     try {
@@ -170,7 +193,10 @@ export default function BranchesPage() {
               
               <div className="flex gap-3">
                 {!branch.isActive && (
-                  <button className="flex-1 py-3 bg-[#FF90E8] text-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all font-black uppercase text-sm">
+                  <button 
+                    onClick={() => handleSwitchBranch(branch.id)}
+                    className="flex-1 py-3 bg-[#FF90E8] text-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all font-black uppercase text-sm"
+                  >
                     🔄 PINDAH KE SINI
                   </button>
                 )}
