@@ -6,44 +6,35 @@ Dokumen ini merupakan perencanaan teknis, arsitektural, dan manajerial untuk pro
 ## 2. Tech Stack yang Digunakan
 Sesuai dengan kebutuhan arsitektur cloud SaaS modern yang cepat, ringan, dan handal, berikut adalah tumpukan teknologi (Tech Stack) yang akan digunakan:
 - **Frontend**: Next.js (React Framework)
-- **Styling**: Tailwind CSS (Pendekatan Mobile-First dan UI modern)
-- **Backend & Database**: Supabase (Menyediakan PostgreSQL Database, Autentikasi Pengguna, dan API secara instan)
-- **Hosting / Deployment**: Vercel (Terintegrasi sangat baik dengan Next.js untuk CI/CD)
-- **Version Control**: Git & GitHub
+- **Styling**: Tailwind CSS
+- **Package Manager**: pnpm
+- **Backend & Database**: Supabase (PostgreSQL, Auth)
 
 ## 3. Pembagian Modul dan Peran (5 Anggota Tim)
 
-1. **Abdur Rouf (Project Manager & System Analyst)**
-   - **Peran**: Memimpin proyek, mengelola *timeline*, dan menjaga kualitas.
+1. **Abdur Rouf (Project Manager & Full Backend Developer)**
+   - **Peran**: Pemimpin proyek dan penanggung jawab tunggal seluruh infrastruktur backend.
    - **Tugas**: 
-     - Menyusun *sprint planning* dan mengelola *backlog* (menggunakan Trello/GitHub Projects).
-     - Memastikan UI/UX dan implementasi fitur berjalan sesuai dengan SRS.
-     - Melakukan sinkronisasi antar anggota tim jika ada konflik antar modul.
-     - Melakukan *Code Review* pada setiap Pull Request.
+     - Manajemen proyek, sprint planning, dan code review.
+     - Penyiapan Supabase (Database Schema, SQL Editor, Auth, Storage).
+     - Membuat API Route / Server Actions untuk menjembatani Frontend ke Supabase.
+     - Mengelola deployment (Vercel) dan environment variables.
 
-2. **Gombet (Backend & Database Developer)**
-   - **Modul**: Basis Data, Autentikasi, dan Logika Server.
-   - **Tugas**:
-     - Membangun skema database (Tabel Toko, Barang, Transaksi, dll) di Supabase.
-     - Setup modul Login/Register menggunakan Supabase Auth serta mengatur hak akses (Role: Kasir vs Owner).
-     - Menulis fungsi database (*Stored Procedures* / *Triggers*) untuk sinkronisasi otomatis pemotongan stok barang setiap kali transaksi berhasil.
+2. **Rafi (Frontend Developer - Modul POS)**
+   - **Modul**: Point of Sales (Kasir) & Struk Digital.
+   - **Tugas**: Antarmuka kasir, logika keranjang, perhitungan kembalian, dan integrasi cetak struk.
 
-3. **Rafi (Frontend Developer - Modul POS)**
-   - **Modul**: Point of Sales (POS) dan Struk.
-   - **Tugas**:
-     - Membangun antarmuka kasir yang responsif.
-     - Membuat logika keranjang belanja (*virtual cart*) di sisi klien (kalkulasi subtotal, pajak/diskon, kembalian otomatis).
-     - Mengintegrasikan pemindaian *barcode* serta fitur cetak struk (format thermal printer atau PDF).
+3. **Akmal (Frontend Developer - Modul Inventaris)**
+   - **Modul**: Manajemen Stok & Katalog Barang.
+   - **Tugas**: CRUD barang, manajemen kategori, dan sistem alert stok menipis.
 
-4. **Akmal (Frontend Developer - Modul Dasbor & Inventaris)**
-   - **Modul**: Dasbor Analitik dan Manajemen Inventaris.
-   - **Tugas**:
-     - Membangun halaman visualisasi data (grafik laba, margin penjualan harian) menggunakan library seperti Recharts atau Chart.js.
-     - Membangun sistem *Early Warning* (notifikasi saat stok barang di bawah limit).
-     - Mengembangkan halaman CRUD (Create, Read, Update, Delete) untuk manajemen barang (katalog produk).
+4. **Adam (Frontend Developer - Modul Dasbor & Laporan)**
+   - **Modul**: Dashboard Analitik.
+   - **Tugas**: Visualisasi grafik penjualan, margin laba, dan rekapitulasi data harian/mingguan.
 
-5. **Adam (DevOps, QA, & Modul Multi-Cabang)**
-   - **Modul**: Skalabilitas Cabang dan *Quality Assurance*.
+5. **Gombet (Frontend Developer - Modul Multi-Cabang & User Management)**
+   - **Modul**: Pengelolaan Cabang & Profil.
+   - **Tugas**: Antarmuka perpindahan cabang, manajemen akun karyawan, dan pengaturan profil toko.
    - **Tugas**:
      - Menerapkan filter logika Multi-Cabang (memastikan satu kasir hanya melihat data cabang mereka, sedangkan owner bisa melihat semua).
      - Mengonfigurasi otomatisasi deployment di Vercel (CI/CD pipeline).
