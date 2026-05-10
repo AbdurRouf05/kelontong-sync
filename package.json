@@ -9,25 +9,18 @@
     "lint": "eslint"
   },
   "dependencies": {
-<<<<<<< Updated upstream
-=======
     "@supabase/supabase-js": "^2.105.4",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.14.0",
->>>>>>> Stashed changes
     "next": "16.2.6",
     "papaparse": "^5.5.3",
     "react": "19.2.4",
-<<<<<<< Updated upstream
-    "react-dom": "19.2.4"
-=======
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.5.0",
     "xlsx": "^0.18.5"
->>>>>>> Stashed changes
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
