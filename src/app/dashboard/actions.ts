@@ -2,10 +2,33 @@
 
 import { supabase } from "@/lib/supabase";
 
-export async function getDashboardStats() {
-  const { data: transactions, error: transError } = await supabase
-    .from("transactions")
-    .select("total_amount, created_at");
+function getStartDate(period: string) {
+  const now = new Date();
+  const start = new Date();
+  if (period === "daily") {
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "weekly") {
+    const day = now.getDay();
+    start.setDate(now.getDate() - day);
+    start.setHours(0, 0, 0, 0);
+  } else if (period === "monthly") {
+    start.setDate(1);
+    start.setHours(0, 0, 0, 0);
+  } else {
+    return null;
+  }
+  return start.toISOString();
+}
+
+export async function getDashboardStats(period: string = "all") {
+  const startDate = getStartDate(period);
+  let query = supabase.from("transactions").select("total_amount, created_at");
+  
+  if (startDate) {
+    query = query.gte("created_at", startDate);
+  }
+
+  const { data: transactions, error: transError } = await query;
 
   if (transError) {
     console.error("Error fetching transactions:", transError);
@@ -23,10 +46,7 @@ export async function getDashboardStats() {
 
   // Calculate metrics
   const totalSales = transactions?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
-  
-  const today = new Date().toISOString().split('T')[0];
-  const todayTransactions = transactions?.filter(t => t.created_at.startsWith(today)).length || 0;
-  
+  const todayTransactions = transactions?.length || 0;
   const lowStockCount = products?.filter(p => p.stock <= p.min_stock).length || 0;
 
   return {
@@ -129,7 +149,7 @@ export async function getTopProducts() {
     }));
 }
 
-export async function getDetailedSalesReport() {
+export async function getDetailedSalesReport(period: "daily" | "weekly" | "monthly" = "daily") {
   const { data, error } = await supabase
     .from("transactions")
     .select("total_amount, created_at")
@@ -140,22 +160,37 @@ export async function getDetailedSalesReport() {
     return [];
   }
 
-  // Group by date
   const grouped: Record<string, number> = {};
+  
   data.forEach(t => {
-    const date = t.created_at.split('T')[0];
-    grouped[date] = (grouped[date] || 0) + Number(t.total_amount);
+    const dateObj = new Date(t.created_at);
+    let key = "";
+
+    if (period === "daily") {
+      key = t.created_at.split('T')[0];
+    } else if (period === "weekly") {
+      // Get first day of week (Sunday)
+      const day = dateObj.getDay();
+      const diff = dateObj.getDate() - day;
+      const startOfWeek = new Date(dateObj.setDate(diff));
+      key = `Week ${startOfWeek.toISOString().split('T')[0]}`;
+    } else if (period === "monthly") {
+      key = dateObj.toLocaleDateString('id-ID', { year: 'numeric', month: 'long' });
+    }
+
+    grouped[key] = (grouped[key] || 0) + Number(t.total_amount);
   });
 
   return Object.entries(grouped).map(([date, sales]) => ({
     date,
     sales,
-    profit: sales * 0.2 // Simplified profit calculation (20% margin)
+    profit: sales * 0.2
   }));
 }
 
-export async function getDailyProductSales() {
-  const { data, error } = await supabase
+export async function getDailyProductSales(period: string = "all") {
+  const startDate = getStartDate(period);
+  let query = supabase
     .from("transaction_items")
     .select(`
       quantity,
@@ -165,6 +200,12 @@ export async function getDailyProductSales() {
       products (name, categories (name))
     `)
     .order("created_at", { ascending: false });
+
+  if (startDate) {
+    query = query.gte("created_at", startDate);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Error fetching daily product sales:", error);
@@ -192,15 +233,23 @@ export async function getDailyProductSales() {
 }
 
 
-export async function getCategoryDistribution() {
-  const { data, error } = await supabase
+export async function getCategoryDistribution(period: string = "all") {
+  const startDate = getStartDate(period);
+  let query = supabase
     .from("transaction_items")
     .select(`
       quantity,
+      created_at,
       products (
         categories (name)
       )
     `);
+
+  if (startDate) {
+    query = query.gte("created_at", startDate);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("Error fetching category distribution:", error);
