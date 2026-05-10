@@ -14,6 +14,9 @@ function getStartDate(period: string) {
   } else if (period === "weekly") {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
+  } else if (period === "monthly") {
+    start.setDate(now.getDate() - 30);
+    start.setHours(0, 0, 0, 0);
   } else if (period === "yearly") {
     start.setMonth(0, 1);
     start.setHours(0, 0, 0, 0);
@@ -25,37 +28,51 @@ function getStartDate(period: string) {
 
 export async function getDashboardStats(period: string = "all") {
   const startDate = getStartDate(period);
-  let query = supabase.from("transactions").select("total_amount, created_at");
-
+  
+  // Ambil transaksi
+  let transQuery = supabase.from("transactions").select("total_amount, created_at");
   if (startDate) {
-    query = query.gte("created_at", startDate);
+    transQuery = transQuery.gte("created_at", startDate);
   }
-
-  const { data: transactions, error: transError } = await query;
+  const { data: transactions, error: transError } = await transQuery;
 
   if (transError) {
     console.error("Error fetching transactions:", transError);
-    return { totalSales: 0, todayTransactions: 0, lowStockCount: 0, totalProducts: 0 };
+    return { totalSales: 0, totalProfit: 0, todayTransactions: 0, totalItemsSold: 0, lowStockCount: 0, totalProducts: 0 };
   }
 
+  // Ambil total barang terjual (quantity)
+  let itemsQuery = supabase.from("transaction_items").select("quantity, created_at");
+  if (startDate) {
+    itemsQuery = itemsQuery.gte("created_at", startDate);
+  }
+  const { data: items, error: itemsError } = await itemsQuery;
+
+  if (itemsError) {
+    console.error("Error fetching items sold:", itemsError);
+  }
+
+  // Ambil info produk (stok)
   const { data: products, error: prodError } = await supabase
     .from("products")
     .select("stock, min_stock");
 
   if (prodError) {
     console.error("Error fetching products:", prodError);
-    return { totalSales: 0, todayTransactions: 0, lowStockCount: 0, totalProducts: 0 };
+    return { totalSales: 0, totalProfit: 0, todayTransactions: 0, totalItemsSold: 0, lowStockCount: 0, totalProducts: 0 };
   }
 
   const totalSales = transactions?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
-  const totalProfit = totalSales * 0.15; // Estimasi laba 15%
+  const totalProfit = totalSales * 0.15;
   const transactionCount = transactions?.length || 0;
+  const totalItemsSold = items?.reduce((acc, curr) => acc + Number(curr.quantity), 0) || 0;
   const lowStockCount = products?.filter(p => p.stock <= (p.min_stock || 0)).length || 0;
 
   return {
     totalSales,
     totalProfit,
     todayTransactions: transactionCount,
+    totalItemsSold,
     lowStockCount,
     totalProducts: products?.length || 0
   };
@@ -68,10 +85,7 @@ export async function getRecentTransactions() {
     .order("created_at", { ascending: false })
     .limit(5);
 
-  if (error) {
-    console.error("Error fetching recent transactions:", error);
-    return [];
-  }
+  if (error) return [];
 
   return data.map(t => ({
     id: t.id,
@@ -84,7 +98,6 @@ export async function getRecentTransactions() {
 }
 
 export async function getSalesData() {
-  // Selalu ambil 7 hari terakhir untuk grafik dasbor
   const startDate = getStartDate("weekly");
   const { data, error } = await supabase
     .from("transactions")
@@ -106,16 +119,17 @@ export async function getSalesData() {
       .reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
     
     const dayName = new Date(date).toLocaleDateString('id-ID', { weekday: 'short' });
-    return { name: dayName, sales: daySales };
+    return { name: dayName, sales: daySales, profit: daySales * 0.15 };
   });
 }
 
 export async function getDetailedSalesReport(period: string = "all") {
-  const startDate = getStartDate(period);
+  const startDateStr = getStartDate(period);
+  const startDate = startDateStr ? new Date(startDateStr) : null;
   let query = supabase.from("transactions").select("total_amount, created_at");
 
-  if (startDate) {
-    query = query.gte("created_at", startDate);
+  if (startDateStr) {
+    query = query.gte("created_at", startDateStr);
   }
 
   const { data, error } = await query.order("created_at", { ascending: true });
@@ -123,9 +137,33 @@ export async function getDetailedSalesReport(period: string = "all") {
   if (error || !data) return [];
 
   const grouped: Record<string, number> = {};
+  
   data.forEach(t => {
-    const date = t.created_at.split('T')[0];
-    grouped[date] = (grouped[date] || 0) + Number(t.total_amount);
+    const dateObj = new Date(t.created_at);
+    let key = "";
+    
+    if (period === "monthly" && startDate) {
+      // Group by Week + Date Range
+      const diffTime = Math.abs(dateObj.getTime() - startDate.getTime());
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+      const weekNum = Math.floor(diffDays / 7) + 1;
+      
+      const weekStart = new Date(startDate);
+      weekStart.setDate(startDate.getDate() + (weekNum - 1) * 7);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+      
+      const format = (d: Date) => d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
+      key = `Mgg ${weekNum} (${format(weekStart)}-${format(weekEnd)})`;
+    } else if (period === "yearly") {
+      key = dateObj.toLocaleDateString('id-ID', { month: 'short' });
+    } else if (period === "all") {
+      key = dateObj.getFullYear().toString();
+    } else {
+      key = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' });
+    }
+
+    grouped[key] = (grouped[key] || 0) + Number(t.total_amount);
   });
 
   return Object.entries(grouped).map(([date, sales]) => ({
@@ -143,12 +181,12 @@ export async function getDailyProductSales(period: string = "all") {
       quantity,
       subtotal,
       created_at,
-      transactions!inner (created_at),
       products (name, categories (name))
     `);
 
+  // Gunakan created_at langsung dari tabel transaction_items
   if (startDate) {
-    query = query.gte("transactions.created_at", startDate);
+    query = query.gte("created_at", startDate);
   }
 
   const { data, error } = await query.order("created_at", { ascending: false });
@@ -156,10 +194,9 @@ export async function getDailyProductSales(period: string = "all") {
   if (error || !data) return [];
 
   return data.map(item => {
-    const product = (item.products as any);
-    const category = product?.categories;
-    const transaction = (item.transactions as any);
-    const date = item.created_at || transaction?.created_at;
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const category = Array.isArray(product?.categories) ? product.categories[0] : product?.categories;
+    const date = item.created_at;
 
     return {
       date: new Date(date).toLocaleDateString('id-ID'),
@@ -177,12 +214,13 @@ export async function getCategoryDistribution(period: string = "all") {
     .from("transaction_items")
     .select(`
       quantity,
-      transactions!inner (created_at),
+      created_at,
       products (categories (name))
     `);
 
+  // Gunakan created_at langsung dari tabel transaction_items
   if (startDate) {
-    query = query.gte("transactions.created_at", startDate);
+    query = query.gte("created_at", startDate);
   }
 
   const { data, error } = await query;
@@ -191,7 +229,8 @@ export async function getCategoryDistribution(period: string = "all") {
 
   const distribution: Record<string, number> = {};
   data.forEach(item => {
-    const categoryName = (item.products as any)?.categories?.name || "Umum";
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const categoryName = Array.isArray(product?.categories) ? product.categories[0]?.name : product?.categories?.name || "Umum";
     distribution[categoryName] = (distribution[categoryName] || 0) + item.quantity;
   });
 
@@ -209,7 +248,8 @@ export async function getTopProducts() {
 
   const aggregation: Record<string, number> = {};
   data.forEach(item => {
-    const name = (item.products as any)?.name || "Produk";
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const name = product?.name || "Produk";
     aggregation[name] = (aggregation[name] || 0) + item.quantity;
   });
 

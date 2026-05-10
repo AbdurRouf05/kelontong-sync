@@ -14,10 +14,10 @@ export default async function ReportsPage({
 }: {
   searchParams: Promise<{ period?: string }>;
 }) {
-  const { period = "all" } = await searchParams;
+  const { period = "daily" } = await searchParams;
 
   const [salesReport, productSales, categoryDistribution, stats] = await Promise.all([
-    getDetailedSalesReport(period === "all" ? "daily" : (period as any)),
+    getDetailedSalesReport(period),
     getDailyProductSales(period),
     getCategoryDistribution(period),
     getDashboardStats(period)
@@ -38,32 +38,38 @@ export default async function ReportsPage({
       </div>
 
       {/* Reports Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
         <div className="neo-card bg-blue-100">
-          <p className="font-bold text-slate-500 uppercase text-xs tracking-widest">
-            Total Penjualan ({period === "all" ? "Semua" : period === "daily" ? "Hari Ini" : period === "weekly" ? "Minggu Ini" : period === "monthly" ? "Bulan Ini" : "Tahun Ini"})
+          <p className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">
+            Total Penjualan
           </p>
-          <h3 className="text-3xl font-black tracking-tight">
+          <h3 className="text-2xl font-black tracking-tight">
             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(stats.totalSales)}
           </h3>
         </div>
         <div className="neo-card bg-purple-100">
-          <p className="font-bold text-slate-500 uppercase text-xs tracking-widest">
-            Total Laba ({period === "all" ? "Semua" : period === "daily" ? "Hari Ini" : period === "weekly" ? "Minggu Ini" : period === "monthly" ? "Bulan Ini" : "Tahun Ini"})
+          <p className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">
+            Total Laba
           </p>
-          <h3 className="text-3xl font-black tracking-tight text-green-600">
+          <h3 className="text-2xl font-black tracking-tight text-green-600">
             {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(stats.totalProfit)}
           </h3>
         </div>
         <div className="neo-card bg-green-100">
-          <p className="font-bold text-slate-500 uppercase text-xs tracking-widest">
+          <p className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">
             Total Transaksi
           </p>
-          <h3 className="text-3xl font-black tracking-tight">{stats.todayTransactions} Transaksi</h3>
+          <h3 className="text-2xl font-black tracking-tight">{stats.todayTransactions} Trx</h3>
+        </div>
+        <div className="neo-card bg-orange-100">
+          <p className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">
+            Barang Terjual
+          </p>
+          <h3 className="text-2xl font-black tracking-tight">{stats.totalItemsSold} Item</h3>
         </div>
         <div className="neo-card bg-yellow-100">
-          <p className="font-bold text-slate-500 uppercase text-xs tracking-widest">Produk Aktif</p>
-          <h3 className="text-3xl font-black tracking-tight">{stats.totalProducts} Produk</h3>
+          <p className="font-bold text-slate-500 uppercase text-[10px] tracking-widest">Produk Aktif</p>
+          <h3 className="text-2xl font-black tracking-tight">{stats.totalProducts} Sku</h3>
         </div>
       </div>
       

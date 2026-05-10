@@ -21,7 +21,11 @@ export default function SalesReportChart({
   period = "daily"
 }: SalesReportChartProps) {
   
-  const periodLabel = period === "daily" ? "Harian" : period === "weekly" ? "Mingguan" : period === "monthly" ? "Bulanan" : "Harian";
+  const periodLabel = 
+    period === "daily" ? "Hari Ini" : 
+    period === "weekly" ? "Minggu Ini" : 
+    period === "monthly" ? "Bulan Ini" : 
+    period === "yearly" ? "Tahun Ini" : "Semua Waktu";
 
   return (
     <div className="neo-card h-[400px] flex flex-col gap-4 bg-white">
@@ -44,10 +48,7 @@ export default function SalesReportChart({
               axisLine={{ stroke: '#000', strokeWidth: 2 }}
               tickLine={{ stroke: '#000', strokeWidth: 2 }}
               tick={{ fill: '#000', fontWeight: 'bold', fontSize: 10 }}
-              tickFormatter={(val) => {
-                if (period === "daily" || period === "all") return val.split('-').slice(1).join('/');
-                return val;
-              }}
+              tickFormatter={(val) => val}
             />
             <YAxis 
               axisLine={{ stroke: '#000', strokeWidth: 2 }}

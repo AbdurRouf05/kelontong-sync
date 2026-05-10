@@ -4,9 +4,7 @@ import {
   TrendingUp, 
   ShoppingBag, 
   Users, 
-  AlertTriangle,
-  ArrowUpRight,
-  ArrowDownRight
+  AlertTriangle
 } from "lucide-react";
 
 export default function SummaryMetrics({ 
@@ -17,32 +15,24 @@ export default function SummaryMetrics({
       name: "Total Penjualan", 
       value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(data.totalSales), 
       icon: <TrendingUp className="text-blue-500" />, 
-      trend: "+100%", 
-      positive: true, 
       color: "bg-blue-100" 
     },
     { 
       name: "Transaksi Hari Ini", 
       value: data.todayTransactions.toString(), 
       icon: <ShoppingBag className="text-green-500" />, 
-      trend: "+0%", 
-      positive: true, 
       color: "bg-green-100" 
     },
     { 
       name: "Stok Menipis", 
       value: data.lowStockCount.toString(), 
       icon: <AlertTriangle className="text-yellow-600" />, 
-      trend: "Cek Segera", 
-      positive: false, 
       color: "bg-yellow-100" 
     },
     { 
       name: "Total Produk", 
       value: data.totalProducts.toString(), 
       icon: <Users className="text-pink-500" />, 
-      trend: "Aktif", 
-      positive: true, 
       color: "bg-pink-100" 
     },
   ];
@@ -54,10 +44,6 @@ export default function SummaryMetrics({
           <div className="flex justify-between items-start">
             <div className={`p-3 border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] group-hover:shadow-none group-hover:translate-x-[2px] group-hover:translate-y-[2px] transition-all ${s.color}`}>
               {s.icon}
-            </div>
-            <div className={`flex items-center text-sm font-black px-2 py-1 border-[2px] border-black ${s.positive ? "bg-green-400" : "bg-red-400"}`}>
-              {s.positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-              {s.trend}
             </div>
           </div>
           <div>
