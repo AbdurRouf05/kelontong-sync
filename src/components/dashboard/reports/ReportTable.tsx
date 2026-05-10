@@ -176,7 +176,11 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
                     </td>
                     <td className="p-4 border-r-[3px] border-black text-center">{r.quantity}</td>
                     <td className="p-4">
-                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(r.total)}
+                      {new Intl.NumberFormat('id-ID', { 
+                        style: 'currency', 
+                        currency: 'IDR',
+                        maximumFractionDigits: 0
+                      }).format(r.total)}
                     </td>
                   </tr>
                 ))

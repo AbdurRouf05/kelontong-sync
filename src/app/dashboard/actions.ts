@@ -77,7 +77,7 @@ export async function getRecentTransactions() {
     id: t.id,
     time: new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     description: `Transaksi Selesai`,
-    amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Number(t.total_amount)),
+    amount: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(t.total_amount)),
     status: "BERHASIL",
     statusColor: "text-green-600"
   }));
