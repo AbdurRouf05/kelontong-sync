@@ -5,6 +5,14 @@ Silakan salin dan tempel kode SQL di bawah ini ke dalam **SQL Editor** di dashbo
 ## 1. Membuat Tabel Utama
 
 ```sql
+-- Hapus tabel jika sudah ada (Gunakan ini jika ingin reset database)
+DROP TABLE IF EXISTS transaction_items CASCADE;
+DROP TABLE IF EXISTS transactions CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS stores CASCADE;
+
 -- 1. Tabel Toko (Tenant)
 CREATE TABLE stores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
