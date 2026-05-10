@@ -181,6 +181,18 @@ export default function StaffManagementPage() {
                 />
               </div>
 
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Peran (Role)</label>
+                <select 
+                  className="w-full p-3 neo-box font-bold focus:outline-none cursor-pointer"
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                >
+                  <option value="kasir">KASIR</option>
+                  <option value="owner">OWNER</option>
+                </select>
+              </div>
+
               <div className="pt-6 flex gap-4">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all">
                   BATAL
