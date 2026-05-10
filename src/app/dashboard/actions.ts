@@ -14,11 +14,11 @@ function getStartDate(period: string) {
   } else if (period === "weekly") {
     start.setDate(now.getDate() - 7);
     start.setHours(0, 0, 0, 0);
-  } else if (period === "monthly") {
-    start.setDate(now.getDate() - 30);
+  } else if (period === "yearly") {
+    start.setMonth(0, 1);
     start.setHours(0, 0, 0, 0);
   } else {
-    return null; // Semua waktu
+    return null;
   }
   return start.toISOString();
 }
@@ -48,11 +48,13 @@ export async function getDashboardStats(period: string = "all") {
   }
 
   const totalSales = transactions?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
+  const totalProfit = totalSales * 0.15; // Estimasi laba 15%
   const transactionCount = transactions?.length || 0;
   const lowStockCount = products?.filter(p => p.stock <= (p.min_stock || 0)).length || 0;
 
   return {
     totalSales,
+    totalProfit,
     todayTransactions: transactionCount,
     lowStockCount,
     totalProducts: products?.length || 0

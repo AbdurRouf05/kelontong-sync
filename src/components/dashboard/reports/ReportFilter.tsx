@@ -16,10 +16,10 @@ export default function ReportFilter() {
   return (
     <div className="flex bg-white border-[4px] border-black p-1 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
       {[
-        { id: "all", label: "Semua" },
         { id: "daily", label: "Hari Ini" },
         { id: "weekly", label: "Minggu Ini" },
-        { id: "monthly", label: "Bulan Ini" }
+        { id: "monthly", label: "Bulan Ini" },
+        { id: "yearly", label: "Tahun Ini" }
       ].map((p) => (
         <button
           key={p.id}
