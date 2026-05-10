@@ -15,7 +15,7 @@ export default function StaffManagementPage() {
   const [staffList, setStaffList] = useState<Staff[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingStaff, setEditingStaff] = useState<Staff | null>(null);
   
   const [formData, setFormData] = useState({
     full_name: '',
@@ -45,33 +45,57 @@ export default function StaffManagementPage() {
     fetchStaff();
   }, []);
 
+  const handleOpenModal = (staff?: Staff) => {
+    if (staff) {
+      setEditingStaff(staff);
+      setFormData({
+        full_name: staff.full_name,
+        role: staff.role,
+      });
+    } else {
+      setEditingStaff(null);
+      setFormData({ full_name: '', role: 'kasir' });
+    }
+    setIsModalOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      // Ambil ID toko pertama untuk dihubungkan ke karyawan baru (Mock)
-      const { data: storeData } = await supabase.from('stores').select('id').limit(1).single();
-      
-      if (!storeData) {
-        throw new Error('Tidak ada toko terdaftar. Silakan buat cabang toko dulu!');
+      if (editingStaff) {
+        // Logika UPDATE
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            full_name: formData.full_name,
+            role: formData.role,
+          })
+          .eq('id', editingStaff.id);
+        
+        if (error) throw error;
+      } else {
+        // Logika INSERT
+        const { data: storeData } = await supabase.from('stores').select('id').limit(1).single();
+        if (!storeData) throw new Error('Tidak ada toko terdaftar.');
+
+        const { error } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: crypto.randomUUID(),
+            full_name: formData.full_name, 
+            role: formData.role,
+            store_id: storeData.id
+          }]);
+
+        if (error) throw error;
       }
-
-      const { error } = await supabase
-        .from('profiles')
-        .insert([{ 
-          id: crypto.randomUUID(), // Buat ID di sini agar Supabase tidak protes 'null'
-          full_name: formData.full_name, 
-          role: formData.role,
-          store_id: storeData.id
-        }]);
-
-      if (error) throw error;
       
       setIsModalOpen(false);
       setFormData({ full_name: '', role: 'kasir' });
       fetchStaff();
     } catch (error: any) {
-      alert('Gagal menambah karyawan: ' + error.message);
+      alert('Gagal menyimpan data: ' + error.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -98,7 +122,7 @@ export default function StaffManagementPage() {
           </p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => handleOpenModal()}
           className="neo-btn-primary flex items-center gap-2"
         >
           <Plus size={20} /> TAMBAH KARYAWAN
@@ -145,7 +169,10 @@ export default function StaffManagementPage() {
                   </td>
                   <td className="p-4 text-center">
                     <div className="flex justify-center gap-2">
-                      <button className="p-2 bg-white border-[2px] border-black hover:bg-yellow-100 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none">
+                      <button 
+                        onClick={() => handleOpenModal(staff)}
+                        className="p-2 bg-white border-[2px] border-black hover:bg-yellow-100 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+                      >
                         <Edit3 size={18} />
                       </button>
                       <button onClick={() => handleDelete(staff.id)} className="p-2 bg-white border-[2px] border-black hover:bg-red-500 hover:text-white text-red-600 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none">
@@ -164,7 +191,9 @@ export default function StaffManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="neo-card bg-white w-full max-w-md p-0 overflow-hidden">
             <div className="p-6 border-b-[4px] border-black bg-[#23A094] text-white flex items-center justify-between">
-              <h3 className="text-2xl font-black uppercase tracking-tight">Tambah Karyawan</h3>
+              <h3 className="text-2xl font-black uppercase tracking-tight">
+                {editingStaff ? 'Edit Karyawan' : 'Tambah Karyawan'}
+              </h3>
               <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-white/20 border-[2px] border-transparent transition-all">
                 <X size={24} />
               </button>
