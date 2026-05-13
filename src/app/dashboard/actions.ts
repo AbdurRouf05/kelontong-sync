@@ -181,7 +181,7 @@ export async function getDailyProductSales(period: string = "all") {
       quantity,
       subtotal,
       created_at,
-      products (name, categories (name))
+      products (name, categories (name, icon))
     `);
 
   // Gunakan created_at langsung dari tabel transaction_items
@@ -193,7 +193,7 @@ export async function getDailyProductSales(period: string = "all") {
 
   if (error || !data) return [];
 
-  return data.map(item => {
+  return data.map((item: any) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products;
     const category = Array.isArray(product?.categories) ? product.categories[0] : product?.categories;
     const date = item.created_at;
@@ -215,7 +215,7 @@ export async function getCategoryDistribution(period: string = "all") {
     .select(`
       quantity,
       created_at,
-      products (categories (name))
+      products (categories (name, icon))
     `);
 
   // Gunakan created_at langsung dari tabel transaction_items
@@ -228,9 +228,10 @@ export async function getCategoryDistribution(period: string = "all") {
   if (error || !data) return [];
 
   const distribution: Record<string, number> = {};
-  data.forEach(item => {
+  data.forEach((item: any) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products;
-    const categoryName = Array.isArray(product?.categories) ? product.categories[0]?.name : product?.categories?.name || "Umum";
+    const category = Array.isArray(product?.categories) ? product.categories[0] : product?.categories;
+    const categoryName = category?.name || "Umum";
     distribution[categoryName] = (distribution[categoryName] || 0) + item.quantity;
   });
 
@@ -247,7 +248,7 @@ export async function getTopProducts() {
   if (error || !data) return [];
 
   const aggregation: Record<string, number> = {};
-  data.forEach(item => {
+  data.forEach((item: any) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products;
     const name = product?.name || "Produk";
     aggregation[name] = (aggregation[name] || 0) + item.quantity;

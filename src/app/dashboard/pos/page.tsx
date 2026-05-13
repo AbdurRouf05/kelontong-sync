@@ -15,7 +15,9 @@ import {
   Loader2,
   Banknote,
   Download,
-  Printer
+  Printer,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
@@ -25,6 +27,7 @@ interface Product {
   name: string;
   price: number;
   category: string;
+  category_icon?: string;
   stock: number;
   image?: string;
 }
@@ -45,6 +48,7 @@ export default function POSPage() {
   
   // Payment States
   const [cashAmount, setCashAmount] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Fetch products from Supabase
   useEffect(() => {
@@ -55,7 +59,13 @@ export default function POSPage() {
         
         const { data, error: fetchError } = await supabase
           .from("products")
-          .select("*")
+          .select(`
+            *,
+            categories (
+              name,
+              icon
+            )
+          `)
           .order("name", { ascending: true });
 
         if (fetchError) throw fetchError;
@@ -63,11 +73,12 @@ export default function POSPage() {
         if (!data || data.length === 0) {
           setProducts([]);
         } else {
-          const mappedProducts = data.map(p => ({
+          const mappedProducts = data.map((p: any) => ({
             id: p.id,
             name: p.name,
             price: Number(p.selling_price),
-            category: "Umum",
+            category: p.categories?.name || "Umum",
+            category_icon: p.categories?.icon || "📦",
             stock: p.stock,
             image: p.image_url
           }));
@@ -291,8 +302,26 @@ export default function POSPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="border-[3px] border-black px-6 flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-blue-400">
-            <span className="font-black uppercase">{filteredProducts.length} BARANG</span>
+          <div className="flex gap-4">
+            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden">
+              <button 
+                onClick={() => setViewMode("grid")}
+                className={`p-4 transition-colors ${viewMode === "grid" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
+                title="Grid View"
+              >
+                <LayoutGrid size={20} />
+              </button>
+              <button 
+                onClick={() => setViewMode("list")}
+                className={`p-4 border-l-[3px] border-black transition-colors ${viewMode === "list" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
+                title="List View"
+              >
+                <List size={20} />
+              </button>
+            </div>
+            <div className="border-[3px] border-black px-6 flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-blue-400">
+              <span className="font-black uppercase">{filteredProducts.length} BARANG</span>
+            </div>
           </div>
         </div>
 
@@ -310,35 +339,73 @@ export default function POSPage() {
               <p className="font-black">MENGHUBUNGKAN KE DATABASE...</p>
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 pb-6">
-              {filteredProducts.map((product) => (
-                <div 
-                  key={product.id}
-                  className={`neo-card flex flex-col group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]"}`}
-                  onClick={() => addToCart(product)}
-                >
-                  <div className="mb-4 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden">
-                    {product.image ? (
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-4xl">📦</span>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-black leading-tight uppercase line-clamp-1">{product.name}</h3>
-                    <p className="text-xl font-bold text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className={`text-xs font-bold px-2 py-1 border-[2px] border-black ${product.stock < 5 ? "bg-red-400" : "bg-slate-200"}`}>
-                      STOK: {product.stock}
-                    </span>
-                    <button className="bg-black text-white p-2 border-[2px] border-black">
-                      <Plus size={20} />
-                    </button>
-                  </div>
+            <>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-6">
+                  {filteredProducts.map((product) => (
+                    <div 
+                      key={product.id}
+                      className={`neo-card p-3 flex flex-col group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"}`}
+                      onClick={() => addToCart(product)}
+                    >
+                      <div className="mb-3 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-4xl">{product.category_icon || "📦"}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-h-0">
+                        <div className="flex items-center gap-1 mb-1">
+                          <span className="text-[8px] font-black bg-slate-200 px-1 border border-black uppercase truncate">{product.category}</span>
+                        </div>
+                        <h3 className="text-xs font-black leading-tight uppercase line-clamp-2 mb-1">{product.name}</h3>
+                        <p className="text-sm font-bold text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 border-[2px] border-black ${product.stock < 5 ? "bg-red-400" : "bg-slate-200"}`}>
+                          STOK: {product.stock}
+                        </span>
+                        <button className="bg-black text-white p-1.5 border-[2px] border-black">
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div className="flex flex-col gap-3 pb-6">
+                  {filteredProducts.map((product) => (
+                    <div 
+                      key={product.id}
+                      className={`neo-card p-3 flex items-center gap-4 group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}
+                      onClick={() => addToCart(product)}
+                    >
+                      <div className="w-16 h-16 bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {product.image ? (
+                          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-2xl">{product.category_icon || "📦"}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <span className="text-[8px] font-black bg-slate-200 px-1 border border-black uppercase">{product.category}</span>
+                        </div>
+                        <h3 className="font-black leading-tight uppercase truncate">{product.name}</h3>
+                        <p className="text-xs font-bold text-slate-400">STOK: {product.stock}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
+                        <button className="mt-1 bg-black text-white p-1 border-[2px] border-black">
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center p-12 neo-card border-dashed border-slate-300 shadow-none">
               <PackageSearch size={64} className="text-slate-300 mb-4" />

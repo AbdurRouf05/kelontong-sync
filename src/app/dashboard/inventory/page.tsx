@@ -143,7 +143,8 @@ export default function InventoryPage() {
         .select(`
           *,
           categories (
-            name
+            name,
+            icon
           )
         `)
         .order("name", { ascending: true });
