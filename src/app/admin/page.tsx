@@ -21,7 +21,8 @@ import {
   Sparkles,
   RefreshCw,
   Mail,
-  UserCheck
+  UserCheck,
+  Database
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { createTenantAction } from "./actions";
