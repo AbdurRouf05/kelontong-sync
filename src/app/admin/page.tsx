@@ -408,12 +408,12 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div className="flex gap-4 w-full md:w-auto items-center">
+          <div className="flex gap-4 w-full md:w-auto items-center flex-wrap md:flex-nowrap">
             {/* Database Connection Indicator Pill */}
             <div 
               onClick={checkSupabaseConnection}
               title={dbStatus === "connected" ? `Koneksi Supabase Aktif (Latensi: ${dbLatency}ms) - Klik untuk tes ulang` : "Klik untuk tes ulang koneksi database"}
-              className={`cursor-pointer border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] px-4 py-3.5 text-sm font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
+              className={`cursor-pointer border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-4 py-3 text-xs font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
                 dbStatus === "connected" ? "bg-emerald-400 text-black" :
                 dbStatus === "checking" ? "bg-yellow-300 text-black animate-pulse" :
                 "bg-rose-500 text-white"
@@ -429,7 +429,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Navigasi Cepat Admin / Tenant */}
-            <div className="flex shrink-0 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
+            <div className="flex shrink-0 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
               <span className="px-4 py-3 bg-[#FFE800] flex items-center gap-1.5 border-r-[3px] border-black whitespace-nowrap">
                 <Activity size={16} /> Platform Admin
               </span>
@@ -443,17 +443,17 @@ export default function AdminDashboard() {
 
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-6 py-4 font-black uppercase text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
-              <Plus size={20} /> REGISTRASI TENANT
+              <Plus size={16} /> REGISTRASI TENANT
             </button>
             
             <button 
               onClick={handleLogout}
-              className="p-4 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2"
+              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
               title="Keluar Admin"
             >
-              <LogOut size={20} /> <span className="hidden md:inline">KELUAR</span>
+              <LogOut size={16} /> KELUAR
             </button>
           </div>
         </div>
