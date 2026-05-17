@@ -22,7 +22,8 @@ import {
   RefreshCw,
   Mail,
   UserCheck,
-  Database
+  Database,
+  Sliders
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { createTenantAction } from "./actions";
@@ -425,6 +426,19 @@ export default function AdminDashboard() {
               }`} />
               <span className="hidden sm:inline">DB {dbStatus === "connected" ? `ONLINE (${dbLatency}ms)` : dbStatus === "checking" ? "PINGING" : "OFFLINE"}</span>
               <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
+            </div>
+
+            {/* Navigasi Cepat Admin / Tenant */}
+            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-sm uppercase tracking-wider">
+              <span className="px-5 py-4 bg-[#FFE800] flex items-center gap-2 border-r-[3px] border-black">
+                <Activity size={18} /> Platform Admin
+              </span>
+              <Link 
+                href="/tenant"
+                className="px-5 py-4 hover:bg-slate-100 transition-colors flex items-center gap-2"
+              >
+                <Sliders size={18} /> Tenant Limits
+              </Link>
             </div>
 
             <button 
