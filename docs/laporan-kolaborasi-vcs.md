@@ -60,15 +60,14 @@ gitGraph
 4.  **`feature/*`**: Branch lokal sementara yang dibuat oleh setiap developer untuk menulis modul masing-masing (contoh: `feature/pos`, `feature/inventory`, `feature/multi-cabang`).
 5.  **`review/*`**: Branch sementara (seperti `review-akmal`) yang digunakan secara dinamis oleh Project Manager untuk meninjau secara mendalam kode kontributor, melakukan perbaikan bug kompilasi, sebelum akhirnya digabungkan ke `dev`.
 
-### B. Proses Penggabungan Kode & Code Review
-*   **Pull Request (PR) & Peer Review**: Developer yang telah menyelesaikan fiturnya dilarang keras me-*merge* langsung ke `dev`. Mereka harus membuat Pull Request (PR) di GitHub. PR tersebut kemudian ditinjau secara lokal oleh Project Manager (Abdur Rouf) untuk dilakukan *Code Review* dan pengecekan *build* secara mandiri.
-*   **Pencegahan Merge Conflict & Build Error**: Sebelum melakukan merge akhir, kode wajib melalui proses uji coba kompilasi lokal menggunakan perintah `pnpm build`. Jika build gagal akibat kesalahan tipe TypeScript atau tag JSX yang tidak menutup sempurna, kode akan diperbaiki di branch `review/` terlebih dahulu agar branch `dev` tetap dalam kondisi suci (*clean build*).
-*   **Penggunaan Non-Fast-Forward Merge (`--no-ff`)**: Semua merge besar dari branch fitur ke `dev` dieksekusi menggunakan perintah `git merge --no-ff`. Ini bertujuan agar riwayat pencabangan grafis tetap terekam jelas di GitHub dan GitLens (VS Code), menunjukkan dengan tepat kontribusi masing-masing developer.
-
-### C. Standardisasi Grafik Kontributor menggunakan `.mailmap`
-Untuk merapikan nama kontributor pada Git log dan VS Code akibat perbedaan nama antara komputer lokal developer dan akun GitHub mereka (misal: "Gombet" di komputer lokal dan "Ferdy120405" di GitHub), tim menerapkan sistem **`.mailmap`**. Dengan membuat file `.mailmap` di root folder:
-*   Email `gombet@example.com` dan `Ferdyardiansyah120405@gmail.com` otomatis dipetakan ke satu nama resmi: **`Ferdy`**.
-*   Grafik Git dan riwayat kontribusi menjadi sangat bersih, profesional, tanpa merusak sejarah Git asli ataupun menyebabkan konflik pencabangan.
+### B. Proses Penggabungan Kode & Alur Kerja Integrasi Tanpa PR (Pull Request)
+Pada proyek ini, tim **tidak menggunakan sistem Pull Request (PR) di GitHub** untuk menggabungkan kode. Alur kerja yang disepakati adalah sebagai berikut:
+1.  **Push Mandiri ke Branch Fitur**: Setiap developer bekerja pada branch fiturnya masing-masing (`feature/*`) dan secara berkala melakukan `push` hasil pekerjaannya ke remote branch di GitHub (`origin/feature/*`).
+2.  **Review Lokal oleh Project Manager**: Setelah fitur selesai, developer melaporkan progresnya. Project Manager (Abdur Rouf) menarik (*pull*) branch fitur tersebut ke komputer lokalnya secara mandiri.
+3.  **Uji Kompilasi & Penyelarasan Konflik**: Project Manager meninjau kode, menyelesaikan konflik secara lokal, dan menguji kestabilan build menggunakan perintah `pnpm build` untuk menjamin tidak ada error TypeScript maupun kerusakan tag layout.
+4.  **Merge Lokal ke Branch `dev`**: Setelah dipastikan bersih dan sukses dikompilasi, Project Manager melakukan *merge* secara lokal ke branch `dev`.
+5.  **Sinkronisasi Final**: Hasil penggabungan lokal tersebut kemudian di-push kembali ke repositori GitHub pada branch `dev` dan akhirnya digabungkan ke branch `main` untuk sinkronisasi production.
+*   **Penggunaan Non-Fast-Forward Merge (`--no-ff`)**: Semua merge besar dari branch fitur ke `dev` dieksekusi menggunakan perintah `git merge --no-ff` agar riwayat pencabangan grafis tetap terekam jelas, menunjukkan dengan tepat kontribusi masing-masing developer.
 
 ---
 
@@ -82,7 +81,7 @@ Setiap anggota tim memegang peran krusial dalam keberhasilan penyusunan Kelonton
     *   Merancang seluruh skema database PostgreSQL Supabase Cloud (Tabel `stores`, `profiles`, `products`, `categories`, `transactions`, dll).
     *   Membuat API / Server Actions untuk memfasilitasi transaksi data antara frontend dengan Supabase.
     *   Menulis SQL Triggers dan Functions di Supabase untuk kalkulasi pengurangan stok otomatis saat transaksi POS selesai.
-    *   Memimpin penyelesaian konflik kode dan perbaikan error kompilasi TypeScript untuk menjamin aplikasi lolos uji `pnpm build` dengan status *Clean Build (Exit Code 0)*.
+    *   Memimpin penyelesaian konflik kode secara lokal dan perbaikan error kompilasi TypeScript untuk menjamin aplikasi lolos uji `pnpm build` dengan status *Clean Build (Exit Code 0)*.
 
 ### 2. Rafi Ryuu (Frontend Developer - Modul POS)
 *   **Peran**: Bertanggung jawab penuh atas kelancaran sistem kasir (Point of Sales).
@@ -110,7 +109,7 @@ Setiap anggota tim memegang peran krusial dalam keberhasilan penyusunan Kelonton
     *   Mengembangkan filter periode dinamis (Harian, Mingguan, Bulanan, Tahunan) untuk menyaring data grafik secara instan.
     *   Membuat tata letak responsif penuh (*mobile-friendly*) untuk aksesibilitas tinggi bagi pemilik toko di lapangan.
 
-### 5. Ferdy / Gombet (Frontend Developer - Modul Multi-Cabang & Settings)
+### 5. Ferdy (Frontend Developer - Modul Multi-Cabang & Settings)
 *   **Peran**: Menangani konfigurasi toko, hak akses karyawan, serta kemampuan sistem multi-tenant.
 *   **Kontribusi Utama**:
     *   Mengembangkan antarmuka pendaftaran toko SaaS *Multi-Step* (`/register`) yang interaktif bagi pendaftar bisnis baru.
@@ -122,11 +121,12 @@ Setiap anggota tim memegang peran krusial dalam keberhasilan penyusunan Kelonton
 ---
 
 ## 📈 5. EVALUASI DAN PROGRES SAAT INI
-Saat ini, proyek KelontongSync berada di penghujung **Fase 4 (Testing & Deployment Final)** dengan persentase penyelesaian **95%**:
-1.  **Core Fitur Selesai**: Modul POS, Inventaris, Laporan, dan Multi-Cabang telah selesai dikembangkan oleh masing-masing developer di branch fiturnya.
+Saat ini, proyek KelontongSync berada di penghujung **Fase 4 (Testing & Deployment Final)** dengan persentase penyelesaian **90%**:
+1.  **Core Fitur Selesai**: Modul POS, Inventaris, Laporan, dan Pengaturan telah selesai dikembangkan oleh masing-masing developer di branch fiturnya dan terintegrasi dengan backend.
 2.  **Integrasi Supabase Sempurna**: API, Triggers database, dan interaksi data dinamis berjalan dengan sangat lancar dan real-time.
-3.  **Proses Merge dev & main Sukses**: Seluruh branch milik developer (`feature/multi-cabang`, `feature/inventory`, dll.) telah sukses digabungkan ke branch integrasi utama (`dev`) dan branch rilis (`main`) secara aman tanpa menyisakan satu pun konflik kode.
-4.  **Aplikasi Stabil & Siap UAS**: Proyek telah lulus pengujian kompilasi produksi Next.js Turbopack secara lokal dan siap dideploy untuk kebutuhan presentasi UAS esok hari.
+3.  **Proses Merge dev & main Sukses**: Seluruh branch milik developer (`feature/*`) telah sukses digabungkan ke branch integrasi utama (`dev`) dan branch rilis (`main`) secara aman tanpa menyisakan satu pun konflik kode.
+4.  **Catatan Fitur Multi-Tenant & Multi-Cabang**: Meskipun antarmuka visual pendaftaran multi-step, dasbor super admin (`/tenant`), dan store switcher telah siap di frontend, **fitur logika multi-tenant dan isolasi data antar multi-cabang saat ini masih belum diaktifkan sepenuhnya**. Kebijakan Row Level Security (RLS) pada database Supabase dinonaktifkan sementara demi memberikan kemudahan serta kelancaran proses pengujian data (*testing dev*) selama presentasi UAS.
+5.  **Aplikasi Stabil & Siap UAS**: Proyek telah lulus pengujian kompilasi produksi Next.js Turbopack secara lokal dan siap dideploy untuk kebutuhan presentasi UAS esok hari.
 
 ---
 *Laporan ini disusun secara kolaboratif sebagai bukti nyata pemahaman tim KelontongSync atas konsep arsitektur perangkat lunak, kolaborasi tim yang sehat, serta kedisiplinan implementasi Version Control System (VCS).*
