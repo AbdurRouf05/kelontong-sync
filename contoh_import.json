@@ -1,0 +1,50 @@
+[
+  {
+    "Nama": "Kopi Susu Gula Aren",
+    "Barcode": "8991234567890",
+    "Harga Beli": 12000,
+    "Harga Jual": 18000,
+    "Stok": 50,
+    "Min Stok": 5
+  },
+  {
+    "Nama": "Indomie Goreng",
+    "Barcode": "8999999195005",
+    "Harga Beli": 2500,
+    "Harga Jual": 3500,
+    "Stok": 120,
+    "Min Stok": 10
+  },
+  {
+    "Nama": "Aqua Botol 600ml",
+    "Barcode": "8886008101053",
+    "Harga Beli": 3000,
+    "Harga Jual": 4500,
+    "Stok": 80,
+    "Min Stok": 10
+  },
+  {
+    "Nama": "Roti Tawar Kupas",
+    "Barcode": "8998888123456",
+    "Harga Beli": 11000,
+    "Harga Jual": 14000,
+    "Stok": 15,
+    "Min Stok": 3
+  },
+  {
+    "Nama": "Sabun Mandi Cair",
+    "Barcode": "8992222333444",
+    "Harga Beli": 18000,
+    "Harga Jual": 24000,
+    "Stok": 30,
+    "Min Stok": 5
+  },
+  {
+    "Nama": "Teh Pucuk Harum",
+    "Barcode": "8997009123456",
+    "Harga Beli": 2500,
+    "Harga Jual": 4000,
+    "Stok": 60,
+    "Min Stok": 8
+  }
+]
