@@ -19,7 +19,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  LayoutGrid,
+  List
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import Papa from "papaparse";
@@ -69,14 +71,13 @@ interface Product {
   id: string;
   name: string;
   barcode: string;
-  buy_price: number;
   selling_price: number;
   stock: number;
   category_id?: string;
   category_name?: string;
   category_icon?: string;
   min_stock: number;
-  image_url?: string;
+  cost_price: number;
 }
 
 export default function InventoryPage() {
@@ -101,28 +102,47 @@ export default function InventoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [showOnlyLowStock, setShowOnlyLowStock] = useState(false);
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
+  const [userContext, setUserContext] = useState<{ business_id: string; current_store_id: string } | null>(null);
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     barcode: "",
     category_id: "",
-    buy_price: "",
+    cost_price: "",
     selling_price: "",
     stock: "",
     min_stock: "5",
-    image_url: ""
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch User Context
+  const fetchUserContext = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("business_id, current_store_id")
+      .eq("id", user.id)
+      .single();
+      
+    if (profile) {
+      setUserContext(profile);
+      return profile;
+    }
+  };
+
   // Fetch categories
-  const fetchCategories = async () => {
+  const fetchCategories = async (bizId: string) => {
     try {
       const { data, error } = await supabase
         .from("categories")
         .select("id, name, icon")
+        .eq("business_id", bizId)
         .order("name", { ascending: true });
       if (error) throw error;
       setCategories(data || []);
@@ -135,35 +155,40 @@ export default function InventoryPage() {
   };
 
   // Fetch products
-  const fetchProducts = async () => {
+  const fetchProducts = async (bizId: string, storeId: string) => {
     try {
       setIsLoading(true);
       const { data, error } = await supabase
         .from("products")
         .select(`
           *,
-          categories (
-            name,
-            icon
+          categories (name, icon),
+          product_stocks!inner (
+            stock,
+            min_stock
           )
         `)
+        .eq("business_id", bizId)
+        .eq("product_stocks.store_id", storeId)
         .order("name", { ascending: true });
 
       if (error) throw error;
 
-      setProducts((data || []).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        barcode: p.barcode || "-",
-        buy_price: p.buy_price || 0,
-        selling_price: p.selling_price || 0,
-        stock: p.stock || 0,
-        category_id: p.category_id,
-        category_name: p.categories?.name || "Tanpa Kategori",
-        category_icon: p.categories?.icon || "📦",
-        min_stock: p.min_stock || 0,
-        image_url: p.image_url
-      })));
+      setProducts((data || []).map((p: any) => {
+        const stockInfo = p.product_stocks?.[0] || { stock: 0, min_stock: 0 };
+        return {
+          id: p.id,
+          name: p.name,
+          barcode: p.barcode || "-",
+          cost_price: p.cost_price || 0,
+          selling_price: p.selling_price || 0,
+          stock: stockInfo.stock,
+          min_stock: stockInfo.min_stock,
+          category_id: p.category_id,
+          category_name: p.categories?.name || "Tanpa Kategori",
+          category_icon: p.categories?.icon || "📦",
+        };
+      }));
     } catch (err: any) {
       console.error("Error:", err.message);
     } finally {
@@ -172,8 +197,14 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    const init = async () => {
+      const context = await fetchUserContext();
+      if (context) {
+        fetchCategories(context.business_id);
+        fetchProducts(context.business_id, context.current_store_id);
+      }
+    };
+    init();
   }, []);
 
   // Auto-suggest icon based on name
@@ -243,24 +274,22 @@ export default function InventoryPage() {
         name: product.name,
         barcode: product.barcode,
         category_id: product.category_id || "",
-        buy_price: product.buy_price.toString(),
+        cost_price: product.cost_price.toString(),
         selling_price: product.selling_price.toString(),
         stock: product.stock.toString(),
         min_stock: product.min_stock.toString(),
-        image_url: product.image_url || ""
       });
-      setImagePreview(product.image_url || null);
+      setImagePreview(null);
     } else {
       setEditingProduct(null);
       setFormData({
         name: "",
         barcode: "",
         category_id: categories.length > 0 ? categories[0].id : "",
-        buy_price: "",
+        cost_price: "",
         selling_price: "",
         stock: "",
         min_stock: "5",
-        image_url: ""
       });
       setImagePreview(null);
     }
@@ -377,7 +406,11 @@ export default function InventoryPage() {
       } else {
         const { error } = await supabase
           .from("categories")
-          .insert([{ name: newCategoryName, store_id: storeId, icon: newCategoryIcon }]);
+          .insert([{ 
+            name: newCategoryName, 
+            business_id: userContext?.business_id, 
+            icon: newCategoryIcon 
+          }]);
         if (error) throw error;
         showToast("Kategori berhasil ditambahkan!");
       }
@@ -385,7 +418,7 @@ export default function InventoryPage() {
       setNewCategoryName("");
       setNewCategoryIcon("📦");
       setEditingCategory(null);
-      fetchCategories();
+      if (userContext) fetchCategories(userContext.business_id);
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -399,8 +432,10 @@ export default function InventoryPage() {
       const { error } = await supabase.from("categories").delete().eq("id", id);
       if (error) throw error;
       showToast(`Kategori "${name}" berhasil dihapus!`);
-      fetchCategories();
-      fetchProducts(); // Refresh products to update category_name in table
+      if (userContext) {
+        fetchCategories(userContext.business_id);
+        fetchProducts(userContext.business_id, userContext.current_store_id);
+      }
     } catch (err: any) {
       showToast(err.message, "error");
     }
@@ -411,7 +446,7 @@ export default function InventoryPage() {
     try {
       setIsSubmitting(true);
       
-      let finalImageUrl = formData.image_url;
+      let finalImageUrl = "";
       
       if (imageFile) {
         finalImageUrl = await uploadImage(imageFile);
@@ -421,30 +456,70 @@ export default function InventoryPage() {
         name: formData.name,
         barcode: formData.barcode,
         category_id: formData.category_id || null,
-        buy_price: parseFloat(formData.buy_price),
+        cost_price: parseFloat(formData.cost_price),
         selling_price: parseFloat(formData.selling_price),
         stock: parseInt(formData.stock),
         min_stock: parseInt(formData.min_stock),
-        image_url: finalImageUrl
       };
 
       if (editingProduct) {
-        const { error } = await supabase
+        // Update Katalog Global
+        const { error: prodError } = await supabase
           .from("products")
-          .update(productData)
+          .update({
+            name: formData.name,
+            barcode: formData.barcode,
+            category_id: formData.category_id || null,
+            cost_price: parseFloat(formData.cost_price),
+            selling_price: parseFloat(formData.selling_price),
+          })
           .eq("id", editingProduct.id);
-        if (error) throw error;
+        if (prodError) throw prodError;
+
+        // Update Stok Cabang Aktif
+        const { error: stockError } = await supabase
+          .from("product_stocks")
+          .update({
+            stock: parseInt(formData.stock),
+            min_stock: parseInt(formData.min_stock),
+          })
+          .eq("product_id", editingProduct.id)
+          .eq("store_id", userContext?.current_store_id);
+        if (stockError) throw stockError;
+        
         showToast("Barang berhasil diperbarui!");
       } else {
-        const { error } = await supabase
+        // Insert Katalog Global
+        const { data: newProd, error: prodError } = await supabase
           .from("products")
-          .insert([productData]);
-        if (error) throw error;
+          .insert([{
+            business_id: userContext?.business_id,
+            name: formData.name,
+            barcode: formData.barcode,
+            category_id: formData.category_id || null,
+            cost_price: parseFloat(formData.cost_price),
+            selling_price: parseFloat(formData.selling_price),
+          }])
+          .select()
+          .single();
+        if (prodError) throw prodError;
+
+        // Insert Stok Awal Cabang Aktif
+        const { error: stockError } = await supabase
+          .from("product_stocks")
+          .insert([{
+            product_id: newProd.id,
+            store_id: userContext?.current_store_id,
+            stock: parseInt(formData.stock),
+            min_stock: parseInt(formData.min_stock),
+          }]);
+        if (stockError) throw stockError;
+
         showToast("Barang berhasil ditambahkan!");
       }
 
       setIsModalOpen(false);
-      fetchProducts();
+      if (userContext) fetchProducts(userContext.business_id, userContext.current_store_id);
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -458,7 +533,7 @@ export default function InventoryPage() {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
       showToast("Barang berhasil dihapus!");
-      fetchProducts();
+      if (userContext) fetchProducts(userContext.business_id, userContext.current_store_id);
     } catch (err: any) {
       showToast(err.message, "error");
     }
@@ -519,7 +594,7 @@ export default function InventoryPage() {
       
       showToast(`${selectedIds.size} barang berhasil dihapus!`);
       setSelectedIds(new Set());
-      fetchProducts();
+      if (userContext) fetchProducts(userContext.business_id, userContext.current_store_id);
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -538,13 +613,13 @@ export default function InventoryPage() {
       const { error } = await supabase
         .from("products")
         .delete()
-        .neq("id", "00000000-0000-0000-0000-000000000000"); // Standard way to delete all rows
+        .eq("business_id", userContext?.business_id);
       
       if (error) throw error;
       
       showToast("Seluruh inventaris berhasil dibersihkan!");
       setSelectedIds(new Set());
-      fetchProducts();
+      if (userContext) fetchProducts(userContext.business_id, userContext.current_store_id);
     } catch (err: any) {
       showToast(err.message, "error");
     } finally {
@@ -558,7 +633,7 @@ export default function InventoryPage() {
       Nama: p.name,
       Barcode: p.barcode,
       Kategori: p.category_name,
-      "Harga Beli": p.buy_price,
+      "Harga Beli": p.cost_price,
       "Harga Jual": p.selling_price,
       Stok: p.stock,
       "Min Stok": p.min_stock
@@ -643,22 +718,53 @@ export default function InventoryPage() {
 
         if (results.length === 0) throw new Error("File kosong atau tidak valid.");
 
-        // Process data to match Supabase schema
-        const toInsert = results.filter(r => r.Nama || r.name).map(r => ({
-          name: r.Nama || r.name,
-          barcode: r.Barcode || r.barcode || "",
-          cost_price: Number(r["Harga Beli"] || r.cost_price || 0),
-          selling_price: Number(r["Harga Jual"] || r.selling_price || 0),
-          stock: Number(r.Stok || r.stock || 0),
-          min_stock: Number(r["Min Stok"] || r.min_stock || 5)
-        }));
+        // Map keys to standard fields (handle lowercase, spaces, Indonesian, and English)
+        const toInsert = results.map((r: any) => {
+          const name = r.Nama || r.nama || r.Name || r.name || "";
+          const barcode = r.Barcode || r.barcode || r.SN || r.sn || r["Barcode / SN"] || "";
+          const cost_price = Number(r["Harga Beli"] || r.harga_beli || r.cost_price || r.buy_price || r["Harga Beli (Rp)"] || 0);
+          const selling_price = Number(r["Harga Jual"] || r.harga_jual || r.selling_price || r["Harga Jual (Rp)"] || 0);
+          const stock = Number(r.Stok || r.stok || r.stock || r.Stock || r["Stok Awal"] || 0);
+          const min_stock = Number(r["Min Stok"] || r.min_stock || r["Limit Stok Minimum"] || 5);
+          return { name, barcode, cost_price, selling_price, stock, min_stock };
+        }).filter(p => p.name);
 
-        const { error } = await supabase.from("products").insert(toInsert);
-        if (error) throw error;
+        if (toInsert.length === 0) throw new Error("Tidak ada produk valid yang ditemukan untuk diimport.");
+
+        // 1. Insert into Products
+        const { data: insertedProds, error: prodError } = await supabase
+          .from("products")
+          .insert(toInsert.map(p => ({
+            business_id: userContext?.business_id,
+            name: p.name,
+            barcode: p.barcode,
+            cost_price: p.cost_price,
+            selling_price: p.selling_price
+          })))
+          .select("id, name");
+
+        if (prodError) throw prodError;
+
+        // 2. Insert into Product Stocks for current store
+        const stocksToInsert = (insertedProds || []).map(p => {
+          const original = toInsert.find(ti => ti.name === p.name);
+          return {
+            product_id: p.id,
+            store_id: userContext?.current_store_id,
+            stock: original?.stock || 0,
+            min_stock: original?.min_stock || 5
+          };
+        });
+
+        const { error: stockError } = await supabase
+          .from("product_stocks")
+          .insert(stocksToInsert);
+
+        if (stockError) throw stockError;
 
         showToast(`${toInsert.length} barang berhasil diimport!`);
         setIsImportModalOpen(false);
-        fetchProducts();
+        if (userContext) fetchProducts(userContext.business_id, userContext.current_store_id);
       } catch (err: any) {
         showToast(err.message, "error");
       } finally {
@@ -808,27 +914,29 @@ export default function InventoryPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-4 w-full md:w-auto">
-            <div className="flex items-center gap-2 border-[3px] border-black bg-white px-3 py-3 font-bold w-full md:w-48">
-              <Filter size={18} />
-              <select 
-                className="bg-transparent focus:outline-none w-full cursor-pointer"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                <option value="Semua">Semua Kategori</option>
-                {categories.map(c => (
-                  <option key={c.id} value={c.id}>{c.icon || "📦"} {c.name}</option>
-                ))}
-              </select>
-            </div>
-            
+          
+          <div className="flex border-[3px] border-black bg-white overflow-hidden shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <button 
+              onClick={() => setViewMode("table")}
+              className={`p-3 transition-colors ${viewMode === 'table' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
+              title="Tampilan Tabel"
+            >
+              <List size={20} />
+            </button>
+            <button 
+              onClick={() => setViewMode("grid")}
+              className={`p-3 border-l-[3px] border-black transition-colors ${viewMode === 'grid' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
+              title="Tampilan Kotak"
+            >
+              <LayoutGrid size={20} />
+            </button>
           </div>
         </div>
 
-        {/* Table Content */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        {/* Table/Grid Content */}
+        {viewMode === "table" ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-yellow-400 border-b-[4px] border-black">
                 <th className="p-4 border-r-[2px] border-black w-10">
@@ -910,9 +1018,73 @@ export default function InventoryPage() {
                   </td>
                 </tr>
               )}
-            </tbody>
-          </table>
-        </div>
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {isLoading ? (
+          <div className="col-span-full py-20 text-center">
+            <Loader2 className="animate-spin mx-auto mb-4" size={48} />
+            <p className="font-black uppercase tracking-widest">Memuat...</p>
+          </div>
+        ) : paginatedProducts.length > 0 ? (
+          paginatedProducts.map(product => (
+            <div 
+              key={product.id} 
+              className={`neo-card flex flex-col bg-white transition-all ${selectedIds.has(product.id) ? "bg-yellow-50 border-yellow-400" : ""}`}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <input 
+                  type="checkbox"
+                  className="w-5 h-5 accent-black cursor-pointer"
+                  checked={selectedIds.has(product.id)}
+                  onChange={() => toggleSelectOne(product.id)}
+                />
+                <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-[10px] font-black uppercase flex items-center gap-1">
+                  <span>{product.category_icon || "📦"}</span>
+                  <span>{product.category_name}</span>
+                </span>
+              </div>
+              
+              <div className="flex-1">
+                <h3 className="font-black uppercase text-lg line-clamp-1 mb-1">{product.name}</h3>
+                <p className="text-xs font-bold text-slate-400 mb-4 tracking-wider">SN: {product.barcode}</p>
+                
+                <div className="flex justify-between items-end mt-4">
+                  <div>
+                    <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Harga Jual</p>
+                    <p className="font-black text-lg text-green-600">Rp {product.selling_price.toLocaleString("id-ID")}</p>
+                  </div>
+                  <div className={`px-3 py-1 border-[2px] border-black font-black text-sm ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
+                    {product.stock}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 border-t-[2px] border-black mt-6 pt-4">
+                <button 
+                  onClick={() => handleOpenModal(product)}
+                  className="flex-1 py-2 font-black text-xs uppercase border-[2px] border-black hover:bg-yellow-400 transition-all"
+                >
+                  EDIT
+                </button>
+                <button 
+                  onClick={() => handleDelete(product.id)}
+                  className="flex-1 py-2 font-black text-xs uppercase border-[2px] border-black hover:bg-red-500 hover:text-white text-red-600 transition-all"
+                >
+                  HAPUS
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-20 text-center text-slate-400 font-bold italic">
+            Barang tidak ditemukan.
+          </div>
+        )}
+      </div>
+    )}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
@@ -1065,8 +1237,8 @@ export default function InventoryPage() {
                   <input 
                     type="number" required
                     className="w-full p-3 border-[3px] border-black font-bold focus:outline-none bg-slate-50"
-                    value={formData.buy_price}
-                    onChange={(e) => setFormData({...formData, buy_price: e.target.value})}
+                    value={formData.cost_price}
+                    onChange={(e) => setFormData({...formData, cost_price: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">

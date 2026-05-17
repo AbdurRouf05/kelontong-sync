@@ -26,11 +26,34 @@ function getStartDate(period: string) {
   return start.toISOString();
 }
 
+/**
+ * Mendapatkan identitas bisnis dan cabang user yang aktif
+ */
+async function getUserContext() {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("business_id, current_store_id")
+    .eq("id", user.id)
+    .single();
+    
+  return profile;
+}
+
 export async function getDashboardStats(period: string = "all") {
+  const context = await getUserContext();
+  if (!context) return { totalSales: 0, totalProfit: 0, todayTransactions: 0, totalItemsSold: 0, lowStockCount: 0, totalProducts: 0 };
+
   const startDate = getStartDate(period);
   
-  // Ambil transaksi
-  let transQuery = supabase.from("transactions").select("total_amount, created_at");
+  // Ambil transaksi berdasarkan bisnis dan cabang
+  let transQuery = supabase
+    .from("transactions")
+    .select("total_amount, created_at")
+    .eq("store_id", context.current_store_id);
+
   if (startDate) {
     transQuery = transQuery.gte("created_at", startDate);
   }
@@ -41,32 +64,32 @@ export async function getDashboardStats(period: string = "all") {
     return { totalSales: 0, totalProfit: 0, todayTransactions: 0, totalItemsSold: 0, lowStockCount: 0, totalProducts: 0 };
   }
 
-  // Ambil total barang terjual (quantity)
-  let itemsQuery = supabase.from("transaction_items").select("quantity, created_at");
+  // Ambil total barang terjual
+  let itemsQuery = supabase
+    .from("transaction_items")
+    .select("quantity, created_at, transactions!inner(store_id)")
+    .eq("transactions.store_id", context.current_store_id);
+
   if (startDate) {
     itemsQuery = itemsQuery.gte("created_at", startDate);
   }
   const { data: items, error: itemsError } = await itemsQuery;
 
-  if (itemsError) {
-    console.error("Error fetching items sold:", itemsError);
-  }
+  // Ambil info stok per cabang (fitur multi-cabang)
+  const { data: stocks, error: stockError } = await supabase
+    .from("product_stocks")
+    .select("stock, min_stock")
+    .eq("store_id", context.current_store_id);
 
-  // Ambil info produk (stok)
-  const { data: products, error: prodError } = await supabase
-    .from("products")
-    .select("stock, min_stock");
-
-  if (prodError) {
-    console.error("Error fetching products:", prodError);
-    return { totalSales: 0, totalProfit: 0, todayTransactions: 0, totalItemsSold: 0, lowStockCount: 0, totalProducts: 0 };
+  if (stockError) {
+    console.error("Error fetching stocks:", stockError);
   }
 
   const totalSales = transactions?.reduce((acc, curr) => acc + Number(curr.total_amount), 0) || 0;
   const totalProfit = totalSales * 0.15;
   const transactionCount = transactions?.length || 0;
   const totalItemsSold = items?.reduce((acc, curr) => acc + Number(curr.quantity), 0) || 0;
-  const lowStockCount = products?.filter(p => p.stock <= (p.min_stock || 0)).length || 0;
+  const lowStockCount = stocks?.filter(s => s.stock <= (s.min_stock || 0)).length || 0;
 
   return {
     totalSales,
@@ -74,14 +97,18 @@ export async function getDashboardStats(period: string = "all") {
     todayTransactions: transactionCount,
     totalItemsSold,
     lowStockCount,
-    totalProducts: products?.length || 0
+    totalProducts: stocks?.length || 0
   };
 }
 
 export async function getRecentTransactions() {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const { data, error } = await supabase
     .from("transactions")
     .select("id, created_at, total_amount")
+    .eq("store_id", context.current_store_id)
     .order("created_at", { ascending: false })
     .limit(5);
 
@@ -98,10 +125,14 @@ export async function getRecentTransactions() {
 }
 
 export async function getSalesData() {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const startDate = getStartDate("weekly");
   const { data, error } = await supabase
     .from("transactions")
     .select("total_amount, created_at")
+    .eq("store_id", context.current_store_id)
     .gte("created_at", startDate!)
     .order("created_at", { ascending: true });
 
@@ -124,9 +155,15 @@ export async function getSalesData() {
 }
 
 export async function getDetailedSalesReport(period: string = "all") {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const startDateStr = getStartDate(period);
   const startDate = startDateStr ? new Date(startDateStr) : null;
-  let query = supabase.from("transactions").select("total_amount, created_at");
+  let query = supabase
+    .from("transactions")
+    .select("total_amount, created_at")
+    .eq("store_id", context.current_store_id);
 
   if (startDateStr) {
     query = query.gte("created_at", startDateStr);
@@ -174,6 +211,9 @@ export async function getDetailedSalesReport(period: string = "all") {
 }
 
 export async function getDailyProductSales(period: string = "all") {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const startDate = getStartDate(period);
   let query = supabase
     .from("transaction_items")
@@ -181,8 +221,10 @@ export async function getDailyProductSales(period: string = "all") {
       quantity,
       subtotal,
       created_at,
+      transactions!inner(store_id),
       products (name, categories (name, icon))
-    `);
+    `)
+    .eq("transactions.store_id", context.current_store_id);
 
   // Gunakan created_at langsung dari tabel transaction_items
   if (startDate) {
@@ -209,14 +251,19 @@ export async function getDailyProductSales(period: string = "all") {
 }
 
 export async function getCategoryDistribution(period: string = "all") {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const startDate = getStartDate(period);
   let query = supabase
     .from("transaction_items")
     .select(`
       quantity,
       created_at,
+      transactions!inner(store_id),
       products (categories (name, icon))
-    `);
+    `)
+    .eq("transactions.store_id", context.current_store_id);
 
   // Gunakan created_at langsung dari tabel transaction_items
   if (startDate) {
@@ -241,9 +288,13 @@ export async function getCategoryDistribution(period: string = "all") {
 }
 
 export async function getTopProducts() {
+  const context = await getUserContext();
+  if (!context) return [];
+
   const { data, error } = await supabase
     .from("transaction_items")
-    .select("quantity, products (name)");
+    .select("quantity, products (name), transactions!inner(store_id)")
+    .eq("transactions.store_id", context.current_store_id);
 
   if (error || !data) return [];
 
