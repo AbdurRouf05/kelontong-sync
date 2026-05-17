@@ -456,7 +456,7 @@ export default function TenantManagementPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex gap-4 w-full md:w-auto items-center flex-wrap md:flex-nowrap">
             {/* Database Connection Indicator Pill */}
             <div 
               onClick={checkSupabaseConnection}
@@ -491,14 +491,14 @@ export default function TenantManagementPage() {
 
             <button 
               onClick={() => setIsCreateModalOpen(true)}
-              className="neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
               <Plus size={16} /> REGISTRASI TENANT
             </button>
             
             <button 
               onClick={handleLogout}
-              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
+              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
               title="Keluar Admin"
             >
               <LogOut size={16} /> KELUAR
