@@ -26,6 +26,7 @@ import {
   Sparkles,
   Loader2
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 // --- DATA STRUKTUR UNTUK FITUR ---
 const features = [
@@ -76,6 +77,27 @@ const faqData = [
 ];
 
 export default function LandingPage() {
+  // --- STATE KONEKSI DATABASE GLOBALLY DI HEADER ---
+  const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "error">("checking");
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      const startTime = performance.now();
+      try {
+        const { error, status } = await supabase.from("profiles").select("id").limit(1);
+        if (error && status !== 406) throw error;
+        const endTime = performance.now();
+        setDbLatency(Math.round(endTime - startTime));
+        setDbStatus("connected");
+      } catch (err) {
+        console.error("Global landing DB check error:", err);
+        setDbStatus("error");
+      }
+    };
+    checkConnection();
+  }, []);
+
   // --- STATE INTERAKTIF SIMULASI KASIR POS DI HERO ---
   // Didesain khusus agar pengguna langsung bisa merasakan visualisasi POS KelontongSync
   const [items, setItems] = useState([
@@ -140,6 +162,36 @@ export default function LandingPage() {
 
           {/* CTA Akses Halaman */}
           <div className="flex items-center gap-4">
+            {/* Database Connection Indicator Pill */}
+            <div 
+              onClick={async () => {
+                setDbStatus("checking");
+                const startTime = performance.now();
+                try {
+                  const { error, status } = await supabase.from("profiles").select("id").limit(1);
+                  if (error && status !== 406) throw error;
+                  setDbLatency(Math.round(performance.now() - startTime));
+                  setDbStatus("connected");
+                } catch {
+                  setDbStatus("error");
+                }
+              }}
+              title={dbStatus === "connected" ? `Koneksi Supabase Aktif (Latensi: ${dbLatency}ms) - Klik untuk tes ulang` : "Klik untuk tes ulang koneksi database"}
+              className={`cursor-pointer border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-3 py-1 text-xs font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
+                dbStatus === "connected" ? "bg-emerald-400 text-black" :
+                dbStatus === "checking" ? "bg-yellow-300 text-black animate-pulse" :
+                "bg-rose-500 text-white"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full border-[1.5px] border-black block shrink-0 ${
+                dbStatus === "connected" ? "bg-emerald-100" :
+                dbStatus === "checking" ? "bg-yellow-100 animate-ping" :
+                "bg-rose-100"
+              }`} />
+              <span className="hidden sm:inline">DB {dbStatus === "connected" ? `ONLINE (${dbLatency}ms)` : dbStatus === "checking" ? "PINGING" : "OFFLINE"}</span>
+              <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
+            </div>
+
             <Link href="/login" className="font-black uppercase text-sm border-b-[3px] border-black hover:bg-slate-100 px-3 py-1 transition-all">
               Masuk
             </Link>

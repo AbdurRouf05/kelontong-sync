@@ -86,6 +86,40 @@ export default function TenantManagementPage() {
     storeName: ""
   });
 
+  // --- STATE DIAGNOSTIK KONEKSI SUPABASE ---
+  const [dbStatus, setDbStatus] = useState<"idle" | "checking" | "connected" | "error">("idle");
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
+  const [dbErrorMsg, setDbErrorMsg] = useState<string | null>(null);
+
+  // --- FUNGSI CEK KONEKSI REAL-TIME KE DATABASE SUPABASE ---
+  const checkSupabaseConnection = async () => {
+    setDbStatus("checking");
+    setDbErrorMsg(null);
+    const startTime = performance.now();
+    try {
+      // Jalankan query ringan ke tabel profiles untuk menguji read konektivitas
+      const { data, error, status } = await supabase
+        .from("profiles")
+        .select("id")
+        .limit(1);
+
+      if (error && status !== 406) {
+        throw error;
+      }
+      
+      const endTime = performance.now();
+      const latency = Math.round(endTime - startTime);
+      setDbLatency(latency);
+      setDbStatus("connected");
+      setToast({ message: `Koneksi Supabase Sukses! Latensi: ${latency}ms`, type: "success" });
+    } catch (err: any) {
+      console.error("Supabase connection check error:", err);
+      setDbStatus("error");
+      setDbErrorMsg(err.message || "Gagal menghubungi server database Supabase.");
+      setToast({ message: "Koneksi Supabase Gagal!", type: "error" });
+    }
+  };
+
   const router = useRouter();
 
   // Auto-hide toast dalam 3 detik
@@ -196,6 +230,7 @@ export default function TenantManagementPage() {
   // Jalankan cek autentikasi saat pertama kali masuk halaman
   useEffect(() => {
     // checkAdminAuth(); // Dinonaktifkan sementara untuk Mode Peninjauan Developer
+    checkSupabaseConnection();
   }, []);
 
   // Memuat data jika terbukti sebagai superadmin
@@ -421,30 +456,49 @@ export default function TenantManagementPage() {
             </div>
           </div>
           
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex gap-4 w-full md:w-auto items-center flex-wrap md:flex-nowrap">
+            {/* Database Connection Indicator Pill */}
+            <div 
+              onClick={checkSupabaseConnection}
+              title={dbStatus === "connected" ? `Koneksi Supabase Aktif (Latensi: ${dbLatency}ms) - Klik untuk tes ulang` : "Klik untuk tes ulang koneksi database"}
+              className={`cursor-pointer border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-4 py-3 text-xs font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
+                dbStatus === "connected" ? "bg-emerald-400 text-black" :
+                dbStatus === "checking" ? "bg-yellow-300 text-black animate-pulse" :
+                "bg-rose-500 text-white"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full border-[1.5px] border-black block shrink-0 ${
+                dbStatus === "connected" ? "bg-emerald-100" :
+                dbStatus === "checking" ? "bg-yellow-100 animate-ping" :
+                "bg-rose-100"
+              }`} />
+              <span className="hidden sm:inline">DB {dbStatus === "connected" ? `ONLINE (${dbLatency}ms)` : dbStatus === "checking" ? "PINGING" : "OFFLINE"}</span>
+              <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
+            </div>
+
             {/* Navigasi Cepat Admin / Tenant */}
-            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
+            <div className="flex shrink-0 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider w-[340px]">
               <Link 
                 href="/admin"
-                className="px-4 py-3 hover:bg-slate-100 transition-colors flex items-center gap-1.5 border-r-[3px] border-black"
+                className="flex-1 px-4 py-3 hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 border-r-[3px] border-black whitespace-nowrap"
               >
                 <Activity size={16} /> Platform Admin
               </Link>
-              <span className="px-4 py-3 bg-[#FFE800] flex items-center gap-1.5">
+              <span className="flex-1 px-4 py-3 bg-[#FFE800] flex items-center justify-center gap-1.5 whitespace-nowrap">
                 <Sliders size={16} /> Tenant Limits
               </span>
             </div>
 
             <button 
               onClick={() => setIsCreateModalOpen(true)}
-              className="neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
               <Plus size={16} /> REGISTRASI TENANT
             </button>
             
             <button 
               onClick={handleLogout}
-              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
+              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
               title="Keluar Admin"
             >
               <LogOut size={16} /> KELUAR
@@ -458,6 +512,97 @@ export default function TenantManagementPage() {
           <p className="text-sm uppercase tracking-wider">
             PERHATIAN: Mengubah status menjadi "Suspended" akan memblokir seluruh kasir dan owner tenant tersebut untuk mengakses dashboard toko.
           </p>
+        </div>
+
+        {/* --- WIDGET DIAGNOSTIK KONEKSI SUPABASE (DATABASE HEALTH CHECKER) --- */}
+        <div className={`neo-card p-6 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors ${
+          dbStatus === "checking" ? "bg-yellow-50" :
+          dbStatus === "connected" ? "bg-emerald-50" :
+          dbStatus === "error" ? "bg-rose-50" :
+          "bg-white"
+        }`}>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-4">
+              <div className={`w-14 h-14 border-[3px] border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                dbStatus === "checking" ? "bg-yellow-300" :
+                dbStatus === "connected" ? "bg-emerald-400" :
+                dbStatus === "error" ? "bg-rose-500 text-white" :
+                "bg-slate-100"
+              }`}>
+                <Database size={28} className={dbStatus === "checking" ? "animate-bounce" : ""} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black uppercase text-black flex items-center gap-2">
+                  Diagnostik Koneksi Supabase Cloud
+                  {dbStatus === "connected" && (
+                    <span className="bg-emerald-500 text-white text-[10px] px-2 py-0.5 border-[2px] border-black font-black uppercase tracking-wider shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                      ONLINE
+                    </span>
+                  )}
+                  {dbStatus === "error" && (
+                    <span className="bg-rose-600 text-white text-[10px] px-2 py-0.5 border-[2px] border-black font-black uppercase tracking-wider shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                      OFFLINE
+                    </span>
+                  )}
+                </h3>
+                
+                {/* Deskripsi status konektivitas */}
+                {dbStatus === "idle" && (
+                  <p className="text-sm font-bold text-slate-500 mt-1">
+                    Status koneksi belum diperiksa. Tekan tombol untuk menguji latensi dan integritas data Supabase.
+                  </p>
+                )}
+                {dbStatus === "checking" && (
+                  <p className="text-sm font-bold text-slate-700 mt-1 flex items-center gap-2">
+                    <Loader2 className="animate-spin text-black" size={16} />
+                    Sedang melakukan ping ke endpoint Supabase dan mengukur latensi...
+                  </p>
+                )}
+                {dbStatus === "connected" && (
+                  <div className="space-y-1 mt-1">
+                    <p className="text-sm font-bold text-emerald-800">
+                      Berhasil terhubung ke database Supabase! Sistem membaca tabel profil dengan sempurna.
+                    </p>
+                    <div className="text-xs font-black uppercase text-emerald-700 tracking-wider flex items-center gap-4">
+                      <span>Latensi API: <span className="underline">{dbLatency} ms</span></span>
+                      <span>Status HTTP: <span className="underline">200 OK</span></span>
+                    </div>
+                  </div>
+                )}
+                {dbStatus === "error" && (
+                  <div className="space-y-1 mt-1">
+                    <p className="text-sm font-bold text-rose-800">
+                      Gagal menghubungi database Supabase Cloud! Silakan periksa koneksi internet Anda atau file environment .env.
+                    </p>
+                    {dbErrorMsg && (
+                      <p className="text-xs font-mono font-bold bg-white/60 p-2 border-[2px] border-black text-rose-700">
+                        Pesan Error: {dbErrorMsg}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tombol Uji Koneksi */}
+            <button
+              onClick={checkSupabaseConnection}
+              disabled={dbStatus === "checking"}
+              className="neo-btn-primary bg-[#FFE800] hover:bg-yellow-300 font-black uppercase text-xs py-3 px-5 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none flex items-center gap-2 self-start md:self-center"
+            >
+              {dbStatus === "checking" ? (
+                <>
+                  <Loader2 className="animate-spin" size={16} />
+                  MENGUJI...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={16} />
+                  UJI KONEKSI DATABASE
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Tenant Table */}

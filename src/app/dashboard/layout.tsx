@@ -25,6 +25,27 @@ export default function DashboardLayout({
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [userProfile, setUserProfile] = useState<{ full_name: string, role: string, store_name: string } | null>(null);
 
+  // --- STATE KONEKSI DATABASE GLOBALLY DI HEADER ---
+  const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "error">("checking");
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
+
+  useEffect(() => {
+    const checkConnection = async () => {
+      const startTime = performance.now();
+      try {
+        const { error, status } = await supabase.from("profiles").select("id").limit(1);
+        if (error && status !== 406) throw error;
+        const endTime = performance.now();
+        setDbLatency(Math.round(endTime - startTime));
+        setDbStatus("connected");
+      } catch (err) {
+        console.error("Global header DB check error:", err);
+        setDbStatus("error");
+      }
+    };
+    checkConnection();
+  }, []);
+
   useEffect(() => {
     const fetchProfile = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -169,6 +190,36 @@ export default function DashboardLayout({
             </h2>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Database Connection Indicator Pill */}
+            <div 
+              onClick={async () => {
+                setDbStatus("checking");
+                const startTime = performance.now();
+                try {
+                  const { error, status } = await supabase.from("profiles").select("id").limit(1);
+                  if (error && status !== 406) throw error;
+                  setDbLatency(Math.round(performance.now() - startTime));
+                  setDbStatus("connected");
+                } catch {
+                  setDbStatus("error");
+                }
+              }}
+              title={dbStatus === "connected" ? `Koneksi Supabase Aktif (Latensi: ${dbLatency}ms) - Klik untuk tes ulang` : "Klik untuk tes ulang koneksi database"}
+              className={`cursor-pointer border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] px-3 py-1 text-xs font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
+                dbStatus === "connected" ? "bg-emerald-400 text-black" :
+                dbStatus === "checking" ? "bg-yellow-300 text-black animate-pulse" :
+                "bg-rose-500 text-white"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full border-[1.5px] border-black block shrink-0 ${
+                dbStatus === "connected" ? "bg-emerald-100" :
+                dbStatus === "checking" ? "bg-yellow-100 animate-ping" :
+                "bg-rose-100"
+              }`} />
+              <span className="hidden sm:inline">DB {dbStatus === "connected" ? `ONLINE (${dbLatency}ms)` : dbStatus === "checking" ? "PINGING" : "OFFLINE"}</span>
+              <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
+            </div>
+
             <div className="hidden sm:block bg-green-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase text-sm">
               {userProfile?.store_name || "Memuat..."} 🏪
             </div>
