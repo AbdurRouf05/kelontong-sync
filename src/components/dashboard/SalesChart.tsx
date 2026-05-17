@@ -15,10 +15,10 @@ export default function SalesChart({ data = [] }: { data?: any[] }) {
   const COLORS = ["#facc15", "#4ade80", "#f472b6", "#60a5fa", "#a78bfa", "#fb923c", "#f87171"];
 
   return (
-    <div className="neo-card h-[400px] flex flex-col gap-4">
+    <div className="neo-card p-4 sm:p-6 h-[400px] flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-black uppercase tracking-tight">Tren Penjualan Mingguan</h3>
-        <span className="bg-blue-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase">Statistik</span>
+        <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tight">Tren Penjualan Mingguan</h3>
+        <span className="bg-blue-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase shrink-0">Statistik</span>
       </div>
 
       <div className="flex-1 w-full flex items-center justify-center">

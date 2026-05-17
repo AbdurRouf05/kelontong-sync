@@ -107,29 +107,29 @@ export default function StoreProfilePage() {
   // --- RENDERING FORM UTAMA ---
   // Dirombak menggunakan gaya Neobrutalism yang tebal, tegas, dan berikon indah
   return (
-    <div className="neo-card bg-white p-8">
+    <div className="neo-card bg-white p-4 sm:p-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
       {/* Bagian Header Form */}
-      <div className="mb-8 border-b-[3px] border-dashed border-black pb-6 flex items-start justify-between">
+      <div className="mb-6 sm:mb-8 border-b-[3px] border-dashed border-black pb-4 sm:pb-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tight mb-2 flex items-center gap-2">
-            <Store size={36} /> Profil Toko & Cabang
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight mb-2 flex items-center gap-2">
+            <Store className="w-6 h-6 sm:w-9 sm:h-9 shrink-0 text-black" /> Profil Toko & Cabang
           </h1>
-          <p className="font-bold text-slate-500 uppercase text-sm tracking-widest">
+          <p className="font-bold text-slate-500 uppercase text-xs sm:text-sm tracking-wider sm:tracking-widest">
             Atur informasi dasar toko atau cabang yang sedang aktif digunakan.
           </p>
         </div>
         {/* Lencana Cabang Aktif */}
-        <div className="bg-[#FFE800] px-4 py-2 border-[3px] border-black font-black uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-xs flex items-center gap-1">
-          <Sparkles size={14} /> Cabang Aktif
+        <div className="bg-[#FFE800] px-3 py-1.5 sm:px-4 sm:py-2 border-[3px] border-black font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-[10px] sm:text-xs flex items-center gap-1 w-fit shrink-0">
+          <Sparkles size={12} className="sm:w-3.5 sm:h-3.5" /> Cabang Aktif
         </div>
       </div>
 
       {/* Form Input */}
-      <form onSubmit={handleSave} className="space-y-6 max-w-2xl">
+      <form onSubmit={handleSave} className="space-y-4 sm:space-y-6 max-w-2xl">
         {/* Input Nama Cabang */}
-        <div className="space-y-2">
-          <label htmlFor="storeName" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-400">
-            <Store size={14} className="text-black" /> Nama Toko / Cabang
+        <div className="space-y-1.5 sm:space-y-2">
+          <label htmlFor="storeName" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
+            <Store size={12} className="sm:w-3.5 sm:h-3.5 text-black" /> Nama Toko / Cabang
           </label>
           <input 
             type="text" 
@@ -138,14 +138,14 @@ export default function StoreProfilePage() {
             placeholder="Masukkan nama toko atau cabang..."
             value={storeData.name}
             onChange={(e) => setStoreData({...storeData, name: e.target.value})}
-            className="w-full p-4 text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none"
+            className="w-full p-3 sm:p-4 text-sm sm:text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none"
           />
         </div>
 
         {/* Input Telepon */}
-        <div className="space-y-2">
-          <label htmlFor="phone" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-400">
-            <Phone size={14} className="text-black" /> Nomor Telepon
+        <div className="space-y-1.5 sm:space-y-2">
+          <label htmlFor="phone" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
+            <Phone size={12} className="sm:w-3.5 sm:h-3.5 text-black" /> Nomor Telepon
           </label>
           <input 
             type="text" 
@@ -153,14 +153,14 @@ export default function StoreProfilePage() {
             placeholder="Masukkan nomor telepon cabang..."
             value={storeData.phone || ''}
             onChange={(e) => setStoreData({...storeData, phone: e.target.value})}
-            className="w-full p-4 text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none"
+            className="w-full p-3 sm:p-4 text-sm sm:text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none"
           />
         </div>
 
         {/* Input Alamat Cabang */}
-        <div className="space-y-2">
-          <label htmlFor="address" className="flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-slate-400">
-            <MapPin size={14} className="text-black" /> Alamat Lengkap
+        <div className="space-y-1.5 sm:space-y-2">
+          <label htmlFor="address" className="flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">
+            <MapPin size={12} className="sm:w-3.5 sm:h-3.5 text-black" /> Alamat Lengkap
           </label>
           <textarea 
             id="address"
@@ -168,7 +168,7 @@ export default function StoreProfilePage() {
             placeholder="Masukkan alamat lengkap cabang..."
             value={storeData.address || ''}
             onChange={(e) => setStoreData({...storeData, address: e.target.value})}
-            className="w-full p-4 text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none resize-none"
+            className="w-full p-3 sm:p-4 text-sm sm:text-lg neo-box bg-[#F4F4F4] font-bold focus:outline-none resize-none"
           ></textarea>
         </div>
 

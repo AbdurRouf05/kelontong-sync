@@ -2,10 +2,10 @@ import Link from "next/link";
 
 export default function TopProducts({ products = [] }: { products?: any[] }) {
   return (
-    <div className="neo-card space-y-6">
+    <div className="neo-card p-4 sm:p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-black uppercase tracking-tight">Produk Terlaris</h3>
-        <span className="bg-purple-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase">Peringkat</span>
+        <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tight">Produk Terlaris</h3>
+        <span className="bg-purple-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase shrink-0">Peringkat</span>
       </div>
 
       <div className="space-y-4">

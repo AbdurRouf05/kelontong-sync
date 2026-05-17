@@ -16,16 +16,16 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
   return (
     <div className="space-y-6">
       {/* Tab Navigasi Horizontal */}
-      <div className="flex flex-wrap gap-4 border-b-[4px] border-black pb-4">
+      <div className="flex flex-wrap sm:flex-nowrap gap-2 sm:gap-4 border-b-[4px] border-black pb-4">
         {tabs.map(tab => {
           const isActive = pathname === tab.href;
           return (
             <Link 
               key={tab.href}
               href={tab.href} 
-              className={`px-6 py-3 border-[3px] border-black font-black uppercase tracking-widest transition-all ${
+              className={`px-3 sm:px-6 py-2 sm:py-3 border-[3px] border-black font-black uppercase text-xs sm:text-sm tracking-wider sm:tracking-widest transition-all flex-1 text-center whitespace-nowrap ${
                 isActive 
-                  ? `${tab.bg} text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-1 -translate-x-1` 
+                  ? `${tab.bg} text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] -translate-y-0.5 -translate-x-0.5 sm:-translate-y-1 sm:-translate-x-1` 
                   : 'bg-white text-black hover:bg-slate-100'
               }`}
             >

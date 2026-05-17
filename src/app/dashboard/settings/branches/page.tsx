@@ -147,55 +147,55 @@ export default function BranchesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tight mb-2">🏪 Multi-Cabang</h1>
-          <p className="font-bold text-slate-500 uppercase text-sm tracking-widest">
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight mb-2">🏪 Multi-Cabang</h1>
+          <p className="font-bold text-slate-500 uppercase text-xs sm:text-sm tracking-wider sm:tracking-widest">
             Kelola dan pindah antar cabang toko yang Anda miliki.
           </p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="neo-btn-primary flex items-center gap-2 bg-[#FFE800]"
+          className="neo-btn-primary flex items-center justify-center gap-2 bg-[#FFE800] w-full md:w-auto"
         >
           <Store size={20} /> BUKA CABANG BARU
         </button>
       </div>
 
       {isLoading ? (
-        <div className="neo-card flex justify-center py-20">
+        <div className="neo-card flex justify-center py-20 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <Loader2 className="animate-spin text-black" size={48} />
         </div>
       ) : branches.length === 0 ? (
-        <div className="neo-card p-20 text-center text-slate-400 italic font-bold">
+        <div className="neo-card p-20 text-center text-slate-400 italic font-bold bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           Belum ada cabang toko terdaftar.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {branches.map((branch) => (
             <div
               key={branch.id}
-              className={`neo-card transition-all relative group ${branch.isActive
+              className={`neo-card p-4 sm:p-6 transition-all relative group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-[3px] border-black ${branch.isActive
                 ? 'bg-[#23A094] text-white'
                 : 'bg-white text-black hover:bg-slate-50'
                 }`}
             >
               {branch.isActive && (
-                <div className="absolute -top-4 -right-4 bg-[#FF6B6B] text-white px-4 py-1 border-[3px] border-black font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-12 z-10">
+                <div className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 bg-[#FF6B6B] text-white px-2.5 py-0.5 sm:px-4 sm:py-1 border-[3px] border-black font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rotate-12 z-10 text-[10px] sm:text-xs">
                   Aktif
                 </div>
               )}
 
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => handleOpenModal(branch)} className="p-2 bg-white text-black border-[2px] border-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
-                  <Edit3 size={16} />
+              <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
+                <button onClick={() => handleOpenModal(branch)} className="p-1.5 sm:p-2 bg-white text-black border-[2px] border-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
+                  <Edit3 size={14} className="sm:w-4 sm:h-4" />
                 </button>
                 {!branch.isActive && (
-                  <button onClick={() => handleDelete(branch.id)} className="p-2 bg-white text-red-600 border-[2px] border-black hover:bg-red-500 hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
-                    <Trash2 size={16} />
+                  <button onClick={() => handleDelete(branch.id)} className="p-1.5 sm:p-2 bg-white text-red-600 border-[2px] border-black hover:bg-red-500 hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
+                    <Trash2 size={14} className="sm:w-4 sm:h-4" />
                   </button>
                 )}
               </div>
 
-              <h2 className="text-2xl font-black uppercase mb-2 pr-20">{branch.name}</h2>
+              <h2 className="text-xl sm:text-2xl font-black uppercase mb-2 pr-20">{branch.name}</h2>
               <p className={`font-bold mb-6 text-sm ${branch.isActive ? 'text-green-100' : 'text-slate-500'}`}>
                 📍 {branch.address || 'Belum ada alamat'} <br />
                 📞 {branch.phone || 'Belum ada nomor telepon'}

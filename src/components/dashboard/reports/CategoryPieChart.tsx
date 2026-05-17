@@ -40,10 +40,10 @@ const getCategoryColor = (name: string, index: number) => {
 
 export default function CategoryPieChart({ data = [] }: { data?: any[] }) {
   return (
-    <div className="neo-card h-[400px] flex flex-col gap-4 bg-white">
-      <div className="flex justify-between items-center">
-        <h3 className="text-2xl font-black uppercase tracking-tight">Distribusi Kategori</h3>
-        <span className="bg-purple-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase">Kategori</span>
+    <div className="neo-card p-4 sm:p-6 h-[320px] sm:h-[400px] flex flex-col gap-3 sm:gap-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+      <div className="flex justify-between items-center gap-2">
+        <h3 className="text-base sm:text-2xl font-black uppercase tracking-tight">Distribusi Kategori</h3>
+        <span className="bg-purple-400 border-[2px] border-black px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-black uppercase shrink-0">Kategori</span>
       </div>
 
       <div className="flex-1 w-full">

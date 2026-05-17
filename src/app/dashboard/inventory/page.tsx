@@ -784,27 +784,27 @@ export default function InventoryPage() {
   const totalValue = products.reduce((acc, p) => acc + (p.selling_price * p.stock), 0);
 
   return (
-    <div className="space-y-6 pb-12 relative">
+    <div className="space-y-6 pb-12 relative px-4 md:px-0">
       {/* Header & Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tight">Inventaris</h1>
-          <p className="font-bold text-slate-500 uppercase text-sm tracking-widest">Manajemen Stok & Katalog Barang</p>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-center lg:text-left">Inventaris</h1>
+          <p className="font-bold text-slate-500 uppercase text-[10px] sm:text-sm tracking-widest text-center lg:text-left">Manajemen Stok & Katalog Barang</p>
         </div>
-        <div className="flex gap-4 relative">
+        <div className="grid grid-cols-2 lg:flex gap-2 sm:gap-3 w-full lg:w-auto items-stretch justify-center lg:justify-end">
           <button 
             onClick={() => setIsImportModalOpen(true)}
-            className="neo-btn-primary bg-blue-400 flex items-center gap-2 px-4 py-2 text-sm font-black"
+            className="neo-btn-primary bg-blue-400 flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] col-span-1 lg:col-span-auto"
           >
-            <Download className="rotate-180" size={18} /> IMPORT
+            <Download className="rotate-180" size={16} /> IMPORT
           </button>
 
-          <div className="relative">
+          <div className="relative flex col-span-1 lg:col-span-auto">
             <button 
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-              className="neo-btn-primary bg-slate-100 flex items-center gap-2 px-4 py-2 text-sm font-black uppercase"
+              className="neo-btn-primary bg-slate-100 flex w-full items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
             >
-              <Download size={18} /> EXPORT
+              <Download size={16} /> EXPORT
             </button>
             
             {isExportMenuOpen && (
@@ -820,34 +820,35 @@ export default function InventoryPage() {
 
           <button 
             onClick={() => setIsCategoryModalOpen(true)}
-            className="neo-btn-primary bg-yellow-400 flex items-center gap-2 px-4 py-2 text-sm font-black"
+            className="neo-btn-primary bg-yellow-400 flex items-center justify-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] col-span-1 lg:col-span-auto"
           >
-            <Plus size={18} /> KATEGORI
+            <Plus size={16} /> KATEGORI
           </button>
+          
           <button 
             onClick={() => handleOpenModal()}
-            className="neo-btn-primary bg-green-400 flex items-center gap-2 px-4 py-2 text-sm font-black uppercase"
+            className="neo-btn-primary bg-green-400 flex w-full lg:w-auto items-center justify-center gap-1.5 px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-black uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] col-span-1 lg:col-span-auto"
           >
-            <Plus size={20} /> TAMBAH BARANG
+            <Plus size={18} /> TAMBAH BARANG
           </button>
         </div>
       </div>
 
       {/* Low Stock Alert Banner */}
       {lowStockCount > 0 && (
-        <div className="neo-card bg-red-500 text-white flex items-center justify-between p-4 animate-bounce">
-          <div className="flex items-center gap-4">
-            <div className="bg-white p-2 border-[2px] border-black text-red-600">
+        <div className="neo-card bg-red-500 text-white flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 animate-bounce">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="bg-white p-2 border-[2px] border-black text-red-600 shrink-0">
               <AlertTriangle size={24} />
             </div>
             <div>
-              <p className="font-black uppercase text-lg">Peringatan Stok Kritis!</p>
-              <p className="font-bold text-sm opacity-90">Ada {lowStockCount} barang yang hampir habis. Segera restock!</p>
+              <p className="font-black uppercase text-base sm:text-lg">Peringatan Stok Kritis!</p>
+              <p className="font-bold text-xs sm:text-sm opacity-90">Ada {lowStockCount} barang hampir habis. Segera restock!</p>
             </div>
           </div>
           <button 
             onClick={() => setShowOnlyLowStock(true)}
-            className="bg-white text-black px-4 py-2 font-black border-[3px] border-black hover:bg-slate-100 transition-all text-sm"
+            className="bg-white text-black px-4 py-2 text-xs sm:text-sm font-black border-[3px] border-black hover:bg-slate-100 transition-all text-center w-full md:w-auto shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px]"
           >
             CEK SEKARANG
           </button>
@@ -855,14 +856,14 @@ export default function InventoryPage() {
       )}
 
       {showOnlyLowStock && (
-        <div className="flex items-center gap-4 bg-yellow-100 border-[3px] border-black p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-yellow-100 border-[3px] border-black p-4">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="text-red-600" size={20} />
-            <p className="font-black uppercase text-sm tracking-tight">Menampilkan Stok Kritis Saja</p>
+            <AlertTriangle className="text-red-600 shrink-0" size={20} />
+            <p className="font-black uppercase text-xs sm:text-sm tracking-tight">Menampilkan Stok Kritis Saja</p>
           </div>
           <button 
             onClick={() => setShowOnlyLowStock(false)}
-            className="bg-black text-white px-3 py-1 font-black text-xs uppercase hover:bg-slate-800 transition-all"
+            className="bg-black text-white px-3 py-2 sm:py-1 font-black text-[10px] sm:text-xs uppercase hover:bg-slate-800 transition-all w-full sm:w-auto text-center"
           >
             Tampilkan Semua Barang
           </button>
@@ -870,32 +871,32 @@ export default function InventoryPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="neo-card bg-white flex items-center gap-6">
-          <div className="w-16 h-16 bg-blue-100 border-[3px] border-black flex items-center justify-center">
-            <Package className="text-blue-600" size={32} />
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <div className="neo-card p-4 sm:p-6 bg-white flex flex-col lg:flex-row lg:items-center gap-2 sm:gap-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] col-span-1 lg:col-span-1">
+          <div className="w-10 h-10 sm:w-16 sm:h-16 bg-blue-100 border-[3px] border-black flex items-center justify-center shrink-0">
+            <Package className="text-blue-600 w-5 h-5 sm:w-8 sm:h-8" />
           </div>
           <div>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Produk</p>
-            <p className="text-3xl font-black">{products.length}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest leading-tight">Total Produk</p>
+            <p className="text-xl sm:text-3xl font-black mt-0.5 sm:mt-0">{products.length}</p>
           </div>
         </div>
-        <div className={`neo-card flex items-center gap-6 ${lowStockCount > 0 ? "bg-red-50 border-red-500 shadow-red-900" : "bg-white"}`}>
-          <div className={`w-16 h-16 border-[3px] border-black flex items-center justify-center ${lowStockCount > 0 ? "bg-red-400" : "bg-slate-100"}`}>
-            <AlertTriangle className={lowStockCount > 0 ? "text-white" : "text-slate-400"} size={32} />
+        <div className={`neo-card p-4 sm:p-6 flex flex-col lg:flex-row lg:items-center gap-2 sm:gap-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] col-span-1 lg:col-span-1 ${lowStockCount > 0 ? "bg-red-50 border-red-500 shadow-red-900" : "bg-white"}`}>
+          <div className={`w-10 h-10 sm:w-16 sm:h-16 border-[3px] border-black flex items-center justify-center shrink-0 ${lowStockCount > 0 ? "bg-red-400" : "bg-slate-100"}`}>
+            <AlertTriangle className={`${lowStockCount > 0 ? "text-white" : "text-slate-400"} w-5 h-5 sm:w-8 sm:h-8`} />
           </div>
           <div>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Stok Menipis</p>
-            <p className={`text-3xl font-black ${lowStockCount > 0 ? "text-red-600" : ""}`}>{lowStockCount}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest leading-tight">Stok Menipis</p>
+            <p className={`text-xl sm:text-3xl font-black mt-0.5 sm:mt-0 ${lowStockCount > 0 ? "text-red-600" : ""}`}>{lowStockCount}</p>
           </div>
         </div>
-        <div className="neo-card bg-white flex items-center gap-6">
-          <div className="w-16 h-16 bg-green-100 border-[3px] border-black flex items-center justify-center">
-            <span className="text-2xl font-black text-green-600">Rp</span>
+        <div className="neo-card p-4 sm:p-6 bg-white flex flex-row items-center gap-4 sm:gap-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] col-span-2 lg:col-span-1">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-green-100 border-[3px] border-black flex items-center justify-center shrink-0">
+            <span className="text-xl sm:text-2xl font-black text-green-600">Rp</span>
           </div>
           <div>
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Nilai Stok</p>
-            <p className="text-2xl font-black">Rp {totalValue.toLocaleString("id-ID")}</p>
+            <p className="text-[10px] sm:text-xs font-black text-slate-400 uppercase tracking-widest leading-tight">Total Nilai Stok</p>
+            <p className="text-xl sm:text-2xl font-black mt-0.5 sm:mt-0">Rp {totalValue.toLocaleString("id-ID")}</p>
           </div>
         </div>
       </div>
@@ -903,188 +904,297 @@ export default function InventoryPage() {
       {/* Filters & Table */}
       <div className="neo-card bg-white p-0 overflow-hidden">
         {/* Table Toolbar */}
-        <div className="p-6 border-b-[4px] border-black flex flex-col md:flex-row gap-4 items-center bg-slate-50">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-            <input 
-              type="text" 
-              placeholder="Cari nama atau barcode..."
-              className="w-full pl-12 pr-4 py-3 bg-white border-[3px] border-black font-bold focus:outline-none focus:shadow-none"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <div className="p-4 sm:p-6 border-b-[4px] border-black flex flex-col lg:flex-row gap-4 items-stretch lg:items-center bg-slate-50">
+          {/* Left Column: Search & Filter */}
+          <div className="flex flex-col sm:flex-row gap-3 flex-1 w-full">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input 
+                type="text" 
+                placeholder="Cari nama atau barcode..."
+                className="w-full pl-12 pr-4 py-3 bg-white border-[3px] border-black font-bold focus:outline-none focus:shadow-none text-sm sm:text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-none"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            {/* Category Dropdown Filter */}
+            <div className="relative w-full sm:w-48 shrink-0">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full pl-4 pr-10 py-3 bg-white border-[3px] border-black font-bold appearance-none cursor-pointer focus:outline-none text-sm sm:text-base shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-none"
+              >
+                <option value="Semua">Semua Kategori</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.icon || "📦"} {cat.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Filter size={16} />
+              </div>
+            </div>
           </div>
           
-          <div className="flex border-[3px] border-black bg-white overflow-hidden shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <button 
-              onClick={() => setViewMode("table")}
-              className={`p-3 transition-colors ${viewMode === 'table' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
-              title="Tampilan Tabel"
-            >
-              <List size={20} />
-            </button>
-            <button 
-              onClick={() => setViewMode("grid")}
-              className={`p-3 border-l-[3px] border-black transition-colors ${viewMode === 'grid' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
-              title="Tampilan Kotak"
-            >
-              <LayoutGrid size={20} />
-            </button>
+          {/* Right Column: Bulk Action & View Mode */}
+          <div className="flex flex-row gap-3 items-center justify-between lg:justify-end shrink-0">
+            {selectedIds.size > 0 && (
+              <button 
+                onClick={handleDeleteSelected}
+                className="neo-btn-primary bg-red-500 hover:bg-red-400 text-white flex items-center gap-1.5 px-4 py-2.5 text-xs sm:text-sm font-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <Trash2 size={16} /> Hapus ({selectedIds.size})
+              </button>
+            )}
+
+            <div className="flex border-[3px] border-black bg-white overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <button 
+                onClick={() => setViewMode("grid")}
+                className={`p-3 transition-colors ${viewMode === 'grid' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
+                title="Tampilan Kotak"
+              >
+                <LayoutGrid size={20} />
+              </button>
+              <button 
+                onClick={() => setViewMode("table")}
+                className={`p-3 border-l-[3px] border-black transition-colors ${viewMode === 'table' ? 'bg-yellow-400' : 'hover:bg-slate-100'}`}
+                title="Tampilan Tabel"
+              >
+                <List size={20} />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Table/Grid Content */}
         {viewMode === "table" ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-yellow-400 border-b-[4px] border-black">
-                <th className="p-4 border-r-[2px] border-black w-10">
-                  <input 
-                    type="checkbox"
-                    className="w-5 h-5 accent-black cursor-pointer"
-                    checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
-                    onChange={toggleSelectAll}
-                  />
-                </th>
-                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Produk</th>
-                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Kategori</th>
-                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Harga Jual</th>
-                <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black text-center">Stok</th>
-                <th className="p-4 font-black uppercase text-sm text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={6} className="p-20 text-center text-black">
-                    <Loader2 className="animate-spin mx-auto mb-4" size={48} />
-                    <p className="font-black uppercase tracking-widest">Memuat Inventaris...</p>
-                  </td>
-                </tr>
-              ) : paginatedProducts.length > 0 ? (
-                paginatedProducts.map((product) => (
-                  <tr key={product.id} className={`border-b-[2px] border-black hover:bg-slate-50 transition-colors ${selectedIds.has(product.id) ? "bg-yellow-50" : ""}`}>
-                    <td className="p-4 border-r-[2px] border-black">
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-yellow-400 border-b-[4px] border-black">
+                    <th className="p-4 border-r-[2px] border-black w-10">
                       <input 
                         type="checkbox"
                         className="w-5 h-5 accent-black cursor-pointer"
-                        checked={selectedIds.has(product.id)}
-                        onChange={() => toggleSelectOne(product.id)}
+                        checked={filteredProducts.length > 0 && selectedIds.size === filteredProducts.length}
+                        onChange={toggleSelectAll}
                       />
-                    </td>
-                    <td className="p-4 border-r-[2px] border-black">
-                      <div>
-                        <p className="font-black uppercase leading-tight">{product.name}</p>
-                        <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
+                    </th>
+                    <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Produk</th>
+                    <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Kategori</th>
+                    <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black">Harga Jual</th>
+                    <th className="p-4 font-black uppercase text-sm border-r-[2px] border-black text-center">Stok</th>
+                    <th className="p-4 font-black uppercase text-sm text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="p-20 text-center text-black">
+                        <Loader2 className="animate-spin mx-auto mb-4" size={48} />
+                        <p className="font-black uppercase tracking-widest">Memuat Inventaris...</p>
+                      </td>
+                    </tr>
+                  ) : paginatedProducts.length > 0 ? (
+                    paginatedProducts.map((product) => (
+                      <tr key={product.id} className={`border-b-[2px] border-black hover:bg-slate-50 transition-colors ${selectedIds.has(product.id) ? "bg-yellow-50" : ""}`}>
+                        <td className="p-4 border-r-[2px] border-black">
+                          <input 
+                            type="checkbox"
+                            className="w-5 h-5 accent-black cursor-pointer"
+                            checked={selectedIds.has(product.id)}
+                            onChange={() => toggleSelectOne(product.id)}
+                          />
+                        </td>
+                        <td className="p-4 border-r-[2px] border-black">
+                          <div>
+                            <p className="font-black uppercase leading-tight">{product.name}</p>
+                            <p className="text-xs font-bold text-slate-400 tracking-wider">SN: {product.barcode}</p>
+                          </div>
+                        </td>
+                        <td className="p-4 border-r-[2px] border-black">
+                          <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-xs font-black uppercase flex items-center gap-1 w-fit">
+                            <span>{product.category_icon || "📦"}</span>
+                            <span>{product.category_name}</span>
+                          </span>
+                        </td>
+                        <td className="p-4 border-r-[2px] border-black font-bold">
+                          Rp {product.selling_price.toLocaleString("id-ID")}
+                        </td>
+                        <td className="p-4 border-r-[2px] border-black text-center">
+                          <div className={`inline-block px-3 py-1 border-[2px] border-black font-black ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
+                            {product.stock}
+                          </div>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => handleOpenModal(product)}
+                              className="p-2 hover:bg-yellow-100 border-[2px] border-transparent hover:border-black transition-all"
+                            >
+                              <Edit3 size={18} />
+                            </button>
+                            <button 
+                              onClick={() => handleDelete(product.id)}
+                              className="p-2 hover:bg-red-100 border-[2px] border-transparent hover:border-black transition-all text-red-600"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="p-20 text-center text-slate-400 italic font-bold">
+                        Barang tidak ditemukan.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Bento List View */}
+            <div className="block md:hidden p-4 bg-slate-50 border-t-[4px] border-black">
+              {isLoading ? (
+                <div className="p-12 text-center text-black">
+                  <Loader2 className="animate-spin mx-auto mb-4" size={40} />
+                  <p className="font-black uppercase text-sm tracking-wider">Memuat Inventaris...</p>
+                </div>
+              ) : paginatedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4">
+                  {paginatedProducts.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className={`neo-card p-3 sm:p-4 bg-white flex flex-col gap-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors ${selectedIds.has(product.id) ? "bg-yellow-50 border-yellow-400" : ""}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        {/* Checkbox & Info */}
+                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                          <input 
+                            type="checkbox"
+                            className="w-5 h-5 mt-0.5 accent-black cursor-pointer shrink-0"
+                            checked={selectedIds.has(product.id)}
+                            onChange={() => toggleSelectOne(product.id)}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-black uppercase text-sm leading-tight truncate">{product.name}</h3>
+                            <p className="text-[10px] font-bold text-slate-400 tracking-wider mt-0.5">SN: {product.barcode}</p>
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              <span className="bg-slate-200 px-1.5 py-0.5 border border-black text-[8px] font-black uppercase flex items-center gap-0.5 w-fit">
+                                <span>{product.category_icon || "📦"}</span>
+                                <span>{product.category_name}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Actions (Top Right of Bento Card) */}
+                        <div className="flex flex-col gap-2 shrink-0">
+                          <button 
+                            onClick={() => handleOpenModal(product)}
+                            className="w-8 h-8 flex items-center justify-center border-[2px] border-black bg-yellow-400 hover:bg-yellow-300 active:translate-y-[2px] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(product.id)}
+                            className="w-8 h-8 flex items-center justify-center border-[2px] border-black bg-red-500 text-white hover:bg-red-400 active:translate-y-[2px] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                    </td>
-                    <td className="p-4 border-r-[2px] border-black">
-                      <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-xs font-black uppercase flex items-center gap-1">
-                        <span>{product.category_icon || "📦"}</span>
-                        <span>{product.category_name}</span>
-                      </span>
-                    </td>
-                    <td className="p-4 border-r-[2px] border-black font-bold">
-                      Rp {product.selling_price.toLocaleString("id-ID")}
-                    </td>
-                    <td className="p-4 border-r-[2px] border-black text-center">
-                      <div className={`inline-block px-3 py-1 border-[2px] border-black font-black ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
+                      
+                      {/* Price & Stock info in a bento-style sub-box */}
+                      <div className="flex items-center justify-between bg-slate-50 border-[2px] border-black p-2 mt-1">
+                        <div>
+                          <p className="text-[8px] font-black uppercase text-slate-400">Harga Jual</p>
+                          <p className="font-black text-xs text-green-600">Rp {product.selling_price.toLocaleString("id-ID")}</p>
+                        </div>
+                        <div className={`px-2 py-1 border-[2px] border-black text-[10px] font-black ${product.stock < (product.min_stock || 5) ? "bg-red-500 text-white animate-pulse" : "bg-green-100"}`}>
+                          STOK: {product.stock}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-12 text-center text-slate-400 font-bold italic text-sm">
+                  Barang tidak ditemukan.
+                </div>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="p-3 sm:p-6 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
+            {isLoading ? (
+              <div className="col-span-full py-20 text-center">
+                <Loader2 className="animate-spin mx-auto mb-4" size={48} />
+                <p className="font-black uppercase tracking-widest">Memuat...</p>
+              </div>
+            ) : paginatedProducts.length > 0 ? (
+              paginatedProducts.map(product => (
+                <div 
+                  key={product.id} 
+                  className={`neo-card p-3 sm:p-6 flex flex-col bg-white transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] ${selectedIds.has(product.id) ? "bg-yellow-50 border-yellow-400" : ""}`}
+                >
+                  <div className="flex justify-between items-start mb-3 sm:mb-4 gap-1.5">
+                    <input 
+                      type="checkbox"
+                      className="w-4 h-4 sm:w-5 sm:h-5 accent-black cursor-pointer shrink-0"
+                      checked={selectedIds.has(product.id)}
+                      onChange={() => toggleSelectOne(product.id)}
+                    />
+                    <span className="bg-slate-200 px-1.5 py-0.5 sm:px-2 sm:py-1 border-[2px] border-black text-[8px] sm:text-[10px] font-black uppercase flex items-center gap-0.5 truncate">
+                      <span>{product.category_icon || "📦"}</span>
+                      <span className="truncate">{product.category_name}</span>
+                    </span>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className="font-black uppercase text-xs sm:text-lg line-clamp-1 mb-0.5 sm:mb-1">{product.name}</h3>
+                    <p className="text-[9px] sm:text-xs font-bold text-slate-400 mb-2 sm:mb-4 tracking-wider truncate">SN: {product.barcode}</p>
+                    
+                    <div className="flex justify-between items-end mt-3 sm:mt-4 gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[8px] sm:text-[10px] font-black uppercase text-slate-400 mb-0.5 sm:mb-1">Harga Jual</p>
+                        <p className="font-black text-xs sm:text-lg text-green-600 truncate">Rp {product.selling_price.toLocaleString("id-ID")}</p>
+                      </div>
+                      <div className={`px-2 py-0.5 sm:px-3 sm:py-1 border-[2px] border-black font-black text-xs sm:text-sm shrink-0 ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
                         {product.stock}
                       </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button 
-                          onClick={() => handleOpenModal(product)}
-                          className="p-2 hover:bg-yellow-100 border-[2px] border-transparent hover:border-black transition-all"
-                        >
-                          <Edit3 size={18} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(product.id)}
-                          className="p-2 hover:bg-red-100 border-[2px] border-transparent hover:border-black transition-all text-red-600"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="p-20 text-center text-slate-400 italic font-bold">
-                    Barang tidak ditemukan.
-                  </td>
-                </tr>
-              )}
-          </tbody>
-        </table>
-      </div>
-    ) : (
-      <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {isLoading ? (
-          <div className="col-span-full py-20 text-center">
-            <Loader2 className="animate-spin mx-auto mb-4" size={48} />
-            <p className="font-black uppercase tracking-widest">Memuat...</p>
-          </div>
-        ) : paginatedProducts.length > 0 ? (
-          paginatedProducts.map(product => (
-            <div 
-              key={product.id} 
-              className={`neo-card flex flex-col bg-white transition-all ${selectedIds.has(product.id) ? "bg-yellow-50 border-yellow-400" : ""}`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <input 
-                  type="checkbox"
-                  className="w-5 h-5 accent-black cursor-pointer"
-                  checked={selectedIds.has(product.id)}
-                  onChange={() => toggleSelectOne(product.id)}
-                />
-                <span className="bg-slate-200 px-2 py-1 border-[2px] border-black text-[10px] font-black uppercase flex items-center gap-1">
-                  <span>{product.category_icon || "📦"}</span>
-                  <span>{product.category_name}</span>
-                </span>
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-black uppercase text-lg line-clamp-1 mb-1">{product.name}</h3>
-                <p className="text-xs font-bold text-slate-400 mb-4 tracking-wider">SN: {product.barcode}</p>
-                
-                <div className="flex justify-between items-end mt-4">
-                  <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Harga Jual</p>
-                    <p className="font-black text-lg text-green-600">Rp {product.selling_price.toLocaleString("id-ID")}</p>
+                    </div>
                   </div>
-                  <div className={`px-3 py-1 border-[2px] border-black font-black text-sm ${product.stock < (product.min_stock || 5) ? "bg-red-400 text-white" : "bg-green-100"}`}>
-                    {product.stock}
+
+                  <div className="flex gap-1.5 sm:gap-2 border-t-[2px] border-black mt-4 sm:mt-6 pt-3 sm:pt-4">
+                    <button 
+                      onClick={() => handleOpenModal(product)}
+                      className="flex-1 py-1.5 sm:py-2 font-black text-[10px] sm:text-xs uppercase border-[2px] border-black bg-white hover:bg-yellow-400 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none text-center"
+                    >
+                      EDIT
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(product.id)}
+                      className="flex-1 py-1.5 sm:py-2 font-black text-[10px] sm:text-xs uppercase border-[2px] border-black bg-white hover:bg-red-500 hover:text-white text-red-600 transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none text-center"
+                    >
+                      HAPUS
+                    </button>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center text-slate-400 font-bold italic">
+                Barang tidak ditemukan.
               </div>
-
-              <div className="flex gap-2 border-t-[2px] border-black mt-6 pt-4">
-                <button 
-                  onClick={() => handleOpenModal(product)}
-                  className="flex-1 py-2 font-black text-xs uppercase border-[2px] border-black hover:bg-yellow-400 transition-all"
-                >
-                  EDIT
-                </button>
-                <button 
-                  onClick={() => handleDelete(product.id)}
-                  className="flex-1 py-2 font-black text-xs uppercase border-[2px] border-black hover:bg-red-500 hover:text-white text-red-600 transition-all"
-                >
-                  HAPUS
-                </button>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full py-20 text-center text-slate-400 font-bold italic">
-            Barang tidak ditemukan.
+            )}
           </div>
         )}
-      </div>
-    )}
 
         {/* Pagination Controls */}
         {totalPages > 1 && (

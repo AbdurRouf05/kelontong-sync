@@ -222,7 +222,7 @@ export async function getDailyProductSales(period: string = "all") {
       subtotal,
       created_at,
       transactions!inner(store_id),
-      products (name, categories (name))
+      products (name, categories (name, icon))
     `)
     .eq("transactions.store_id", context.current_store_id);
 
@@ -235,7 +235,7 @@ export async function getDailyProductSales(period: string = "all") {
 
   if (error || !data) return [];
 
-  return data.map(item => {
+  return data.map((item: any) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products;
     const category = Array.isArray(product?.categories) ? product.categories[0] : product?.categories;
     const date = item.created_at;
@@ -261,7 +261,7 @@ export async function getCategoryDistribution(period: string = "all") {
       quantity,
       created_at,
       transactions!inner(store_id),
-      products (categories (name))
+      products (categories (name, icon))
     `)
     .eq("transactions.store_id", context.current_store_id);
 
@@ -299,7 +299,7 @@ export async function getTopProducts() {
   if (error || !data) return [];
 
   const aggregation: Record<string, number> = {};
-  data.forEach(item => {
+  data.forEach((item: any) => {
     const product = Array.isArray(item.products) ? item.products[0] : item.products;
     const name = product?.name || "Produk";
     aggregation[name] = (aggregation[name] || 0) + item.quantity;
