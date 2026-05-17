@@ -53,9 +53,9 @@ export default function TenantManagementPage() {
   // --- STATE DATA DAN HALAMAN UTAMA ---
   const [tenants, setTenants] = useState<DetailedTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [adminName, setAdminName] = useState("");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [adminName, setAdminName] = useState("Developer Mode");
   const [searchQuery, setSearchQuery] = useState("");
   
   // State Notifikasi Toast Kustom
@@ -195,7 +195,7 @@ export default function TenantManagementPage() {
 
   // Jalankan cek autentikasi saat pertama kali masuk halaman
   useEffect(() => {
-    checkAdminAuth();
+    // checkAdminAuth(); // Dinonaktifkan sementara untuk Mode Peninjauan Developer
   }, []);
 
   // Memuat data jika terbukti sebagai superadmin
