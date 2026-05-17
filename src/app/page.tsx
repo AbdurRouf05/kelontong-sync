@@ -176,15 +176,15 @@ export default function LandingPage() {
                 MULAI DAFTAR <ArrowRight size={28} strokeWidth={3} />
               </Link>
               
-              <div className="flex items-center justify-center gap-4 bg-white border-[3px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-xs tracking-wider">
-                <div className="flex -space-x-3">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="w-10 h-10 rounded-none border-[2px] border-black bg-[#FF90E8] flex items-center justify-center font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      {String.fromCharCode(65 + i)}
-                    </div>
+              <div className="flex items-center justify-center gap-3 bg-white border-[3px] border-black px-5 py-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <div className="flex text-yellow-500">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} fill="currentColor" size={16} strokeWidth={2.5} />
                   ))}
                 </div>
-                <span>Telah dipercaya 2,000+ Juragan</span>
+                <span className="font-black text-xs uppercase tracking-wider text-black">
+                  4.9/5 Rating Kepuasan
+                </span>
               </div>
             </div>
           </div>
