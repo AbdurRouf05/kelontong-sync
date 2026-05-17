@@ -429,13 +429,13 @@ export default function AdminDashboard() {
             </div>
 
             {/* Navigasi Cepat Admin / Tenant */}
-            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
-              <span className="px-4 py-3 bg-[#FFE800] flex items-center gap-1.5 border-r-[3px] border-black">
+            <div className="flex shrink-0 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
+              <span className="px-4 py-3 bg-[#FFE800] flex items-center gap-1.5 border-r-[3px] border-black whitespace-nowrap">
                 <Activity size={16} /> Platform Admin
               </span>
               <Link 
                 href="/tenant"
-                className="px-4 py-3 hover:bg-slate-100 transition-colors flex items-center gap-1.5"
+                className="px-4 py-3 hover:bg-slate-100 transition-colors flex items-center gap-1.5 whitespace-nowrap"
               >
                 <Sliders size={16} /> Tenant Limits
               </Link>
