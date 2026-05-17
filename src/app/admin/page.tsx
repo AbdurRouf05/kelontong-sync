@@ -406,7 +406,26 @@ export default function AdminDashboard() {
             </div>
           </div>
           
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex gap-4 w-full md:w-auto items-center">
+            {/* Database Connection Indicator Pill */}
+            <div 
+              onClick={checkSupabaseConnection}
+              title={dbStatus === "connected" ? `Koneksi Supabase Aktif (Latensi: ${dbLatency}ms) - Klik untuk tes ulang` : "Klik untuk tes ulang koneksi database"}
+              className={`cursor-pointer border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] px-4 py-3.5 text-sm font-black uppercase flex items-center gap-1.5 transition-all hover:-translate-y-[1px] hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none ${
+                dbStatus === "connected" ? "bg-emerald-400 text-black" :
+                dbStatus === "checking" ? "bg-yellow-300 text-black animate-pulse" :
+                "bg-rose-500 text-white"
+              }`}
+            >
+              <span className={`w-2.5 h-2.5 rounded-full border-[1.5px] border-black block shrink-0 ${
+                dbStatus === "connected" ? "bg-emerald-100" :
+                dbStatus === "checking" ? "bg-yellow-100 animate-ping" :
+                "bg-rose-100"
+              }`} />
+              <span className="hidden sm:inline">DB {dbStatus === "connected" ? `ONLINE (${dbLatency}ms)` : dbStatus === "checking" ? "PINGING" : "OFFLINE"}</span>
+              <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
+            </div>
+
             <button 
               onClick={() => setIsModalOpen(true)}
               className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-6 py-4 font-black uppercase text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
