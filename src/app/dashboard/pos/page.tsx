@@ -50,7 +50,6 @@ export default function POSPage() {
   
   // Payment States
   const [cashAmount, setCashAmount] = useState<number>(0);
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   // Fetch context and products
   useEffect(() => {
@@ -341,7 +340,6 @@ export default function POSPage() {
             <div className="border-[3px] border-black px-6 flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-blue-400">
               <span className="font-black uppercase">{filteredProducts.length} BARANG</span>
             </div>
-          </div>
           </div>
         </div>
 
