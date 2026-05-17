@@ -34,7 +34,7 @@ Sesuai dengan kebutuhan arsitektur cloud SaaS modern yang cepat, ringan, dan han
    - **Modul**: Dashboard Analitik.
    - **Tugas**: Visualisasi grafik penjualan, margin laba, dan rekapitulasi data harian/mingguan.
 
-5. **Gombet (Frontend Developer - Modul Multi-Cabang & User Management)**
+5. **Ferdy (Frontend Developer - Modul Multi-Cabang & User Management)**
    - **Modul**: Pengelolaan Cabang & Profil.
    - **Tugas**: Antarmuka perpindahan cabang, manajemen akun karyawan, dan pengaturan profil toko.
    - **Tugas**:
@@ -47,13 +47,13 @@ Sesuai dengan kebutuhan arsitektur cloud SaaS modern yang cepat, ringan, dan han
 - **Fase 1: Inisiasi & Persiapan (Minggu 1)**
   - Setup Repository GitHub dan aturan kolaborasi.
   - Setup proyek Vercel dan Supabase.
-  - Implementasi struktur awal database (oleh Gombet).
+  - Implementasi struktur awal database (oleh Ferdy).
   - Inisiasi boilerplate Next.js + Tailwind (oleh Adam).
 
 - **Fase 2: Core Development (Minggu 2 - 3)**
   - Pembangunan UI POS dan logika keranjang oleh Rafi.
   - Pembangunan UI Katalog Barang dan Manajemen Inventaris oleh Akmal.
-  - Integrasi API otentikasi login oleh Gombet.
+  - Integrasi API otentikasi login oleh Ferdy.
 
 - **Fase 3: Integrasi & Fitur Lanjutan (Minggu 4)**
   - Menyambungkan Frontend (POS & Inventaris) ke Supabase Database.

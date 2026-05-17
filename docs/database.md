@@ -21,7 +21,7 @@ DROP TABLE IF EXISTS store_settings CASCADE;
 -- 1. Tabel Toko (Tenant)
 CREATE TABLE stores (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- [Tambahan oleh Gombet]: Untuk melacak pemilik cabang pada fitur Multi-Cabang
+  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- [Tambahan oleh Ferdy]: Untuk melacak pemilik cabang pada fitur Multi-Cabang
   name TEXT NOT NULL,
   address TEXT,
   phone TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE stores (
 -- 2. Tabel Profil (Karyawan/Owner)
 -- Menghubungkan Supabase Auth dengan data toko
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- [Disederhanakan oleh Gombet]: Untuk mempermudah testing CRUD tanpa Auth User beneran
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), -- [Disederhanakan oleh Ferdy]: Untuk mempermudah testing CRUD tanpa Auth User beneran
   store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
   full_name TEXT,
   role TEXT CHECK (role IN ('owner', 'kasir')),
@@ -136,7 +136,7 @@ CREATE TABLE stock_logs (
 
 ---
 
-## 🟣 4. Tambahan Modul Settings (Dibuat oleh: Gombet/AI)
+## 🟣 4. Tambahan Modul Settings (Dibuat oleh: Ferdy/AI)
 **Fungsi**: Menyimpan preferensi toko seperti logo, footer struk, dan ambang batas stok tipis.
 
 ```sql

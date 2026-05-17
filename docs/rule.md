@@ -1,6 +1,6 @@
 # Rules & Guidelines Proyek KelontongSync
 
-Dokumen ini berisi aturan main (Rules of Engagement) yang harus dipatuhi oleh kelima anggota tim (Abdur Rouf, Gombet, Rafi, Akmal, dan Adam) agar proses pengembangan berjalan sinkron, terarah, dan terhindar dari konflik (baik konflik kode maupun komunikasi).
+Dokumen ini berisi aturan main (Rules of Engagement) yang harus dipatuhi oleh kelima anggota tim (Abdur Rouf, Ferdy, Rafi, Akmal, dan Adam) agar proses pengembangan berjalan sinkron, terarah, dan terhindar dari konflik (baik konflik kode maupun komunikasi).
 
 ## 1. Aturan Komunikasi dan Sinkronisasi (Agile & Scrum)
 - **Daily Stand-up**: Diadakan minimal 3 kali seminggu (Senin, Rabu, Jumat) via Online Meeting atau Grup Chat.

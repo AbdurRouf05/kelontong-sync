@@ -32,10 +32,10 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 - [x] **Adam**: Integrasi library Chart.js/Recharts untuk grafik penjualan.
 - [x] **Adam**: Membuat layout responsif untuk tampilan mobile/tablet.
 
-### Modul Settings & Multi-Cabang (Gombet)
-- [x] **Gombet**: Membuat UI Pengaturan Profil Toko & Cabang.
-- [x] **Gombet**: Membuat halaman manajemen akun karyawan/kasir.
-- [x] **Gombet**: Implementasi UI untuk fitur perpindahan antar cabang.
+### Modul Settings & Multi-Cabang (Ferdy)
+- [x] **Ferdy**: Membuat UI Pengaturan Profil Toko & Cabang.
+- [x] **Ferdy**: Membuat halaman manajemen akun karyawan/kasir.
+- [x] **Ferdy**: Implementasi UI untuk fitur perpindahan antar cabang.
 
 ---
 
