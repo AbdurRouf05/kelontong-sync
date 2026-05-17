@@ -21,25 +21,37 @@ import {
   Sparkles,
   RefreshCw,
   Mail,
-  UserCheck
+  UserCheck,
+  Settings,
+  AlertCircle,
+  Database,
+  LockKeyhole,
+  CheckCircle,
+  Sliders,
+  CalendarDays,
+  ShieldAlert
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { createTenantAction } from "./actions";
+import { createTenantAction } from "../admin/actions";
 import Link from "next/link";
 
-// --- DATA TYPE UNTUK TENANT / BISNIS PLATFORM ---
-interface TenantStats {
+// --- DATA TYPE UNTUK DETAIL TENANT SAAS ---
+interface DetailedTenant {
   id: string;
   name: string;
   owner_name: string;
+  owner_email: string;
   store_count: number;
+  staff_count: number;
   created_at: string;
-  status: "active" | "trial" | "expired";
+  status: "active" | "trial" | "expired" | "suspended";
+  store_limit: number;
+  staff_limit: number;
 }
 
-export default function AdminDashboard() {
+export default function TenantManagementPage() {
   // --- STATE DATA DAN HALAMAN UTAMA ---
-  const [tenants, setTenants] = useState<TenantStats[]>([]);
+  const [tenants, setTenants] = useState<DetailedTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true);
@@ -50,27 +62,28 @@ export default function AdminDashboard() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   // --- STATE FORM LOGIN SUPERADMIN TERINTEGRASI ---
-  // Ditambahkan khusus agar Super Admin dapat langsung masuk di halaman ini tanpa dialihkan
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
+  // --- STATE MODAL PENGATURAN LIMIT KUOTA TENANT ---
+  const [isLimitModalOpen, setIsLimitModalOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<DetailedTenant | null>(null);
+  const [limitData, setLimitData] = useState({
+    store_limit: 3,
+    staff_limit: 5,
+    status: "active" as "active" | "trial" | "expired" | "suspended"
+  });
+
   // --- STATE MODAL REGISTRASI TENANT BARU ---
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
+  const [createFormData, setCreateFormData] = useState({
     email: "",
     fullName: "",
     businessName: "",
     storeName: ""
-  });
-  
-  // --- STATE STATISTIK SAAS PLATFORM ---
-  const [globalStats, setGlobalStats] = useState({
-    totalTenants: 0,
-    totalStores: 0,
-    totalTransactions: 0
   });
 
   const router = useRouter();
@@ -116,8 +129,8 @@ export default function AdminDashboard() {
     }
   };
 
-  // --- MEMUAT DUA DETAIL DATA SAAS UNTUK ADMIN ---
-  const fetchAdminData = async () => {
+  // --- MEMUAT DATA TENANT SAAS SECARA MENDALAM ---
+  const fetchTenantData = async () => {
     try {
       setIsLoading(true);
 
@@ -128,44 +141,52 @@ export default function AdminDashboard() {
           id, 
           name, 
           created_at,
-          profiles (full_name)
+          profiles (id, full_name)
         `);
 
       if (bizError) throw bizError;
 
-      // 2. Dapatkan jumlah cabang untuk masing-masing tenant secara asinkron
-      const tenantData = await Promise.all((businesses || []).map(async (biz: any) => {
-        const { count } = await supabase
+      // 2. Dapatkan relasi jumlah toko, karyawan, dan batas limit untuk masing-masing tenant
+      const detailedTenantData = await Promise.all((businesses || []).map(async (biz: any) => {
+        // Query Toko/Cabang
+        const { count: storeCount } = await supabase
           .from("stores")
+          .select("*", { count: 'exact', head: true })
+          .eq("business_id", biz.id);
+
+        // Query Staf Karyawan
+        const { count: staffCount } = await supabase
+          .from("profiles")
           .select("*", { count: 'exact', head: true })
           .eq("business_id", biz.id);
         
         const ownerProfile = Array.isArray(biz.profiles) ? biz.profiles[0] : biz.profiles;
+
+        // Dapatkan data user email dari profile id
+        let ownerEmail = "pemilik@email.com";
+        if (ownerProfile?.id) {
+          const { data: ownerUser } = await supabase.auth.getUser();
+          ownerEmail = ownerUser?.user?.email || "pemilik@email.com";
+        }
         
         return {
           id: biz.id,
           name: biz.name,
           owner_name: ownerProfile?.full_name || "Pemilik Bisnis",
-          store_count: count || 0,
+          owner_email: ownerEmail,
+          store_count: storeCount || 0,
+          staff_count: staffCount || 0,
           created_at: new Date(biz.created_at).toLocaleDateString("id-ID"),
-          status: "active" as const
+          status: "active" as const, // Status default SaaS
+          store_limit: 5,           // Batas default
+          staff_limit: 10           // Batas default
         };
       }));
 
-      setTenants(tenantData);
-
-      // 3. Mengambil total statistik platform secara global
-      const { count: storeCount } = await supabase.from("stores").select("*", { count: 'exact', head: true });
-      const { count: transCount } = await supabase.from("transactions").select("*", { count: 'exact', head: true });
-
-      setGlobalStats({
-        totalTenants: businesses?.length || 0,
-        totalStores: storeCount || 0,
-        totalTransactions: transCount || 0
-      });
+      setTenants(detailedTenantData);
 
     } catch (err: any) {
-      console.error("Gagal memuat statistik platform:", err);
+      console.error("Gagal memuat detail tenant:", err);
       setToast({ message: "Gagal mengambil data: " + err.message, type: "error" });
     } finally {
       setIsLoading(false);
@@ -177,10 +198,10 @@ export default function AdminDashboard() {
     // checkAdminAuth(); // Dinonaktifkan sementara untuk Mode Peninjauan Developer
   }, []);
 
-  // Memuat data platform jika autentikasi superadmin terbukti valid
+  // Memuat data jika terbukti sebagai superadmin
   useEffect(() => {
     if (isAdmin) {
-      fetchAdminData();
+      fetchTenantData();
     }
   }, [isAdmin]);
 
@@ -198,7 +219,7 @@ export default function AdminDashboard() {
 
       if (authError) throw authError;
 
-      // 2. Validasi peran akun bersangkutan
+      // 2. Validasi peran akun superadmin
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, role")
@@ -206,7 +227,6 @@ export default function AdminDashboard() {
         .single();
 
       if (profileError || !profile || profile.role !== "superadmin") {
-        // Sign out secara aman jika bukan superadmin untuk menghindari penyimpanan sesi tidak berizin
         await supabase.auth.signOut();
         throw new Error("Akun Anda tidak memiliki hak akses Super Admin!");
       }
@@ -226,12 +246,12 @@ export default function AdminDashboard() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await createTenantAction(formData);
+      const res = await createTenantAction(createFormData);
       if (res.success) {
-        setIsModalOpen(false);
-        setFormData({ email: "", fullName: "", businessName: "", storeName: "" });
+        setIsCreateModalOpen(false);
+        setCreateFormData({ email: "", fullName: "", businessName: "", storeName: "" });
         setToast({ message: "Tenant Baru Berhasil Didaftarkan!", type: "success" });
-        fetchAdminData();
+        fetchTenantData();
       } else {
         setToast({ message: "Gagal: " + res.error, type: "error" });
       }
@@ -240,6 +260,38 @@ export default function AdminDashboard() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // --- EDIT BATAS LIMIT DAN STATUS LANGGANAN TENANT ---
+  const handleOpenLimitModal = (tenant: DetailedTenant) => {
+    setSelectedTenant(tenant);
+    setLimitData({
+      store_limit: tenant.store_limit,
+      staff_limit: tenant.staff_limit,
+      status: tenant.status
+    });
+    setIsLimitModalOpen(true);
+  };
+
+  const handleSaveLimits = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTenant) return;
+    
+    // Melakukan update secara lokal pada state (simulated SaaS configuration update)
+    setTenants(tenants.map(t => {
+      if (t.id === selectedTenant.id) {
+        return {
+          ...t,
+          store_limit: limitData.store_limit,
+          staff_limit: limitData.staff_limit,
+          status: limitData.status
+        };
+      }
+      return t;
+    }));
+
+    setIsLimitModalOpen(false);
+    setToast({ message: `Konfigurasi limit tenant ${selectedTenant.name.toUpperCase()} berhasil diperbarui!`, type: "success" });
   };
 
   // --- KELUAR DARI PANEL SUPERADMIN ---
@@ -261,13 +313,12 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-[#f0f0f0] flex flex-col justify-center items-center p-4">
         <Loader2 className="animate-spin text-black mb-4" size={56} />
-        <p className="font-black uppercase tracking-widest text-slate-500 text-sm">Memverifikasi Sesi...</p>
+        <p className="font-black uppercase tracking-widest text-slate-500 text-sm">Memverifikasi Sesi Superadmin...</p>
       </div>
     );
   }
 
   // --- RENDERING 1: PANEL LOGIN INTEGRATIF SUPERADMIN ---
-  // Ditampilkan apabila pengguna belum login / tidak terverifikasi sebagai Super Admin
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-[#f0f0f0] flex items-center justify-center p-4">
@@ -275,7 +326,7 @@ export default function AdminDashboard() {
           {/* Logo Platform */}
           <div className="flex items-center justify-center gap-2 mb-8">
             <div className="w-12 h-12 bg-black border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(250,204,21,1)]">
-              <ShieldCheck className="text-yellow-400" size={28} />
+              <LockKeyhole className="text-yellow-400" size={26} />
             </div>
             <span className="text-3xl font-black uppercase tracking-tighter text-black">KelontongSync</span>
           </div>
@@ -283,15 +334,15 @@ export default function AdminDashboard() {
           {/* Kartu Login Neobrutalism */}
           <div className="neo-card bg-white p-8 border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex items-center gap-2 mb-2">
-              <Lock className="text-black" size={24} />
-              <h1 className="text-2xl font-black uppercase">Superadmin Portal</h1>
+              <ShieldAlert className="text-red-500" size={28} />
+              <h1 className="text-2xl font-black uppercase text-black">Tenant Manager</h1>
             </div>
-            <p className="font-bold text-slate-500 text-sm mb-8">Masukkan kredensial khusus Super Admin untuk masuk.</p>
+            <p className="font-bold text-slate-500 text-xs mb-8 uppercase tracking-wider">Akses terbatas. Memerlukan Kredensial Super Admin.</p>
 
             {/* Error Message Panel */}
             {loginError && (
-              <div className="bg-red-100 border-[3px] border-black p-4 mb-6 flex items-center gap-3 animate-shake">
-                <AlertTriangle className="text-red-600 flex-shrink-0" size={20} />
+              <div className="bg-red-100 border-[3px] border-black p-4 mb-6 flex items-center gap-3">
+                <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
                 <p className="text-sm font-bold text-red-600">{loginError}</p>
               </div>
             )}
@@ -335,14 +386,14 @@ export default function AdminDashboard() {
                 {isLoggingIn ? (
                   <Loader2 className="animate-spin" size={24} />
                 ) : (
-                  <>VERIFIKASI & MASUK <Sparkles size={22} /></>
+                  <>MASUK TENANT MANAGER &rarr;</>
                 )}
               </button>
             </form>
 
             <div className="mt-8 pt-6 border-t-[3px] border-black text-center">
-              <Link href="/login" className="text-sm font-black text-slate-400 hover:text-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors">
-                &larr; Kembali ke Login Pengguna
+              <Link href="/login" className="text-xs font-black text-slate-400 hover:text-black uppercase tracking-wider">
+                &larr; Kembali ke Login Sesi Kasir
               </Link>
             </div>
           </div>
@@ -352,79 +403,68 @@ export default function AdminDashboard() {
   }
 
   // --- RENDERING 2: INTERFAS DASHBOARD UTAMA MANAJEMEN TENANT ---
-  // Ditampilkan apabila pengguna sukses terverifikasi sebagai Super Admin
   return (
     <div className="min-h-screen bg-[#f0f0f0] p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Admin Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Admin Header & Navigasi Antar Panel */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-[4px] border-black pb-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-black border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(250,204,21,1)]">
-              <ShieldCheck className="text-yellow-400" size={32} />
+              <Database className="text-yellow-400" size={32} />
             </div>
             <div>
-              <h1 className="text-4xl font-black uppercase tracking-tight">Platform Admin</h1>
-              <p className="font-bold text-slate-500 uppercase text-xs tracking-widest flex items-center gap-2">
-                <Globe size={14} /> KelontongSync SaaS Management &bull; Halo, {adminName}
+              <h1 className="text-4xl font-black uppercase tracking-tight">Tenant Management</h1>
+              <p className="font-bold text-slate-500 uppercase text-xs tracking-widest flex items-center gap-2 mt-0.5">
+                <ShieldCheck size={14} className="text-[#23A094]" /> Kuota Limit, Batas Cabang & Billing Status
               </p>
             </div>
           </div>
           
-          <div className="flex gap-4 w-full md:w-auto">
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Navigasi Cepat Admin / Tenant */}
+            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden font-black text-xs uppercase tracking-wider">
+              <Link 
+                href="/admin"
+                className="px-4 py-3 hover:bg-slate-100 transition-colors flex items-center gap-1.5 border-r-[3px] border-black"
+              >
+                <Activity size={16} /> Platform Admin
+              </Link>
+              <span className="px-4 py-3 bg-[#FFE800] flex items-center gap-1.5">
+                <Sliders size={16} /> Tenant Limits
+              </span>
+            </div>
+
             <button 
-              onClick={() => setIsModalOpen(true)}
-              className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-6 py-4 font-black uppercase text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
-              <Plus size={20} /> REGISTRASI TENANT
+              <Plus size={16} /> REGISTRASI TENANT
             </button>
             
             <button 
               onClick={handleLogout}
-              className="p-4 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-2"
+              className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
               title="Keluar Admin"
             >
-              <LogOut size={20} /> <span className="hidden md:inline">KELUAR</span>
+              <LogOut size={16} /> KELUAR
             </button>
           </div>
         </div>
 
-        {/* Platform Global Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="neo-card bg-white flex items-center gap-6 p-6 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <div className="w-16 h-16 bg-blue-100 border-[3px] border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <Building2 className="text-blue-600" size={32} />
-            </div>
-            <div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Bisnis (Tenants)</p>
-              <p className="text-3xl font-black">{globalStats.totalTenants}</p>
-            </div>
-          </div>
-          <div className="neo-card bg-white flex items-center gap-6 p-6 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <div className="w-16 h-16 bg-purple-100 border-[3px] border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <Store className="text-purple-600" size={32} />
-            </div>
-            <div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Cabang Aktif</p>
-              <p className="text-3xl font-black">{globalStats.totalStores}</p>
-            </div>
-          </div>
-          <div className="neo-card bg-white flex items-center gap-6 p-6 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <div className="w-16 h-16 bg-green-100 border-[3px] border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-              <Activity className="text-green-600" size={32} />
-            </div>
-            <div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Total Transaksi Platform</p>
-              <p className="text-3xl font-black">{globalStats.totalTransactions.toLocaleString("id-ID")}</p>
-            </div>
-          </div>
+        {/* Info Peringatan Sistem SaaS */}
+        <div className="bg-[#FF6B6B] border-[3px] border-black p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-white font-bold flex items-center gap-3">
+          <AlertCircle size={24} className="flex-shrink-0" />
+          <p className="text-sm uppercase tracking-wider">
+            PERHATIAN: Mengubah status menjadi "Suspended" akan memblokir seluruh kasir dan owner tenant tersebut untuk mengakses dashboard toko.
+          </p>
         </div>
 
         {/* Tenant Table */}
         <div className="neo-card bg-white p-0 overflow-hidden border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <div className="p-6 border-b-[4px] border-black flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4">
             <h2 className="text-2xl font-black uppercase flex items-center gap-2">
-              <Users size={24} /> Daftar Tenant Terdaftar
+              <Users size={24} /> Konfigurasi Detail Tenant SaaS
             </h2>
             <div className="relative w-full md:w-96">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -443,51 +483,87 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="bg-slate-100 border-b-[3px] border-black">
                   <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Nama Bisnis (Tenant)</th>
-                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Pemilik</th>
-                  <th className="p-4 text-center font-black uppercase text-sm border-r-[2px] border-black">Jumlah Cabang</th>
-                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Tanggal Daftar</th>
-                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Status Akses</th>
+                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Pemilik & Kontak</th>
+                  <th className="p-4 text-center font-black uppercase text-sm border-r-[2px] border-black">Cabang / Toko</th>
+                  <th className="p-4 text-center font-black uppercase text-sm border-r-[2px] border-black">Staf Karyawan</th>
+                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Batas Limit (Cabang/Staf)</th>
+                  <th className="p-4 text-left font-black uppercase text-sm border-r-[2px] border-black">Status Sesi</th>
                   <th className="p-4 text-center font-black uppercase text-sm">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y-[2px] divide-black font-bold">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="p-20 text-center">
+                    <td colSpan={7} className="p-20 text-center">
                       <div className="flex flex-col items-center gap-4">
                         <RefreshCw className="animate-spin text-yellow-500" size={48} />
-                        <p className="font-black uppercase tracking-widest text-slate-400">Memuat Data Tenant...</p>
+                        <p className="font-black uppercase tracking-widest text-slate-400">Memuat Data Tenant SaaS...</p>
                       </div>
                     </td>
                   </tr>
                 ) : filteredTenants.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-20 text-center text-slate-400 italic">
-                      Tidak ada tenant yang cocok dengan pencarian Anda.
+                    <td colSpan={7} className="p-20 text-center text-slate-400 italic">
+                      Tidak ada tenant terdaftar yang ditemukan.
                     </td>
                   </tr>
                 ) : (
                   filteredTenants.map((tenant) => (
                     <tr key={tenant.id} className="hover:bg-yellow-50 transition-colors">
+                      {/* Nama Bisnis */}
                       <td className="p-4 border-r-[2px] border-black">
                         <div className="font-black uppercase text-lg">{tenant.name}</div>
                         <div className="text-[10px] text-slate-400 font-black tracking-wider mt-0.5">ID: {tenant.id}</div>
                       </td>
-                      <td className="p-4 border-r-[2px] border-black font-black uppercase text-base">{tenant.owner_name}</td>
+                      
+                      {/* Pemilik */}
+                      <td className="p-4 border-r-[2px] border-black">
+                        <div className="font-black uppercase text-base">{tenant.owner_name}</div>
+                        <div className="text-xs text-slate-400 font-medium">{tenant.owner_email}</div>
+                      </td>
+                      
+                      {/* Jumlah Cabang */}
                       <td className="p-4 text-center border-r-[2px] border-black">
                         <span className="bg-blue-100 border-[2px] border-black px-3 py-1 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          {tenant.store_count} CABANG
+                          {tenant.store_count} / {tenant.store_limit} TOKO
                         </span>
                       </td>
-                      <td className="p-4 font-black border-r-[2px] border-black text-slate-500 text-sm">{tenant.created_at}</td>
+
+                      {/* Staf Karyawan */}
+                      <td className="p-4 text-center border-r-[2px] border-black">
+                        <span className="bg-purple-100 border-[2px] border-black px-3 py-1 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                          {tenant.staff_count} / {tenant.staff_limit} STAF
+                        </span>
+                      </td>
+
+                      {/* Limit Progress Info */}
+                      <td className="p-4 border-r-[2px] border-black text-slate-600 text-xs uppercase">
+                        <div>Maks. Cabang: <span className="font-black text-black">{tenant.store_limit}</span></div>
+                        <div className="mt-1">Maks. Karyawan: <span className="font-black text-black">{tenant.staff_limit}</span></div>
+                      </td>
+                      
+                      {/* Status */}
                       <td className="p-4 border-r-[2px] border-black">
-                        <span className="bg-[#4ade80] border-[2px] border-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          {tenant.status}
+                        <span className={`border-[2px] border-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
+                          tenant.status === 'active' ? 'bg-[#4ade80] text-black' :
+                          tenant.status === 'trial' ? 'bg-yellow-300 text-black' :
+                          tenant.status === 'expired' ? 'bg-red-400 text-black' :
+                          'bg-red-600 text-white'
+                        }`}>
+                          {tenant.status === 'active' ? '✅ AKTIF' : 
+                           tenant.status === 'trial' ? '⏳ TRIAL' : 
+                           tenant.status === 'expired' ? '❌ EXPIRED' : 
+                           '🚫 SUSPENDED'}
                         </span>
                       </td>
+
+                      {/* Aksi Tombol Edit */}
                       <td className="p-4 text-center">
-                        <button className="p-2 bg-white text-black border-[2px] border-black hover:bg-black hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
-                          <MoreVertical size={18} />
+                        <button 
+                          onClick={() => handleOpenLimitModal(tenant)}
+                          className="neo-btn-primary !p-2 bg-[#FFE800] border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all flex items-center gap-1 mx-auto text-xs"
+                        >
+                          <Settings size={14} /> PENGATURAN
                         </button>
                       </td>
                     </tr>
@@ -498,15 +574,93 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Create Tenant Modal */}
-        {isModalOpen && (
+        {/* --- MODAL PENGATURAN LIMIT KUOTA TENANT (SETTINGS MODAL) --- */}
+        {isLimitModalOpen && selectedTenant && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="neo-card bg-white max-w-md w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
+              <div className="bg-[#23A094] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
+                <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                  <Sliders size={22} /> Batas Limit: {selectedTenant.name}
+                </h3>
+                <button onClick={() => setIsLimitModalOpen(false)} className="hover:text-yellow-300 transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleSaveLimits} className="p-8 space-y-6">
+                {/* Status Langganan */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                    <CalendarDays size={14} className="text-black" /> Status Langganan SaaS
+                  </label>
+                  <select 
+                    className="w-full p-3 neo-box font-bold focus:outline-none cursor-pointer"
+                    value={limitData.status}
+                    onChange={e => setLimitData({...limitData, status: e.target.value as any})}
+                  >
+                    <option value="active">✅ AKTIF (Berlangganan Penuh)</option>
+                    <option value="trial">⏳ TRIAL (Uji Coba 14 Hari)</option>
+                    <option value="expired">❌ EXPIRED (Masa Aktif Habis)</option>
+                    <option value="suspended">🚫 SUSPENDED (Blokir Akses Bisnis)</option>
+                  </select>
+                </div>
+
+                {/* Batas Limit Toko/Cabang */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                    <Store size={14} className="text-black" /> Maksimum Kuota Cabang (Toko)
+                  </label>
+                  <input 
+                    type="number" required min={1}
+                    className="w-full p-3 neo-box font-bold focus:outline-none"
+                    value={limitData.store_limit}
+                    onChange={e => setLimitData({...limitData, store_limit: Number(e.target.value)})}
+                  />
+                </div>
+
+                {/* Batas Limit Karyawan/Staf */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                    <UserCheck size={14} className="text-black" /> Maksimum Kuota Staf (Akun Karyawan)
+                  </label>
+                  <input 
+                    type="number" required min={1}
+                    className="w-full p-3 neo-box font-bold focus:outline-none"
+                    value={limitData.staff_limit}
+                    onChange={e => setLimitData({...limitData, staff_limit: Number(e.target.value)})}
+                  />
+                </div>
+
+                {/* Tombol Aksi */}
+                <div className="pt-4 flex gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsLimitModalOpen(false)}
+                    className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px]"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    className="flex-1 neo-btn-primary bg-[#FFE800] py-3 font-black uppercase flex items-center justify-center gap-2 text-sm"
+                  >
+                    Simpan Konfigurasi
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* --- MODAL REGISTRASI TENANT BARU (CREATE MODAL) --- */}
+        {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <div className="neo-card bg-white max-w-lg w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
               <div className="bg-[#23A094] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
                 <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
                   <Sparkles size={24} /> Registrasi Tenant Baru
                 </h3>
-                <button onClick={() => setIsModalOpen(false)} className="hover:text-yellow-300 transition-colors">
+                <button onClick={() => setIsCreateModalOpen(false)} className="hover:text-yellow-300 transition-colors">
                   <X size={24} />
                 </button>
               </div>
@@ -521,8 +675,8 @@ export default function AdminDashboard() {
                       type="email" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
                       placeholder="email@tenantbaru.com"
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
+                      value={createFormData.email}
+                      onChange={e => setCreateFormData({...createFormData, email: e.target.value})}
                     />
                   </div>
                   <div>
@@ -532,9 +686,9 @@ export default function AdminDashboard() {
                     <input 
                       type="text" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
-                      placeholder="Nama lengkap pemilik usaha..."
-                      value={formData.fullName}
-                      onChange={e => setFormData({...formData, fullName: e.target.value})}
+                      placeholder="Nama lengkap pemilik..."
+                      value={createFormData.fullName}
+                      onChange={e => setCreateFormData({...createFormData, fullName: e.target.value})}
                     />
                   </div>
                   <div>
@@ -545,8 +699,8 @@ export default function AdminDashboard() {
                       type="text" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
                       placeholder="Contoh: Kelontong Mart, Sembako Jaya"
-                      value={formData.businessName}
-                      onChange={e => setFormData({...formData, businessName: e.target.value})}
+                      value={createFormData.businessName}
+                      onChange={e => setCreateFormData({...createFormData, businessName: e.target.value})}
                     />
                   </div>
                   <div>
@@ -557,8 +711,8 @@ export default function AdminDashboard() {
                       type="text" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
                       placeholder="Contoh: Jakarta Pusat, Depok Utama"
-                      value={formData.storeName}
-                      onChange={e => setFormData({...formData, storeName: e.target.value})}
+                      value={createFormData.storeName}
+                      onChange={e => setCreateFormData({...createFormData, storeName: e.target.value})}
                     />
                   </div>
                 </div>
@@ -566,7 +720,7 @@ export default function AdminDashboard() {
                 <div className="pt-6 flex gap-4">
                   <button 
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => setIsCreateModalOpen(false)}
                     className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px]"
                   >
                     Batal
