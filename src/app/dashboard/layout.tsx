@@ -13,7 +13,8 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function DashboardLayout({
   children,
@@ -22,14 +23,42 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [userProfile, setUserProfile] = useState<{ full_name: string, role: string, store_name: string } | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, role, stores(name)")
+        .eq("id", user.id)
+        .single();
+
+      if (data) {
+        setUserProfile({
+          full_name: data.full_name || "User",
+          role: data.role || "staff",
+          store_name: (data.stores as any)?.name || "Cabang Utama"
+        });
+      }
+    };
+    fetchProfile();
+  }, []);
 
   const menuItems = [
-    { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} />, owner: "Adam" },
-    { name: "POS (Kasir)", href: "/dashboard/pos", icon: <ShoppingCart size={20} />, owner: "Rafi" },
-    { name: "Inventaris", href: "/dashboard/inventory", icon: <Package size={20} />, owner: "Akmal" },
-    { name: "Laporan", href: "/dashboard/reports", icon: <BarChart3 size={20} />, owner: "Adam" },
-    { name: "Pengaturan", href: "/dashboard/settings", icon: <Settings size={20} />, owner: "Gombet" },
+    { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={20} />, role: "all" },
+    { name: "POS (Kasir)", href: "/dashboard/pos", icon: <ShoppingCart size={20} />, role: "all" },
+    { name: "Inventaris", href: "/dashboard/inventory", icon: <Package size={20} />, role: "all" },
+    { name: "Laporan", href: "/dashboard/reports", icon: <BarChart3 size={20} />, role: "all" },
+    { name: "Kelola Cabang", href: "/dashboard/management", icon: <Store size={20} />, role: "owner" },
+    { name: "Pengaturan", href: "/dashboard/settings", icon: <Settings size={20} />, role: "all" },
   ];
+
+  const visibleMenuItems = menuItems.filter(item => 
+    item.role === "all" || item.role === userProfile?.role
+  );
 
   return (
     <div className="min-h-screen bg-[#f0f0f0] flex relative">
@@ -50,7 +79,7 @@ export default function DashboardLayout({
         </div>
 
         <nav className="flex-1 p-4 space-y-4">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link 
@@ -68,7 +97,6 @@ export default function DashboardLayout({
                 {isSidebarOpen && (
                   <div className="flex flex-col">
                     <span>{item.name}</span>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-widest">PIC: {item.owner}</span>
                   </div>
                 )}
               </Link>
@@ -106,7 +134,7 @@ export default function DashboardLayout({
           </button>
         </div>
         <nav className="flex-1 p-4 space-y-4">
-          {menuItems.map((item) => (
+          {visibleMenuItems.map((item) => (
             <Link 
               key={item.name} 
               href={item.href}
@@ -120,7 +148,6 @@ export default function DashboardLayout({
               {item.icon}
               <div className="flex flex-col">
                 <span>{item.name}</span>
-                <span className="text-[10px] text-slate-400 uppercase tracking-widest">PIC: {item.owner}</span>
               </div>
             </Link>
           ))}
@@ -143,10 +170,10 @@ export default function DashboardLayout({
           </div>
           <div className="flex items-center gap-2 md:gap-4">
             <div className="hidden sm:block bg-green-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase text-sm">
-              Toko Berkah Utama 🏪
+              {userProfile?.store_name || "Memuat..."} 🏪
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-pink-400 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm md:text-base">
-              👤
+            <div className="w-10 h-10 md:w-12 md:h-12 bg-pink-400 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm md:text-base font-black">
+              {userProfile?.full_name?.charAt(0) || "U"}
             </div>
           </div>
         </header>

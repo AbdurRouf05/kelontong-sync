@@ -96,9 +96,9 @@ export default function LandingPage() {
               Beralih ke sistem kasir modern dengan gaya <span className="underline decoration-[#23A094] decoration-8 underline-offset-4">Neobrutalism</span>. Gak cuma keren, tapi bikin jualan makin sat-set!
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start pt-4">
-              <button className="neo-btn-primary !text-2xl !py-6 !px-10 flex items-center justify-center gap-3">
+              <Link href="/login" className="neo-btn-primary !text-2xl !py-6 !px-10 flex items-center justify-center gap-3">
                 MULAI SEKARANG <ArrowRight size={28} strokeWidth={3} />
-              </button>
+              </Link>
               <div className="flex items-center gap-4 bg-white border-[3px] border-black p-4 shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-sm">
                 <div className="flex -space-x-3">
                   {[1,2,3].map(i => (
