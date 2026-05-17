@@ -14,7 +14,7 @@ export default function ReportFilter() {
   };
 
   return (
-    <div className="flex bg-white border-[4px] border-black p-1 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+    <div className="flex flex-wrap sm:flex-nowrap bg-white border-[4px] border-black p-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full sm:w-auto">
       {[
         { id: "all", label: "Semua" },
         { id: "daily", label: "Hari Ini" },
@@ -25,7 +25,7 @@ export default function ReportFilter() {
         <button
           key={p.id}
           onClick={() => setPeriod(p.id)}
-          className={`px-6 py-2 text-sm font-black uppercase transition-all ${
+          className={`px-3 sm:px-6 py-2 text-[10px] sm:text-sm font-black uppercase transition-all flex-1 text-center whitespace-nowrap ${
             currentPeriod === p.id 
               ? "bg-yellow-400 border-[2px] border-black" 
               : "hover:bg-slate-50"

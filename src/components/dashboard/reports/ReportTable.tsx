@@ -104,7 +104,7 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
     setIsExportMenuOpen(false);
   };
   return (
-    <div className="neo-card space-y-6">
+    <div className="neo-card p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
       {/* Header Laporan Khusus Print */}
       <div className="hidden print:block mb-8 border-b-[4px] border-black pb-4">
         <h1 className="text-4xl font-black uppercase">Laporan Penjualan Produk</h1>
@@ -112,18 +112,18 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
         <p className="text-sm font-bold text-slate-500">Tanggal Cetak: {new Date().toLocaleDateString('id-ID')}</p>
       </div>
 
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
-        <h3 className="text-2xl font-black uppercase tracking-tight">Rincian Penjualan Produk</h3>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 border-[3px] border-black bg-white px-3 py-1 font-bold">
-            <span className="text-xs uppercase">Show:</span>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 sm:gap-4 print:hidden">
+        <h3 className="text-lg sm:text-2xl font-black uppercase tracking-tight">Rincian Penjualan Produk</h3>
+        <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-1.5 sm:gap-2 border-[3px] border-black bg-white px-2 sm:px-3 py-1 sm:py-1.5 font-bold">
+            <span className="text-[10px] sm:text-xs uppercase">Show:</span>
             <select 
               value={itemsPerPage}
               onChange={(e) => {
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-transparent focus:outline-none cursor-pointer text-sm"
+              className="bg-transparent focus:outline-none cursor-pointer text-xs sm:text-sm"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -132,12 +132,12 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
               <option value={100}>100</option>
             </select>
           </div>
-          <div className="relative">
+          <div className="relative flex-1 sm:flex-none">
             <button 
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-              className="flex-1 md:flex-none bg-white border-[3px] border-black px-4 py-2 font-black uppercase hover:bg-black hover:text-white transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-2"
+              className="w-full sm:w-auto bg-white border-[3px] border-black px-3 sm:px-4 py-1.5 sm:py-2 font-black uppercase hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
             >
-              <Download size={18} /> EXPORT
+              <Download size={16} className="sm:w-[18px] sm:h-[18px]" /> EXPORT
             </button>
 
             {isExportMenuOpen && (
@@ -152,7 +152,8 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
         </div>
       </div>
 
-      <div className="border-[3px] border-black overflow-hidden print:border-none">
+      {/* Desktop Table View */}
+      <div className="hidden md:block border-[3px] border-black overflow-hidden print:border-none">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-black text-white text-sm uppercase font-black">
@@ -192,6 +193,47 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Bento Cards View */}
+      <div className="block md:hidden space-y-4 print:hidden">
+        {paginatedData.length > 0 ? (
+          paginatedData.map((r, i) => (
+            <div key={i} className="neo-card p-3 sm:p-4 bg-white flex flex-col gap-3 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] border-[3px] border-black">
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-[9px] font-black uppercase text-slate-400 shrink-0">{r.date}</span>
+                <span className="bg-slate-200 px-1.5 py-0.5 border-[2px] border-black text-[8px] font-black uppercase truncate max-w-[120px]">
+                  {r.category}
+                </span>
+              </div>
+              
+              <div className="flex-1">
+                <h4 className="font-black uppercase text-xs sm:text-sm leading-tight line-clamp-2">{r.productName}</h4>
+              </div>
+              
+              <div className="flex items-center justify-between bg-slate-50 border-[2px] border-black p-2 mt-1 text-xs">
+                <div>
+                  <p className="text-[8px] font-black uppercase text-slate-400">Jumlah</p>
+                  <p className="font-bold text-black">{r.quantity} Item</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[8px] font-black uppercase text-slate-400">Total Penjualan</p>
+                  <p className="font-black text-blue-600">
+                    {new Intl.NumberFormat('id-ID', { 
+                      style: 'currency', 
+                      currency: 'IDR',
+                      maximumFractionDigits: 0
+                    }).format(r.total)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="neo-card p-8 text-center text-slate-400 italic text-sm">
+            Belum ada data transaksi untuk ditampilkan.
+          </div>
+        )}
       </div>
 
       {/* Pagination Controls */}

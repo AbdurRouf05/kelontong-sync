@@ -21,12 +21,12 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-purple-400 border-[4px] border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-black uppercase tracking-tight">Halo, Juragan Rouf! 👋</h1>
-          <p className="text-xl font-bold italic">Tokomu hari ini rame banget, lho. Cuan makin kenceng!</p>
+      <div className="bg-purple-400 border-[4px] border-black p-6 sm:p-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="space-y-2 text-center md:text-left">
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight">Halo, Juragan Rouf! 👋</h1>
+          <p className="text-sm sm:text-xl font-bold italic">Tokomu hari ini rame banget, lho. Cuan makin kenceng!</p>
         </div>
-        <Link href="/dashboard/reports" className="neo-btn-primary !bg-white whitespace-nowrap">
+        <Link href="/dashboard/reports" className="neo-btn-primary !bg-white whitespace-nowrap w-full md:w-auto text-center py-3 md:py-2.5 px-6 shrink-0 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           Lihat Detail Hari Ini 🚀
         </Link>
       </div>

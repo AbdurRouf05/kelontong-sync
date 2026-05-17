@@ -47,6 +47,7 @@ export default function POSPage() {
   const [lastTransaction, setLastTransaction] = useState<any>(null);
   const [userContext, setUserContext] = useState<{ business_id: string; current_store_id: string } | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [activeTab, setActiveTab] = useState<"products" | "cart">("products");
   
   // Payment States
   const [cashAmount, setCashAmount] = useState<number>(0);
@@ -257,7 +258,7 @@ export default function POSPage() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-full max-h-[calc(100vh-140px)]">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full max-h-[calc(100vh-140px)]">
       {/* Hidden Receipt Area */}
       <div id="receipt-content" className="hidden print:block w-[80mm] mx-auto p-6 text-black font-mono leading-relaxed bg-white">
         <div className="text-center mb-8">
@@ -307,38 +308,54 @@ export default function POSPage() {
         </div>
       </div>
 
+      {/* Mobile Tab Switcher */}
+      <div className="flex lg:hidden border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden w-full shrink-0 z-10">
+        <button 
+          onClick={() => setActiveTab("products")}
+          className={`flex-1 py-3.5 text-center font-black uppercase text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 ${activeTab === "products" ? "bg-yellow-400 text-black" : "hover:bg-slate-100"}`}
+        >
+          <LayoutGrid size={16} /> Produk ({filteredProducts.length})
+        </button>
+        <button 
+          onClick={() => setActiveTab("cart")}
+          className={`flex-1 py-3.5 text-center font-black uppercase text-xs sm:text-sm border-l-[3px] border-black transition-colors flex items-center justify-center gap-2 ${activeTab === "cart" ? "bg-pink-400 text-black" : "hover:bg-slate-100"}`}
+        >
+          <ShoppingCart size={16} /> Keranjang ({cart.reduce((acc, i) => acc + i.quantity, 0)})
+        </button>
+      </div>
+
       {/* Main UI */}
-      <div className="flex-1 flex flex-col gap-6 overflow-hidden print:hidden">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className={`flex-1 flex flex-col gap-6 overflow-hidden print:hidden ${activeTab === "products" ? "flex" : "hidden lg:flex"}`}>
+        <div className="flex flex-col sm:flex-row gap-3 w-full">
           <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
               placeholder="Cari barang..."
-              className="w-full pl-12 pr-4 py-4 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold text-lg"
+              className="w-full pl-11 pr-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold text-sm sm:text-lg"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex gap-4">
-            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden">
+          <div className="flex gap-3 w-full sm:w-auto">
+            <div className="flex border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden flex-1 sm:flex-initial">
               <button 
                 onClick={() => setViewMode("grid")}
-                className={`p-4 transition-colors ${viewMode === "grid" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
+                className={`flex-1 sm:flex-initial p-3 sm:p-4 transition-colors flex items-center justify-center ${viewMode === "grid" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
                 title="Tampilan Kotak"
               >
-                <LayoutGrid size={20} />
+                <LayoutGrid size={18} />
               </button>
               <button 
                 onClick={() => setViewMode("list")}
-                className={`p-4 border-l-[3px] border-black transition-colors ${viewMode === "list" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
+                className={`flex-1 sm:flex-initial p-3 sm:p-4 border-l-[3px] border-black transition-colors flex items-center justify-center ${viewMode === "list" ? "bg-yellow-400" : "hover:bg-slate-100"}`}
                 title="Tampilan Daftar"
               >
-                <List size={20} />
+                <List size={18} />
               </button>
             </div>
-            <div className="border-[3px] border-black px-6 flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-blue-400">
-              <span className="font-black uppercase">{filteredProducts.length} BARANG</span>
+            <div className="border-[3px] border-black px-4 sm:px-6 flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] bg-blue-400 flex-1 sm:flex-initial">
+              <span className="font-black uppercase text-xs sm:text-sm whitespace-nowrap">{filteredProducts.length} BARANG</span>
             </div>
           </div>
         </div>
@@ -359,33 +376,33 @@ export default function POSPage() {
           ) : products.length > 0 ? (
             <>
               {viewMode === "grid" ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 pb-6">
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id}
-                      className={`neo-card p-3 flex flex-col group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"}`}
+                      className={`neo-card p-2 sm:p-3 flex flex-col group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]"}`}
                       onClick={() => addToCart(product)}
                     >
-                      <div className="mb-3 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden">
+                      <div className="mb-2 sm:mb-3 aspect-square bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden">
                         {product.image ? (
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-4xl">{product.category_icon || "📦"}</span>
+                          <span className="text-2xl sm:text-4xl">{product.category_icon || "📦"}</span>
                         )}
                       </div>
                       <div className="flex-1 min-h-0">
                         <div className="flex items-center gap-1 mb-1">
-                          <span className="text-[8px] font-black bg-slate-200 px-1 border border-black uppercase truncate">{product.category}</span>
+                          <span className="text-[7px] sm:text-[8px] font-black bg-slate-200 px-1 border border-black uppercase truncate">{product.category}</span>
                         </div>
-                        <h3 className="text-xs font-black leading-tight uppercase line-clamp-2 mb-1">{product.name}</h3>
-                        <p className="text-sm font-bold text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
+                        <h3 className="text-[10px] sm:text-xs font-black leading-tight uppercase line-clamp-2 mb-1">{product.name}</h3>
+                        <p className="text-xs sm:text-sm font-bold text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
                       </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 border-[2px] border-black ${product.stock < 5 ? "bg-red-400" : "bg-slate-200"}`}>
+                      <div className="mt-2.5 sm:mt-3 flex items-center justify-between gap-1">
+                        <span className={`text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 border-[2px] border-black truncate ${product.stock < 5 ? "bg-red-400 text-white" : "bg-slate-200"}`}>
                           STOK: {product.stock}
                         </span>
-                        <button className="bg-black text-white p-1.5 border-[2px] border-black">
-                          <Plus size={16} />
+                        <button className="bg-black text-white p-1 sm:p-1.5 border-[2px] border-black shrink-0">
+                          <Plus size={12} className="sm:w-4 sm:h-4" />
                         </button>
                       </div>
                     </div>
@@ -396,27 +413,27 @@ export default function POSPage() {
                   {filteredProducts.map((product) => (
                     <div 
                       key={product.id}
-                      className={`neo-card p-3 flex items-center gap-4 group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}
+                      className={`neo-card p-2 sm:p-3 flex items-center gap-3 sm:gap-4 group cursor-pointer ${product.stock <= 0 ? "opacity-50 grayscale" : "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"}`}
                       onClick={() => addToCart(product)}
                     >
-                      <div className="w-16 h-16 bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 border-[2px] border-black flex items-center justify-center overflow-hidden flex-shrink-0">
                         {product.image ? (
                           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-2xl">{product.category_icon || "📦"}</span>
+                          <span className="text-xl sm:text-2xl">{product.category_icon || "📦"}</span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1 mb-0.5">
-                          <span className="text-[8px] font-black bg-slate-200 px-1 border border-black uppercase">{product.category}</span>
+                          <span className="text-[7px] sm:text-[8px] font-black bg-slate-200 px-1 border border-black uppercase">{product.category}</span>
                         </div>
-                        <h3 className="font-black leading-tight uppercase truncate">{product.name}</h3>
-                        <p className="text-xs font-bold text-slate-400">STOK: {product.stock}</p>
+                        <h3 className="text-xs sm:text-sm font-black leading-tight uppercase truncate">{product.name}</h3>
+                        <p className="text-[10px] sm:text-xs font-bold text-slate-400">STOK: {product.stock}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-black text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
+                      <div className="text-right shrink-0">
+                        <p className="font-black text-xs sm:text-sm text-green-600">Rp {product.price.toLocaleString("id-ID")}</p>
                         <button className="mt-1 bg-black text-white p-1 border-[2px] border-black">
-                          <Plus size={16} />
+                          <Plus size={14} />
                         </button>
                       </div>
                     </div>
@@ -434,48 +451,48 @@ export default function POSPage() {
       </div>
 
       {/* Right Column: Cart */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-6 print:hidden">
+      <div className={`w-full lg:w-[400px] flex flex-col gap-6 print:hidden ${activeTab === "cart" ? "flex" : "hidden lg:flex"}`}>
         <div className="flex-1 flex flex-col neo-card bg-white p-0 overflow-hidden">
-          <div className="p-6 border-b-[4px] border-black bg-pink-400 flex items-center justify-between">
-            <h3 className="text-xl font-black uppercase flex items-center gap-2">
-              <ShoppingCart size={24} strokeWidth={3} /> Keranjang
+          <div className="p-4 sm:p-6 border-b-[4px] border-black bg-pink-400 flex items-center justify-between">
+            <h3 className="text-lg sm:text-xl font-black uppercase flex items-center gap-2">
+              <ShoppingCart size={20} className="w-5 h-5 sm:w-6 sm:h-6" strokeWidth={3} /> Keranjang
             </h3>
-            <span className="bg-white border-[2px] border-black px-2 font-bold">{cart.length}</span>
+            <span className="bg-white border-[2px] border-black px-2 font-bold text-xs sm:text-sm">{cart.length}</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 flex flex-col gap-3 sm:gap-4 custom-scrollbar">
             {cart.map((item) => (
-              <div key={item.id} className="flex gap-4 p-3 border-[3px] border-black bg-slate-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <div key={item.id} className="flex gap-3 sm:gap-4 p-2.5 sm:p-3 border-[3px] border-black bg-slate-50 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-sm uppercase truncate">{item.name}</h4>
-                  <div className="mt-2 flex items-center gap-3">
+                  <h4 className="font-bold text-xs sm:text-sm uppercase truncate">{item.name}</h4>
+                  <div className="mt-2 flex items-center justify-between gap-3">
                     <div className="flex items-center border-[2px] border-black bg-white">
-                      <button onClick={() => updateQuantity(item.id, -1)} className="p-1"><Minus size={14} /></button>
-                      <span className="w-8 text-center font-black text-sm border-x-[2px] border-black">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, 1)} className="p-1"><Plus size={14} /></button>
+                      <button onClick={() => updateQuantity(item.id, -1)} className="p-1"><Minus size={12} /></button>
+                      <span className="w-6 sm:w-8 text-center font-black text-xs sm:text-sm border-x-[2px] border-black">{item.quantity}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="p-1"><Plus size={12} /></button>
                     </div>
-                    <p className="font-black text-sm ml-auto">Rp {(item.price * item.quantity).toLocaleString("id-ID")}</p>
+                    <p className="font-black text-xs sm:text-sm">Rp {(item.price * item.quantity).toLocaleString("id-ID")}</p>
                   </div>
                 </div>
-                <button onClick={() => removeFromCart(item.id)} className="text-red-500"><Trash2 size={18} /></button>
+                <button onClick={() => removeFromCart(item.id)} className="text-red-500 shrink-0"><Trash2 size={16} /></button>
               </div>
             ))}
           </div>
 
-          <div className="p-6 border-t-[4px] border-black bg-slate-50">
-            <div className="flex justify-between font-black text-2xl uppercase">
+          <div className="p-4 sm:p-6 border-t-[4px] border-black bg-slate-50">
+            <div className="flex justify-between font-black text-xl sm:text-2xl uppercase">
               <span>Total</span>
               <span className="text-blue-600">Rp {total.toLocaleString("id-ID")}</span>
             </div>
           </div>
         </div>
 
-        <div className="neo-card bg-white space-y-4">
+        <div className="neo-card p-4 sm:p-6 bg-white space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-black uppercase text-slate-400">Uang Bayar (Rp)</label>
             <input 
               type="number" 
-              className="w-full p-3 border-[3px] border-black bg-yellow-50 font-black text-xl focus:outline-none"
+              className="w-full p-3 border-[3px] border-black bg-yellow-50 font-black text-lg sm:text-xl focus:outline-none"
               placeholder="0"
               value={cashAmount || ""}
               onChange={(e) => setCashAmount(Number(e.target.value))}
@@ -485,7 +502,7 @@ export default function POSPage() {
           <div className="p-3 border-[3px] border-black bg-slate-100">
             <div className="flex justify-between items-center">
               <span className="font-bold uppercase text-xs">Kembalian</span>
-              <span className={`font-black text-xl ${changeAmount < 0 ? "text-red-500" : "text-green-600"}`}>
+              <span className={`font-black text-lg sm:text-xl ${changeAmount < 0 ? "text-red-500" : "text-green-600"}`}>
                 Rp {changeAmount.toLocaleString("id-ID")}
               </span>
             </div>
@@ -494,7 +511,7 @@ export default function POSPage() {
           <button 
             onClick={handleCheckout}
             disabled={cart.length === 0 || cashAmount < total || isProcessing}
-            className={`w-full neo-btn-secondary py-4 font-black flex items-center justify-center gap-2 ${cart.length === 0 || cashAmount < total || isProcessing ? "opacity-50 grayscale cursor-not-allowed" : "bg-green-400"}`}
+            className={`w-full neo-btn-secondary py-3.5 sm:py-4 font-black flex items-center justify-center gap-2 ${cart.length === 0 || cashAmount < total || isProcessing ? "opacity-50 grayscale cursor-not-allowed" : "bg-green-400"}`}
           >
             {isProcessing ? <Loader2 className="animate-spin" size={24} /> : <CreditCard size={24} />}
             KONFIRMASI BAYAR

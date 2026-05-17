@@ -28,13 +28,13 @@ export default function SalesReportChart({
     period === "yearly" ? "Tahun Ini" : "Semua Waktu";
 
   return (
-    <div className="neo-card h-[400px] flex flex-col gap-4 bg-white">
-      <div className="flex justify-between items-center">
+    <div className="neo-card p-4 sm:p-6 h-[320px] sm:h-[400px] flex flex-col gap-3 sm:gap-4 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+      <div className="flex justify-between items-center gap-2">
         <div>
-          <h3 className="text-2xl font-black uppercase tracking-tight">Tren Penjualan & Laba</h3>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tampilan: {periodLabel}</p>
+          <h3 className="text-base sm:text-2xl font-black uppercase tracking-tight">Tren Penjualan & Laba</h3>
+          <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tampilan: {periodLabel}</p>
         </div>
-        <span className="bg-green-400 border-[2px] border-black px-3 py-1 text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <span className="bg-green-400 border-[2px] border-black px-2 py-0.5 sm:px-3 sm:py-1 text-[10px] sm:text-xs font-black uppercase shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
           {periodLabel}
         </span>
       </div>

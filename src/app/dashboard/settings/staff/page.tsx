@@ -237,14 +237,14 @@ export default function StaffManagementPage() {
       {/* Header Halaman */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-4xl font-black uppercase tracking-tight mb-2">👥 Manajemen Akun Karyawan</h1>
-          <p className="font-bold text-slate-500 uppercase text-sm tracking-widest">
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight mb-2">👥 Manajemen Akun Karyawan</h1>
+          <p className="font-bold text-slate-500 uppercase text-xs sm:text-sm tracking-wider sm:tracking-widest">
             Kelola hak akses karyawan, kasir, dan admin untuk bisnis Anda.
           </p>
         </div>
         <button 
           onClick={() => handleOpenModal()}
-          className="neo-btn-primary flex items-center gap-2 bg-[#FFE800]"
+          className="neo-btn-primary flex items-center justify-center gap-2 bg-[#FFE800] w-full md:w-auto"
         >
           <Plus size={20} /> TAMBAH KARYAWAN
         </button>
@@ -252,51 +252,51 @@ export default function StaffManagementPage() {
 
       {/* Konten Daftar Karyawan */}
       {isLoading ? (
-        <div className="neo-card flex flex-col justify-center items-center py-20 bg-white">
+        <div className="neo-card flex flex-col justify-center items-center py-20 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           <Loader2 className="animate-spin text-black mb-4" size={48} />
           <p className="font-black uppercase tracking-widest text-slate-500 text-sm">Memuat Karyawan...</p>
         </div>
       ) : staffList.length === 0 ? (
-        <div className="neo-card p-20 text-center text-slate-400 italic font-bold bg-white">
+        <div className="neo-card p-20 text-center text-slate-400 italic font-bold bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
           Belum ada karyawan terdaftar dalam sistem bisnis Anda.
         </div>
       ) : (
         /* Kartu Grid Neobrutalisme Baru */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {staffList.map((staff) => (
             <div 
               key={staff.id} 
-              className="neo-card bg-white p-6 relative group flex flex-col justify-between hover:bg-slate-50 transition-colors"
+              className="neo-card bg-white p-4 sm:p-6 relative group flex flex-col justify-between hover:bg-slate-50 transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-[3px] border-black"
             >
-              {/* Menu Tombol Aksi hover-in */}
-              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Menu Tombol Aksi - Selalu Tampil di Mobile, Hover di Desktop */}
+              <div className="absolute top-4 right-4 flex gap-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20">
                 <button 
                   onClick={() => handleOpenModal(staff)} 
-                  className="p-2 bg-white text-black border-[2px] border-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all"
+                  className="p-1.5 sm:p-2 bg-white text-black border-[2px] border-black hover:bg-yellow-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all"
                 >
-                  <Edit3 size={16} />
+                  <Edit3 size={14} className="sm:w-4 sm:h-4" />
                 </button>
                 <button 
                   onClick={() => handleDelete(staff.id)} 
-                  className="p-2 bg-white text-red-600 border-[2px] border-black hover:bg-red-500 hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all"
+                  className="p-1.5 sm:p-2 bg-white text-red-600 border-[2px] border-black hover:bg-red-500 hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} className="sm:w-4 sm:h-4" />
                 </button>
               </div>
 
               <div>
                 {/* Bagian Profil Utama */}
-                <div className="flex items-center gap-4 mb-4">
-                  <div className={`w-14 h-14 rounded-none border-[3px] border-black flex items-center justify-center font-black text-xl text-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] ${getRandomBgColor(staff.full_name)}`}>
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 pr-16 sm:pr-0">
+                  <div className={`w-11 h-11 sm:w-14 sm:h-14 rounded-none border-[3px] border-black flex items-center justify-center font-black text-base sm:text-xl text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] ${getRandomBgColor(staff.full_name)} shrink-0`}>
                     {staff.full_name.substring(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="text-xl font-black uppercase tracking-tight text-black line-clamp-1">{staff.full_name}</h3>
-                    <div className="flex gap-2 mt-1">
-                      <span className={`px-2 py-0.5 border-[2px] text-[10px] font-black uppercase ${getRoleBadgeStyle(staff.role)}`}>
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-xl font-black uppercase tracking-tight text-black line-clamp-1">{staff.full_name}</h3>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      <span className={`px-1.5 py-0.5 border-[2px] text-[8px] sm:text-[10px] font-black uppercase ${getRoleBadgeStyle(staff.role)}`}>
                         {staff.role === 'owner' ? '👑 OWNER' : '💼 KASIR'}
                       </span>
-                      <span className="px-2 py-0.5 border-[2px] border-black bg-[#4ade80] text-black text-[10px] font-black uppercase">
+                      <span className="px-1.5 py-0.5 border-[2px] border-black bg-[#4ade80] text-black text-[8px] sm:text-[10px] font-black uppercase">
                         ✅ {staff.status}
                       </span>
                     </div>
