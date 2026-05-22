@@ -177,11 +177,11 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-20 bg-white border-b-[4px] border-black flex items-center justify-between px-4 md:px-8 shrink-0">
+        <header className="sticky top-0 z-30 h-20 bg-white/90 backdrop-blur-md border-b-[4px] border-black shadow-sm flex items-center justify-between px-4 md:px-8 shrink-0 transition-all">
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setSidebarOpen(true)} 
-              className="md:hidden p-2 bg-yellow-400 border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+              className="md:hidden p-2 bg-yellow-400 border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all"
             >
               <Menu size={20} />
             </button>
@@ -223,9 +223,13 @@ export default function DashboardLayout({
             <div className="hidden sm:block bg-green-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase text-sm">
               {userProfile?.store_name || "Memuat..."} 🏪
             </div>
-            <div className="w-10 h-10 md:w-12 md:h-12 bg-pink-400 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm md:text-base font-black">
+            <Link 
+              href="/dashboard/settings"
+              title="Pengaturan Akun"
+              className="w-10 h-10 md:w-12 md:h-12 bg-pink-400 border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center text-sm md:text-base font-black hover:-translate-y-[1px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all cursor-pointer"
+            >
               {userProfile?.full_name?.charAt(0) || "U"}
-            </div>
+            </Link>
           </div>
         </header>
 
