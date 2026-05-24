@@ -68,6 +68,7 @@ export default function StaffManagementPage() {
 
   // --- MEMUAT DAFTAR TOKO/CABANG (UNTUK DROP-DOWN PENUGASAN CABANG) ---
   const fetchStores = async (bizId: string) => {
+    if (!bizId) return;
     try {
       const { data, error } = await supabase
         .from('stores')
@@ -83,6 +84,10 @@ export default function StaffManagementPage() {
 
   // --- MEMUAT DATA KARYAWAN (RELATIONAL JOIN DENGAN TOKO) ---
   const fetchStaff = async (bizId: string) => {
+    if (!bizId) {
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       // Melakukan join query untuk mendapatkan nama toko/cabang penugasan
@@ -120,9 +125,11 @@ export default function StaffManagementPage() {
   useEffect(() => {
     const init = async () => {
       const context = await fetchUserContext();
-      if (context) {
+      if (context && context.business_id) {
         await fetchStores(context.business_id);
         await fetchStaff(context.business_id);
+      } else {
+        setIsLoading(false);
       }
     };
     init();

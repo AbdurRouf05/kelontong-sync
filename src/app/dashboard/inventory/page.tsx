@@ -138,6 +138,7 @@ export default function InventoryPage() {
 
   // Fetch categories
   const fetchCategories = async (bizId: string) => {
+    if (!bizId) return;
     try {
       const { data, error } = await supabase
         .from("categories")
@@ -156,6 +157,10 @@ export default function InventoryPage() {
 
   // Fetch products
   const fetchProducts = async (bizId: string, storeId: string) => {
+    if (!bizId || !storeId) {
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
       const { data, error } = await supabase
@@ -199,9 +204,11 @@ export default function InventoryPage() {
   useEffect(() => {
     const init = async () => {
       const context = await fetchUserContext();
-      if (context) {
+      if (context && context.business_id && context.current_store_id) {
         fetchCategories(context.business_id);
         fetchProducts(context.business_id, context.current_store_id);
+      } else {
+        setIsLoading(false);
       }
     };
     init();

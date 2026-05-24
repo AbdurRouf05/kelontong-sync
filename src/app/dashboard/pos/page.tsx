@@ -69,7 +69,10 @@ export default function POSPage() {
           .eq("id", user.id)
           .single();
           
-        if (!profile) return;
+        if (!profile || !profile.business_id || !profile.current_store_id) {
+          setIsLoading(false);
+          return;
+        }
         setUserContext(profile);
 
         // 2. Fetch Products with Branch Stock

@@ -13,11 +13,35 @@ Desain visual aplikasi ini menerapkan tema **Neobrutalism** (berkarakter tebal, 
 ## 🛠️ 2. METODOLOGI PENGEMBANGAN & KOLABORASI TIM
 Proyek ini diselesaikan secara kolaboratif oleh 5 anggota tim dengan menerapkan metode **Agile & Scrum** yang disesuaikan untuk skala akademik.
 
-### A. Alur Kerja Komunikasi & Sinkronisasi
+### A. Apa itu Metode Agile & Scrum?
+*   **Agile**: Suatu filosofi dan pendekatan pengembangan perangkat lunak yang berfokus pada kolaborasi erat, proses iteratif (bertahap), penyampaian nilai (*value delivery*) secara cepat, dan fleksibilitas tinggi dalam merespons perubahan kebutuhan pengguna.
+*   **Scrum**: Salah satu kerangka kerja (*framework*) terpopuler di bawah payung Agile. Proses pengembangan dibagi menjadi siklus waktu tetap berdurasi pendek yang disebut **Sprint** (biasanya 1 hingga 4 minggu). Scrum memiliki komponen utama:
+    *   **Peran Utama (Roles)**:
+        *   *Product Owner (PO)*: Pemilik visi produk, bertanggung jawab menentukan fitur prioritas di dalam Product Backlog.
+        *   *Scrum Master (SM)*: Fasilitator tim, bertugas menghilangkan hambatan (*blockers*) dan memastikan prinsip Scrum dipatuhi.
+        *   *Development Team*: Tim lintas fungsi (developer, desainer, dll.) yang bekerja secara mandiri (*self-organizing*) untuk mewujudkan fitur.
+    *   **Upacara Scrum (Scrum Ceremonies)**:
+        *   *Sprint Planning*: Sesi perencanaan untuk memilih tugas dari *Product Backlog* ke *Sprint Backlog* yang akan diselesaikan dalam satu Sprint.
+        *   *Daily Stand-up Meeting*: Pertemuan harian singkat (15 menit) untuk menyinkronkan aktivitas harian dan mendiskusikan kendala kerja.
+        *   *Sprint Review*: Sesi demonstrasi hasil kerja (*Increment*) yang telah selesai di akhir Sprint kepada pemangku kepentingan.
+        *   *Sprint Retrospective*: Sesi evaluasi internal tim untuk membahas apa yang berjalan baik dan apa yang perlu diperbaiki pada Sprint berikutnya.
+    *   **Artefak Scrum (Scrum Artifacts)**:
+        *   *Product Backlog*: Daftar terurut seluruh kebutuhan dan fitur produk.
+        *   *Sprint Backlog*: Daftar tugas spesifik yang harus diselesaikan pada Sprint berjalan.
+        *   *Increment*: Produk kerja fungsional yang siap rilis dan memenuhi kriteria kualitas (*Definition of Done*).
+
+### B. Kesesuaian Metode Agile Scrum untuk Proyek KelontongSync
+Mengapa kerangka kerja **Agile Scrum** sangat cocok (*highly suitable*) diterapkan dalam pembangunan aplikasi **KelontongSync**?
+1.  **Pengembangan Modular yang Paralel**: KelontongSync memiliki modul-modul independen yang dapat dikembangkan secara bersamaan oleh masing-masing frontend developer (POS oleh Rafi, Inventaris oleh Akmal, Dashboard/Laporan oleh Adam, dan Settings/Multi-tenant oleh Ferdy), sementara PM (Abdur Rouf) menyediakan infrastruktur backend dan database. Scrum memungkinkan tim membagi modul-modul ini ke dalam *User Story* yang jelas dan mengerjakannya secara paralel tanpa saling menghambat.
+2.  **Iterasi Cepat & Integrasi Kontinu (Continuous Integration)**: Dalam alur kerja Git kita, setiap kali modul atau sub-fitur fungsional selesai, Project Manager (PM) langsung melakukan review, penyelarasan konflik secara lokal, pengujian build produksi (`pnpm build`), dan merge lokal dengan mode `--no-ff` ke branch `dev`. Proses siklus penggabungan berkala ini mencerminkan penciptaan **Increment** yang dapat dievaluasi secara kontinu, sangat sejalan dengan prinsip kelayakan rilis cepat pada akhir Sprint.
+3.  **Fleksibilitas Menghadapi Hambatan Praktis**: Karakteristik Agile adalah adaptif terhadap situasi dunia nyata. Sebagai contoh, tim menyadari adanya keterbatasan waktu pengujian dan kebutuhan kelancaran presentasi UAS. Oleh karena itu, tim mengambil keputusan taktis untuk menonaktifkan kebijakan Row Level Security (RLS) Supabase sementara waktu dan memprioritaskan penyelesaian alur pendaftaran tenant SaaS multi-step serta diagnosis latensi visual. Keputusan pivot yang cepat ini hanya bisa difasilitasi dengan baik melalui metodologi Agile.
+4.  **Kolaborasi Efisien Tim Skala Kecil**: Dengan tim berjumlah 5 orang, birokrasi komunikasi sangat minim. Sesi sinkronisasi rutin bertindak layaknya *Daily Stand-up* yang lincah untuk menyelesaikan hambatan integrasi backend-frontend secara real-time.
+
+### C. Alur Kerja Komunikasi & Sinkronisasi Realitas Tim
 *   **Daily Stand-up Meeting**: Diadakan secara berkala minimal 3 kali seminggu untuk melaporkan progres harian, rencana pekerjaan hari ini, dan hambatan (*blockers*) yang dihadapi masing-masing anggota.
 *   **Task Management (Kanban Board)**: Seluruh tugas dibagi ke dalam tiket kerja terstruktur dalam folder `docs/checklist.md` yang bertindak sebagai papan kontrol tugas (*To Do -> In Progress -> In Review -> Done*). Setiap anggota dibatasi hanya boleh mengerjakan maksimal 2 tugas secara bersamaan untuk menjaga kualitas fokus kerja (*WIP Limit*).
 
-### B. Standardisasi Penulisan Kode (Coding Convention)
+### D. Standardisasi Penulisan Kode (Coding Convention)
 Untuk memastikan kode tetap seragam dan mudah dibaca oleh anggota tim lainnya:
 *   **Bahasa Pemrograman & Skema Database**: Menggunakan Bahasa Inggris penuh untuk penamaan variabel, fungsi, file, dan tabel database (contoh: tabel `products`, kolom `selling_price`, fungsi `fetchCategories()`).
 *   **Linter & Formatter**: Setiap anggota wajib menggunakan **Prettier** dan **ESLint** di VS Code masing-masing. Kode yang berantakan tidak diperbolehkan masuk ke repositori utama.

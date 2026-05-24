@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, notFound } from "next/navigation";
 import { 
   LayoutDashboard, 
   ShoppingCart, 
@@ -11,7 +11,8 @@ import {
   LogOut,
   Store,
   Menu,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
@@ -24,6 +25,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [userProfile, setUserProfile] = useState<{ full_name: string, role: string, store_name: string } | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   // --- STATE KONEKSI DATABASE GLOBALLY DI HEADER ---
   const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "error">("checking");
@@ -47,25 +49,37 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsAuthorized(false);
+          return;
+        }
 
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, role, stores(name)")
-        .eq("id", user.id)
-        .single();
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("full_name, role, stores(name)")
+          .eq("id", user.id)
+          .single();
 
-      if (data) {
+        if (error || !data || data.role === "superadmin") {
+          setIsAuthorized(false);
+          return;
+        }
+
         setUserProfile({
           full_name: data.full_name || "User",
           role: data.role || "staff",
           store_name: (data.stores as any)?.name || "Cabang Utama"
         });
+        setIsAuthorized(true);
+      } catch (err) {
+        console.error("Auth check error:", err);
+        setIsAuthorized(false);
       }
     };
-    fetchProfile();
+    checkAuth();
   }, []);
 
   const menuItems = [
@@ -81,10 +95,24 @@ export default function DashboardLayout({
     item.role === "all" || item.role === userProfile?.role
   );
 
+  if (isAuthorized === null) {
+    return (
+      <div className="h-screen w-screen bg-[#f0f0f0] flex flex-col justify-center items-center">
+        <Loader2 className="animate-spin text-black mb-4" size={48} />
+        <p className="font-black uppercase tracking-widest text-slate-500 text-sm">Memverifikasi Sesi...</p>
+      </div>
+    );
+  }
+
+  if (isAuthorized === false) {
+    notFound();
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-[#f0f0f0] flex relative">
+    <div className="h-screen w-screen bg-[#f0f0f0] flex overflow-hidden">
       {/* Sidebar - Desktop */}
-      <aside className={`${isSidebarOpen ? "w-72" : "w-20"} bg-white border-r-[4px] border-black transition-all duration-300 flex flex-col hidden md:flex`}>
+      <aside className={`${isSidebarOpen ? "w-72" : "w-20"} bg-white border-r-[4px] border-black transition-all duration-300 flex flex-col hidden md:flex shrink-0 h-full`}>
         <div className="p-6 border-b-[4px] border-black flex items-center justify-between">
           {isSidebarOpen && (
             <div className="flex items-center gap-2">
@@ -176,7 +204,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         <header className="sticky top-0 z-30 h-20 bg-white/90 backdrop-blur-md border-b-[4px] border-black shadow-sm flex items-center justify-between px-4 md:px-8 shrink-0 transition-all">
           <div className="flex items-center gap-4">
             <button 
@@ -220,8 +248,9 @@ export default function DashboardLayout({
               <span className="sm:hidden">DB {dbStatus === "connected" ? `${dbLatency}ms` : dbStatus === "checking" ? "..." : "ERR"}</span>
             </div>
 
-            <div className="hidden sm:block bg-green-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase text-sm">
-              {userProfile?.store_name || "Memuat..."} 🏪
+            <div className="hidden sm:flex bg-green-400 border-[3px] border-black px-4 py-1 font-bold shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] uppercase text-sm items-center gap-1.5">
+              <span>{userProfile?.store_name || "Memuat..."}</span>
+              <Store size={16} className="shrink-0" />
             </div>
             <Link 
               href="/dashboard/settings"
@@ -233,7 +262,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="p-4 md:p-8 overflow-y-auto overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-8 overflow-y-auto overflow-x-hidden">
           {children}
         </main>
       </div>

@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { TrendingDown } from "lucide-react";
 
 export default function SalesChart({ data = [] }: { data?: any[] }) {
   const COLORS = ["#facc15", "#4ade80", "#f472b6", "#60a5fa", "#a78bfa", "#fb923c", "#f87171"];
@@ -64,9 +65,11 @@ export default function SalesChart({ data = [] }: { data?: any[] }) {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center space-y-2">
-            <div className="text-4xl">📉</div>
-            <p className="font-bold italic text-slate-500">Belum ada data penjualan minggu ini.</p>
+          <div className="text-center space-y-3 flex flex-col items-center justify-center">
+            <div className="p-3 border-[3px] border-black bg-pink-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <TrendingDown size={32} className="text-black" />
+            </div>
+            <p className="font-bold italic text-slate-500 text-sm">Belum ada data penjualan minggu ini.</p>
           </div>
         )}
       </div>

@@ -516,9 +516,9 @@ export default function LandingPage() {
             <div className="space-y-6">
               <h4 className="font-black uppercase text-xl text-[#FF90E8]">Portal Khusus</h4>
               <ul className="space-y-4 font-bold text-gray-400 uppercase text-sm tracking-widest">
-                <li><Link href="/admin" className="hover:text-white transition-colors">🔑 Superadmin Portal</Link></li>
-                <li><Link href="/login" className="hover:text-white transition-colors">👤 Kasir & Owner Login</Link></li>
-                <li><Link href="/register" className="hover:text-white transition-colors">🚀 Registrasi Tenant</Link></li>
+                <li><Link href="/admin" className="hover:text-white transition-colors">Superadmin Portal</Link></li>
+                <li><Link href="/login" className="hover:text-white transition-colors">Kasir & Owner Login</Link></li>
+                <li><Link href="/register" className="hover:text-white transition-colors">Registrasi Tenant</Link></li>
               </ul>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TrendingUp } from "lucide-react";
 
 export default function TopProducts({ products = [] }: { products?: any[] }) {
   return (
@@ -30,8 +31,8 @@ export default function TopProducts({ products = [] }: { products?: any[] }) {
         ))}
       </div>
 
-      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center">
-        Analisis Produk Lengkap 📈
+      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center flex items-center justify-center gap-1.5">
+        Analisis Produk Lengkap <TrendingUp size={18} />
       </Link>
     </div>
   );

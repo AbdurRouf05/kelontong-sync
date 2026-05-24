@@ -314,3 +314,22 @@ export async function getTopProducts() {
       color: ["bg-yellow-400", "bg-green-400", "bg-blue-400", "bg-pink-400"][i % 4]
     }));
 }
+
+export async function getUserProfile() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("full_name, role")
+      .eq("id", user.id)
+      .single();
+      
+    if (error) throw error;
+    return profile;
+  } catch (err) {
+    console.error("Error getting user profile:", err);
+    return null;
+  }
+}

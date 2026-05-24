@@ -1,15 +1,10 @@
 "use client";
 import { useState, useMemo } from "react";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Download, CheckCircle2, XCircle } from "lucide-react";
-import Papa from "papaparse";
-import * as XLSX from "xlsx";
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, XCircle, Store } from "lucide-react";
 
 export default function ReportTable({ data = [] }: { data?: any[] }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -29,86 +24,15 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
     setCurrentPage(pageNumber);
   };
 
-  const handleExport = (format: "csv" | "xlsx" | "json" | "pdf") => {
-    console.log(`Starting export to ${format}...`, data.length, "items");
-    
-    if (data.length === 0) {
-      showToast("Tidak ada data untuk diekspor!", "error");
-      setIsExportMenuOpen(false);
-      return;
-    }
-
-    const exportData = data.map(r => ({
-      Tanggal: r.date,
-      Produk: r.productName,
-      Kategori: r.category,
-      Jumlah: r.quantity,
-      Total: r.total
-    }));
-
-    try {
-      if (format === "csv") {
-        const csv = Papa.unparse(exportData);
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `laporan_penjualan_${new Date().toLocaleDateString()}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Berhasil diekspor ke CSV!");
-      } else if (format === "xlsx") {
-        const ws = XLSX.utils.json_to_sheet(exportData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
-        XLSX.writeFile(wb, `laporan_penjualan_${new Date().toLocaleDateString()}.xlsx`);
-        showToast("Berhasil diekspor ke XLSX!");
-      } else if (format === "json") {
-        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `laporan_penjualan_${new Date().toLocaleDateString()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        showToast("Berhasil diekspor ke JSON!");
-      } else if (format === "pdf") {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("LAPORAN PENJUALAN PRODUK - KELONTONGSYNC", 14, 15);
-        doc.setFontSize(10);
-        doc.text(`Dicetak pada: ${new Date().toLocaleString("id-ID")}`, 14, 22);
-        
-        autoTable(doc, {
-          head: [["Tanggal", "Produk", "Kategori", "Jumlah", "Total"]],
-          body: data.map(r => [
-            r.date || "-", 
-            r.productName || "-", 
-            r.category || "-", 
-            (r.quantity || 0).toString(),
-            `Rp ${(r.total || 0).toLocaleString("id-ID")}`
-          ]),
-          startY: 25,
-          theme: "grid",
-          headStyles: { fillColor: [0, 0, 0] },
-          styles: { fontStyle: "bold" }
-        });
-        
-        doc.save(`laporan_penjualan_${new Date().toISOString().split('T')[0]}.pdf`);
-        showToast("Berhasil diekspor ke PDF!");
-      }
-    } catch (err: any) {
-      console.error(`Gagal export ${format}:`, err);
-      showToast(`Gagal export ${format}!`, "error");
-    }
-    setIsExportMenuOpen(false);
-  };
   return (
     <div className="neo-card p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
       {/* Header Laporan Khusus Print */}
       <div className="hidden print:block mb-8 border-b-[4px] border-black pb-4">
         <h1 className="text-4xl font-black uppercase">Laporan Penjualan Produk</h1>
-        <p className="text-xl font-bold">Toko Berkah Utama 🏪</p>
+        <p className="text-xl font-bold flex items-center gap-1.5">
+          <span>Toko Berkah Utama</span>
+          <Store size={18} className="shrink-0" />
+        </p>
         <p className="text-sm font-bold text-slate-500">Tanggal Cetak: {new Date().toLocaleDateString('id-ID')}</p>
       </div>
 
@@ -131,23 +55,6 @@ export default function ReportTable({ data = [] }: { data?: any[] }) {
               <option value={50}>50</option>
               <option value={100}>100</option>
             </select>
-          </div>
-          <div className="relative flex-1 sm:flex-none">
-            <button 
-              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-              className="w-full sm:w-auto bg-white border-[3px] border-black px-3 sm:px-4 py-1.5 sm:py-2 font-black uppercase hover:bg-black hover:text-white transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
-            >
-              <Download size={16} className="sm:w-[18px] sm:h-[18px]" /> EXPORT
-            </button>
-
-            {isExportMenuOpen && (
-              <div className="absolute right-0 top-full mt-2 w-40 bg-white border-[3px] border-black z-[100] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-2 duration-200">
-                <button onClick={() => handleExport("csv")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-yellow-400 border-b-[2px] border-black transition-colors">CSV Format</button>
-                <button onClick={() => handleExport("xlsx")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-green-400 border-b-[2px] border-black transition-colors">Excel (XLSX)</button>
-                <button onClick={() => handleExport("pdf")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-red-400 border-b-[2px] border-black transition-colors">PDF Report</button>
-                <button onClick={() => handleExport("json")} className="w-full text-left p-3 font-black uppercase text-xs hover:bg-blue-400 border-b-[2px] border-black transition-colors">JSON Data</button>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ClipboardList } from "lucide-react";
 
 export default function RecentTransactions({ transactions = [] }: { transactions?: any[] }) {
   return (
@@ -52,8 +53,8 @@ export default function RecentTransactions({ transactions = [] }: { transactions
         ))}
       </div>
 
-      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center text-sm">
-        Lihat Semua Laporan 📋
+      <Link href="/dashboard/reports" className="block w-full py-3 border-[3px] border-black font-black uppercase hover:bg-black hover:text-white transition-colors text-center flex items-center justify-center gap-1.5 text-sm">
+        Lihat Semua Laporan <ClipboardList size={18} />
       </Link>
     </div>
   );

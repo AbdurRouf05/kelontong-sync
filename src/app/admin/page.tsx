@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { 
   Users, 
   Building2, 
@@ -23,15 +23,20 @@ import {
   Mail,
   UserCheck,
   Database,
-  Sliders
+  Sliders,
+  CheckCircle,
+  Copy,
+  Check
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { createTenantAction } from "./actions";
+import { createTenantAction, updateTenantAction, deleteTenantAction, getTenantsAction } from "./actions";
 import Link from "next/link";
 
 // --- DATA TYPE UNTUK TENANT / BISNIS PLATFORM ---
 interface TenantStats {
   id: string;
+  owner_id: string;
+  owner_email: string;
   name: string;
   owner_name: string;
   store_count: number;
@@ -43,9 +48,9 @@ export default function AdminDashboard() {
   // --- STATE DATA DAN HALAMAN UTAMA ---
   const [tenants, setTenants] = useState<TenantStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(true);
-  const [adminName, setAdminName] = useState("Developer Mode");
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminName, setAdminName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   
   // State Notifikasi Toast Kustom
@@ -63,10 +68,35 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
+    password: "",
     fullName: "",
     businessName: "",
     storeName: ""
   });
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  
+  // --- STATE MODAL EDIT TENANT ---
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<TenantStats | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    email: "",
+    password: "",
+    fullName: "",
+    businessName: ""
+  });
+
+  // --- STATE MODAL DELETE TENANT ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [tenantToDelete, setTenantToDelete] = useState<TenantStats | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // --- STATE MODAL UBAH PASSWORD SUPERADMIN ---
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [adminNewPassword, setAdminNewPassword] = useState("");
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState("");
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   
   // --- STATE STATISTIK SAAS PLATFORM ---
   const [globalStats, setGlobalStats] = useState({
@@ -157,45 +187,19 @@ export default function AdminDashboard() {
     try {
       setIsLoading(true);
 
-      // 1. Dapatkan daftar seluruh tenant (bisnis) terdaftar
-      const { data: businesses, error: bizError } = await supabase
-        .from("businesses")
-        .select(`
-          id, 
-          name, 
-          created_at,
-          profiles (full_name)
-        `);
+      const res = await getTenantsAction();
+      if (!res.success || !res.tenants) {
+        throw new Error(res.error || "Gagal mengambil data tenant");
+      }
 
-      if (bizError) throw bizError;
+      setTenants(res.tenants);
 
-      // 2. Dapatkan jumlah cabang untuk masing-masing tenant secara asinkron
-      const tenantData = await Promise.all((businesses || []).map(async (biz: any) => {
-        const { count } = await supabase
-          .from("stores")
-          .select("*", { count: 'exact', head: true })
-          .eq("business_id", biz.id);
-        
-        const ownerProfile = Array.isArray(biz.profiles) ? biz.profiles[0] : biz.profiles;
-        
-        return {
-          id: biz.id,
-          name: biz.name,
-          owner_name: ownerProfile?.full_name || "Pemilik Bisnis",
-          store_count: count || 0,
-          created_at: new Date(biz.created_at).toLocaleDateString("id-ID"),
-          status: "active" as const
-        };
-      }));
-
-      setTenants(tenantData);
-
-      // 3. Mengambil total statistik platform secara global
+      // Mengambil total statistik platform secara global
       const { count: storeCount } = await supabase.from("stores").select("*", { count: 'exact', head: true });
       const { count: transCount } = await supabase.from("transactions").select("*", { count: 'exact', head: true });
 
       setGlobalStats({
-        totalTenants: businesses?.length || 0,
+        totalTenants: res.tenants.length,
         totalStores: storeCount || 0,
         totalTransactions: transCount || 0
       });
@@ -210,7 +214,7 @@ export default function AdminDashboard() {
 
   // Jalankan cek autentikasi saat pertama kali masuk halaman
   useEffect(() => {
-    // checkAdminAuth(); // Dinonaktifkan sementara untuk Mode Peninjauan Developer
+    checkAdminAuth();
     checkSupabaseConnection();
   }, []);
 
@@ -265,8 +269,12 @@ export default function AdminDashboard() {
     try {
       const res = await createTenantAction(formData);
       if (res.success) {
-        setIsModalOpen(false);
-        setFormData({ email: "", fullName: "", businessName: "", storeName: "" });
+        setCreatedCredentials({
+          email: formData.email,
+          password: formData.password || "Password123!"
+        });
+        setIsCopied(false);
+        setFormData({ email: "", password: "", fullName: "", businessName: "", storeName: "" });
         setToast({ message: "Tenant Baru Berhasil Didaftarkan!", type: "success" });
         fetchAdminData();
       } else {
@@ -276,6 +284,82 @@ export default function AdminDashboard() {
       setToast({ message: "Error: " + err.message, type: "error" });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // --- FUNGSI UPDATE TENANT ---
+  const handleUpdateTenant = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedTenant) return;
+    setIsEditing(true);
+    try {
+      const res = await updateTenantAction(
+        selectedTenant.id,
+        selectedTenant.owner_id,
+        editFormData
+      );
+      if (res.success) {
+        setIsEditModalOpen(false);
+        setSelectedTenant(null);
+        setToast({ message: "Tenant berhasil diperbarui!", type: "success" });
+        fetchAdminData();
+      } else {
+        setToast({ message: "Gagal: " + res.error, type: "error" });
+      }
+    } catch (err: any) {
+      setToast({ message: "Error: " + err.message, type: "error" });
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  // --- FUNGSI DELETE TENANT ---
+  const handleDeleteTenant = async () => {
+    if (!tenantToDelete) return;
+    setIsDeleting(true);
+    try {
+      const res = await deleteTenantAction(
+        tenantToDelete.id,
+        tenantToDelete.owner_id
+      );
+      if (res.success) {
+        setIsDeleteModalOpen(false);
+        setTenantToDelete(null);
+        setToast({ message: "Tenant berhasil dihapus dari platform!", type: "success" });
+        fetchAdminData();
+      } else {
+        setToast({ message: "Gagal: " + res.error, type: "error" });
+      }
+    } catch (err: any) {
+      setToast({ message: "Error: " + err.message, type: "error" });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // --- FUNGSI UBAH PASSWORD SUPERADMIN ---
+  const handleAdminPasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminNewPassword.length < 6) {
+      setToast({ message: "Sandi minimal 6 karakter!", type: "error" });
+      return;
+    }
+    if (adminNewPassword !== adminConfirmPassword) {
+      setToast({ message: "Konfirmasi sandi tidak cocok!", type: "error" });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: adminNewPassword });
+      if (error) throw error;
+      setToast({ message: "Sandi Super Admin berhasil diperbarui!", type: "success" });
+      setAdminNewPassword("");
+      setAdminConfirmPassword("");
+      setIsPasswordModalOpen(false);
+    } catch (err: any) {
+      setToast({ message: "Gagal: " + err.message, type: "error" });
+    } finally {
+      setIsUpdatingPassword(false);
     }
   };
 
@@ -306,86 +390,8 @@ export default function AdminDashboard() {
   // --- RENDERING 1: PANEL LOGIN INTEGRATIF SUPERADMIN ---
   // Ditampilkan apabila pengguna belum login / tidak terverifikasi sebagai Super Admin
   if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-[#f0f0f0] flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Logo Platform */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <div className="w-12 h-12 bg-black border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(250,204,21,1)]">
-              <ShieldCheck className="text-yellow-400" size={28} />
-            </div>
-            <span className="text-3xl font-black uppercase tracking-tighter text-black">KelontongSync</span>
-          </div>
-
-          {/* Kartu Login Neobrutalism */}
-          <div className="neo-card bg-white p-8 border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <div className="flex items-center gap-2 mb-2">
-              <Lock className="text-black" size={24} />
-              <h1 className="text-2xl font-black uppercase">Superadmin Portal</h1>
-            </div>
-            <p className="font-bold text-slate-500 text-sm mb-8">Masukkan kredensial khusus Super Admin untuk masuk.</p>
-
-            {/* Error Message Panel */}
-            {loginError && (
-              <div className="bg-red-100 border-[3px] border-black p-4 mb-6 flex items-center gap-3 animate-shake">
-                <AlertTriangle className="text-red-600 flex-shrink-0" size={20} />
-                <p className="text-sm font-bold text-red-600">{loginError}</p>
-              </div>
-            )}
-
-            <form onSubmit={handleAdminLogin} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-slate-400 ml-1">Email Super Admin</label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                  <input 
-                    type="email" 
-                    required
-                    placeholder="superadmin@email.com"
-                    className="w-full pl-12 pr-4 py-4 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase text-slate-400 ml-1">Kata Sandi</label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                  <input 
-                    type="password" 
-                    required
-                    placeholder="••••••••"
-                    className="w-full pl-12 pr-4 py-4 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-bold focus:outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full neo-btn-primary bg-[#FFE800] py-4 font-black flex items-center justify-center gap-2 text-lg hover:bg-yellow-300 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 active:translate-y-0 active:translate-x-0"
-              >
-                {isLoggingIn ? (
-                  <Loader2 className="animate-spin" size={24} />
-                ) : (
-                  <>VERIFIKASI & MASUK <Sparkles size={22} /></>
-                )}
-              </button>
-            </form>
-
-            <div className="mt-8 pt-6 border-t-[3px] border-black text-center">
-              <Link href="/login" className="text-sm font-black text-slate-400 hover:text-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors">
-                &larr; Kembali ke Login Pengguna
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    notFound();
+    return null;
   }
 
   // --- RENDERING 2: INTERFAS DASHBOARD UTAMA MANAJEMEN TENANT ---
@@ -442,12 +448,20 @@ export default function AdminDashboard() {
             </div>
 
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => { setCreatedCredentials(null); setIsModalOpen(true); }}
               className="flex-1 md:flex-none neo-btn-primary bg-[#FFE800] flex items-center justify-center gap-2 px-5 py-3 font-black uppercase text-xs shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none"
             >
               <Plus size={16} /> REGISTRASI TENANT
             </button>
             
+            <button 
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="p-3 bg-white border-[3px] border-black font-black text-slate-700 hover:bg-slate-100 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
+              title="Ubah Sandi Super Admin"
+            >
+              <Lock size={16} /> UBAH SANDI
+            </button>
+
             <button 
               onClick={handleLogout}
               className="p-3 bg-white border-[3px] border-black font-black text-red-600 hover:bg-red-500 hover:text-white shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center gap-1.5 text-xs"
@@ -633,7 +647,10 @@ export default function AdminDashboard() {
                         <div className="font-black uppercase text-lg">{tenant.name}</div>
                         <div className="text-[10px] text-slate-400 font-black tracking-wider mt-0.5">ID: {tenant.id}</div>
                       </td>
-                      <td className="p-4 border-r-[2px] border-black font-black uppercase text-base">{tenant.owner_name}</td>
+                      <td className="p-4 border-r-[2px] border-black">
+                        <div className="font-black uppercase text-base">{tenant.owner_name}</div>
+                        <div className="text-xs text-slate-400 mt-0.5 font-bold font-mono">{tenant.owner_email}</div>
+                      </td>
                       <td className="p-4 text-center border-r-[2px] border-black">
                         <span className="bg-blue-100 border-[2px] border-black px-3 py-1 font-black text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                           {tenant.store_count} CABANG
@@ -646,8 +663,29 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        <button className="p-2 bg-white text-black border-[2px] border-black hover:bg-black hover:text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] transition-all">
-                          <MoreVertical size={18} />
+                        <button 
+                          onClick={() => {
+                            setSelectedTenant(tenant);
+                            setEditFormData({
+                              email: tenant.owner_email,
+                              password: "",
+                              fullName: tenant.owner_name,
+                              businessName: tenant.name
+                            });
+                            setIsEditModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-[#407BFF] text-white border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase tracking-wider hover:-translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all mr-2"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setTenantToDelete(tenant);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-[#FF6B6B] text-white border-[2px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase tracking-wider hover:-translate-y-[1px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-y-0 active:shadow-none transition-all"
+                        >
+                          Hapus
                         </button>
                       </td>
                     </tr>
@@ -662,16 +700,231 @@ export default function AdminDashboard() {
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
             <div className="neo-card bg-white max-w-lg w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
-              <div className="bg-[#23A094] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
+              
+              {createdCredentials ? (
+                /* --- LAYAR SUKSES PENDAFTARAN TENANT --- */
+                <div>
+                  <div className="bg-[#4ade80] text-black p-6 flex justify-between items-center border-b-[4px] border-black">
+                    <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                      <CheckCircle size={24} /> Registrasi Sukses!
+                    </h3>
+                    <button onClick={() => setIsModalOpen(false)} className="hover:text-white transition-colors">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  
+                  <div className="p-8 space-y-6">
+                    <div className="text-center space-y-2">
+                      <div className="mx-auto w-16 h-16 bg-[#4ade80] border-[3px] border-black flex items-center justify-center shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+                        <Sparkles size={32} className="text-black" />
+                      </div>
+                      <h4 className="text-xl font-black uppercase tracking-tight">Akun Tenant Berhasil Dibuat</h4>
+                      <p className="text-sm font-bold text-slate-500">
+                        Gunakan kredensial berikut untuk masuk sebagai pemilik tenant (owner) di halaman login utama.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Box Email */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400">Email Akun</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" readOnly
+                            value={createdCredentials.email}
+                            className="flex-1 p-3 bg-slate-100 border-[3px] border-black font-bold focus:outline-none"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(createdCredentials.email);
+                              setToast({ message: "Email disalin!", type: "success" });
+                            }}
+                            className="p-3 bg-[#FFE800] border-[3px] border-black hover:bg-yellow-300 active:translate-y-[2px] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            title="Salin Email"
+                          >
+                            <Copy size={20} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Box Password */}
+                      <div className="space-y-1">
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400">Kata Sandi (Password)</label>
+                        <div className="flex items-center gap-2">
+                          <input 
+                            type="text" readOnly
+                            value={createdCredentials.password}
+                            className="flex-1 p-3 bg-slate-100 border-[3px] border-black font-bold focus:outline-none"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(createdCredentials.password);
+                              setToast({ message: "Kata sandi disalin!", type: "success" });
+                            }}
+                            className="p-3 bg-[#FFE800] border-[3px] border-black hover:bg-yellow-300 active:translate-y-[2px] transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                            title="Salin Kata Sandi"
+                          >
+                            <Copy size={20} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Catatan Penting */}
+                    <div className="bg-yellow-100 border-[3px] border-black p-4 flex gap-3 text-xs font-bold text-slate-700">
+                      <Lock className="flex-shrink-0" size={16} />
+                      <p>Keamanan Akun: Harap berikan email dan password di atas secara aman ke pemilik tenant bersangkutan.</p>
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const credText = `Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}`;
+                          navigator.clipboard.writeText(credText);
+                          setToast({ message: "Semua kredensial disalin!", type: "success" });
+                          setIsCopied(true);
+                          setTimeout(() => {
+                            setIsModalOpen(false);
+                            setCreatedCredentials(null);
+                          }, 1000);
+                        }}
+                        className="flex-1 py-3 bg-[#4ade80] hover:bg-[#3ec470] border-[3px] border-black font-black uppercase flex items-center justify-center gap-2 text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px]"
+                      >
+                        {isCopied ? <Check size={18} /> : <Copy size={18} />}
+                        SALIN SEMUA & TUTUP
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setIsModalOpen(false);
+                          setCreatedCredentials(null);
+                        }}
+                        className="py-3 px-6 border-[3px] border-black font-black uppercase hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px]"
+                      >
+                        TUTUP
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* --- FORM UTAMA REGISTRASI TENANT BARU --- */
+                <div>
+                  <div className="bg-[#23A094] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
+                    <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+                      <Sparkles size={24} /> Registrasi Tenant Baru
+                    </h3>
+                    <button onClick={() => setIsModalOpen(false)} className="hover:text-yellow-300 transition-colors">
+                      <X size={24} />
+                    </button>
+                  </div>
+                  
+                  <form onSubmit={handleCreateTenant} className="p-8 space-y-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          <Mail size={14} className="text-black" /> Email Akun Owner
+                        </label>
+                        <input 
+                          type="email" required
+                          className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                          placeholder="email@tenantbaru.com"
+                          value={formData.email}
+                          onChange={e => setFormData({...formData, email: e.target.value})}
+                        />
+                      </div>
+                      
+                      {/* FIELD PASSWORD BARU */}
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          <Lock size={14} className="text-black" /> Kata Sandi Akun (Opsional)
+                        </label>
+                        <input 
+                          type="text"
+                          className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                          placeholder="Gunakan Password123! jika dikosongkan..."
+                          value={formData.password}
+                          onChange={e => setFormData({...formData, password: e.target.value})}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          <UserCheck size={14} className="text-black" /> Nama Lengkap Owner
+                        </label>
+                        <input 
+                          type="text" required
+                          className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                          placeholder="Nama lengkap pemilik usaha..."
+                          value={formData.fullName}
+                          onChange={e => setFormData({...formData, fullName: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          <Building2 size={14} className="text-black" /> Nama Bisnis / Perusahaan
+                        </label>
+                        <input 
+                          type="text" required
+                          className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                          placeholder="Contoh: Kelontong Mart, Sembako Jaya"
+                          value={formData.businessName}
+                          onChange={e => setFormData({...formData, businessName: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                          <Store size={14} className="text-black" /> Nama Cabang Utama
+                        </label>
+                        <input 
+                          type="text" required
+                          className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                          placeholder="Contoh: Jakarta Pusat, Depok Utama"
+                          value={formData.storeName}
+                          onChange={e => setFormData({...formData, storeName: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-6 flex gap-4">
+                      <button 
+                        type="button"
+                        onClick={() => setIsModalOpen(false)}
+                        className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px]"
+                      >
+                        Batal
+                      </button>
+                      <button 
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 neo-btn-primary bg-[#FFE800] py-3 font-black uppercase flex items-center justify-center gap-2 text-sm"
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Simpan Tenant"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Edit Tenant Modal */}
+        {isEditModalOpen && selectedTenant && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="neo-card bg-white max-w-lg w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
+              <div className="bg-[#407BFF] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
                 <h3 className="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
-                  <Sparkles size={24} /> Registrasi Tenant Baru
+                  <Sparkles size={24} /> Edit Data Tenant
                 </h3>
-                <button onClick={() => setIsModalOpen(false)} className="hover:text-yellow-300 transition-colors">
+                <button onClick={() => setIsEditModalOpen(false)} className="hover:text-yellow-300 transition-colors">
                   <X size={24} />
                 </button>
               </div>
               
-              <form onSubmit={handleCreateTenant} className="p-8 space-y-4">
+              <form onSubmit={handleUpdateTenant} className="p-8 space-y-4">
                 <div className="space-y-4">
                   <div>
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
@@ -681,10 +934,24 @@ export default function AdminDashboard() {
                       type="email" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
                       placeholder="email@tenantbaru.com"
-                      value={formData.email}
-                      onChange={e => setFormData({...formData, email: e.target.value})}
+                      value={editFormData.email}
+                      onChange={e => setEditFormData({...editFormData, email: e.target.value})}
                     />
                   </div>
+                  
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                      <Lock size={14} className="text-black" /> Reset Sandi (Kosongkan jika tidak ingin diubah)
+                    </label>
+                    <input 
+                      type="text"
+                      className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                      placeholder="Masukkan sandi baru..."
+                      value={editFormData.password}
+                      onChange={e => setEditFormData({...editFormData, password: e.target.value})}
+                    />
+                  </div>
+
                   <div>
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
                       <UserCheck size={14} className="text-black" /> Nama Lengkap Owner
@@ -692,11 +959,12 @@ export default function AdminDashboard() {
                     <input 
                       type="text" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
-                      placeholder="Nama lengkap pemilik usaha..."
-                      value={formData.fullName}
-                      onChange={e => setFormData({...formData, fullName: e.target.value})}
+                      placeholder="Nama lengkap..."
+                      value={editFormData.fullName}
+                      onChange={e => setEditFormData({...editFormData, fullName: e.target.value})}
                     />
                   </div>
+                  
                   <div>
                     <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
                       <Building2 size={14} className="text-black" /> Nama Bisnis / Perusahaan
@@ -704,21 +972,9 @@ export default function AdminDashboard() {
                     <input 
                       type="text" required
                       className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
-                      placeholder="Contoh: Kelontong Mart, Sembako Jaya"
-                      value={formData.businessName}
-                      onChange={e => setFormData({...formData, businessName: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
-                      <Store size={14} className="text-black" /> Nama Cabang Utama
-                    </label>
-                    <input 
-                      type="text" required
-                      className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
-                      placeholder="Contoh: Jakarta Pusat, Depok Utama"
-                      value={formData.storeName}
-                      onChange={e => setFormData({...formData, storeName: e.target.value})}
+                      placeholder="Nama bisnis..."
+                      value={editFormData.businessName}
+                      onChange={e => setEditFormData({...editFormData, businessName: e.target.value})}
                     />
                   </div>
                 </div>
@@ -726,17 +982,127 @@ export default function AdminDashboard() {
                 <div className="pt-6 flex gap-4">
                   <button 
                     type="button"
-                    onClick={() => setIsModalOpen(false)}
+                    onClick={() => setIsEditModalOpen(false)}
                     className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:shadow-none active:translate-x-[3px] active:translate-y-[3px]"
                   >
                     Batal
                   </button>
                   <button 
                     type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 neo-btn-primary bg-[#FFE800] py-3 font-black uppercase flex items-center justify-center gap-2 text-sm"
+                    disabled={isEditing}
+                    className="flex-1 neo-btn-primary bg-[#407BFF] text-white py-3 font-black uppercase flex items-center justify-center gap-2 text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 active:translate-y-0"
                   >
-                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : "Simpan Tenant"}
+                    {isEditing ? <Loader2 className="animate-spin" size={18} /> : "Simpan Perubahan"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {isDeleteModalOpen && tenantToDelete && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="neo-card bg-white max-w-md w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
+              <div className="bg-[#FF6B6B] text-white p-6 flex justify-between items-center border-b-[4px] border-black">
+                <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                  <AlertTriangle size={24} /> Konfirmasi Hapus Tenant
+                </h3>
+                <button onClick={() => setIsDeleteModalOpen(false)} className="hover:text-black transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <div className="p-8 space-y-6">
+                <div className="bg-red-50 border-[3px] border-[#FF6B6B] p-4 text-sm font-bold text-red-700 space-y-2">
+                  <p className="font-black uppercase tracking-wider text-xs">⚠️ PERINGATAN KERAS!</p>
+                  <p>Menghapus akun tenant **{tenantToDelete.name}** ({tenantToDelete.owner_name}) akan menghapus:</p>
+                  <ul className="list-disc pl-5 space-y-1 text-xs">
+                    <li>Akun login Supabase Auth miliknya</li>
+                    <li>Profil owner dan profil seluruh staff/kasir</li>
+                    <li>Seluruh cabang ({tenantToDelete.store_count} cabang)</li>
+                    <li>Semua data stok produk dan riwayat transaksi selamanya</li>
+                  </ul>
+                  <p className="font-black text-xs">Tindakan ini bersifat PERMANEN dan tidak dapat dibatalkan!</p>
+                </div>
+
+                <div className="flex gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px]"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={handleDeleteTenant}
+                    className="flex-1 py-3 bg-[#FF6B6B] text-white border-[3px] border-black font-black uppercase flex items-center justify-center gap-2 text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-red-600 active:translate-x-[3px] active:translate-y-[3px]"
+                  >
+                    {isDeleting ? <Loader2 className="animate-spin" size={18} /> : "YA, HAPUS SEKARANG"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Superadmin Change Password Modal */}
+        {isPasswordModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="neo-card bg-white max-w-md w-full p-0 overflow-hidden border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in duration-200">
+              <div className="bg-[#FFE800] text-black p-6 flex justify-between items-center border-b-[4px] border-black">
+                <h3 className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+                  <Lock size={24} /> Ubah Sandi Super Admin
+                </h3>
+                <button onClick={() => setIsPasswordModalOpen(false)} className="hover:text-red-500 transition-colors">
+                  <X size={24} />
+                </button>
+              </div>
+              
+              <form onSubmit={handleAdminPasswordChange} className="p-8 space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                      <Lock size={14} className="text-black" /> Kata Sandi Baru
+                    </label>
+                    <input 
+                      type="password" required
+                      className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                      placeholder="Minimal 6 karakter..."
+                      value={adminNewPassword}
+                      onChange={e => setAdminNewPassword(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-1">
+                      <Lock size={14} className="text-black" /> Konfirmasi Kata Sandi
+                    </label>
+                    <input 
+                      type="password" required
+                      className="w-full p-3 neo-box font-bold focus:outline-none mt-1"
+                      placeholder="Ulangi sandi baru..."
+                      value={adminConfirmPassword}
+                      onChange={e => setAdminConfirmPassword(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-6 flex gap-4">
+                  <button 
+                    type="button"
+                    onClick={() => setIsPasswordModalOpen(false)}
+                    className="flex-1 py-3 font-black uppercase border-[3px] border-black hover:bg-slate-100 transition-all text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px]"
+                  >
+                    Batal
+                  </button>
+                  <button 
+                    type="submit"
+                    disabled={isUpdatingPassword}
+                    className="flex-1 neo-btn-primary bg-[#FFE800] text-black py-3 font-black uppercase flex items-center justify-center gap-2 text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:translate-x-[3px] active:translate-y-[3px]"
+                  >
+                    {isUpdatingPassword ? <Loader2 className="animate-spin" size={18} /> : "PERBARUI SANDI"}
                   </button>
                 </div>
               </form>

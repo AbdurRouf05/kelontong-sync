@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit3, Trash2, X, Loader2, Store } from 'lucide-react';
+import { Plus, Edit3, Trash2, X, Loader2, Store, MapPin, Phone, RefreshCw } from 'lucide-react';
 
 type Branch = {
   id: string;
@@ -147,7 +147,9 @@ export default function BranchesPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight mb-2">🏪 Multi-Cabang</h1>
+          <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-tight mb-2 flex items-center gap-2">
+            <Store className="w-6 h-6 sm:w-9 sm:h-9 shrink-0 text-black" /> Multi-Cabang
+          </h1>
           <p className="font-bold text-slate-500 uppercase text-xs sm:text-sm tracking-wider sm:tracking-widest">
             Kelola dan pindah antar cabang toko yang Anda miliki.
           </p>
@@ -196,18 +198,24 @@ export default function BranchesPage() {
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black uppercase mb-2 pr-20">{branch.name}</h2>
-              <p className={`font-bold mb-6 text-sm ${branch.isActive ? 'text-green-100' : 'text-slate-500'}`}>
-                📍 {branch.address || 'Belum ada alamat'} <br />
-                📞 {branch.phone || 'Belum ada nomor telepon'}
-              </p>
+              <div className={`font-bold mb-6 text-sm ${branch.isActive ? 'text-green-100' : 'text-slate-500'} space-y-1.5`}>
+                <div className="flex items-start gap-1.5">
+                  <MapPin size={16} className="shrink-0 mt-0.5" />
+                  <span>{branch.address || 'Belum ada alamat'}</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Phone size={16} className="shrink-0" />
+                  <span>{branch.phone || 'Belum ada nomor telepon'}</span>
+                </div>
+              </div>
 
               <div className="flex gap-3">
                 {!branch.isActive && (
                   <button
                     onClick={() => handleSwitchBranch(branch.id)}
-                    className="flex-1 py-3 bg-[#FF90E8] text-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all font-black uppercase text-sm"
+                    className="flex-1 py-3 bg-[#FF90E8] text-black border-[3px] border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-[2px] hover:-translate-x-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all font-black uppercase text-sm flex items-center justify-center gap-1.5"
                   >
-                    🔄 PINDAH KE SINI
+                    <RefreshCw size={16} className="animate-spin-hover" /> PINDAH KE SINI
                   </button>
                 )}
                 {branch.isActive && (

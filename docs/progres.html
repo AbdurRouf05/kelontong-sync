@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan UAS: KelontongSync - Neo Brutalism Presentation</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        brutalBg: '#FFFDF6',
+                        brutalYellow: '#FFE600',
+                        brutalCyan: '#3FE5FF',
+                        brutalPink: '#FF7EE2',
+                        brutalOrange: '#FF6B35',
+                        brutalGreen: '#39e38e',
+                        brutalPurple: '#A78BFA',
+                        brutalDark: '#1A1A1A'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Neo-Brutalist Premium Styling Rules */
+        .brutal-border {
+            border: 4px solid #1A1A1A;
+        }
+        .brutal-border-sm {
+            border: 2px solid #1A1A1A;
+        }
+        .brutal-shadow {
+            box-shadow: 8px 8px 0px 0px #1A1A1A;
+        }
+        .brutal-shadow-sm {
+            box-shadow: 4px 4px 0px 0px #1A1A1A;
+        }
+        .brutal-shadow-lg {
+            box-shadow: 12px 12px 0px 0px #1A1A1A;
+        }
+        .brutal-btn-active:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px 0px #1A1A1A;
+        }
+        .brutal-hover:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 10px 10px 0px 0px #1A1A1A;
+        }
+        
+        /* Custom scrollbar matching the brutalist theme */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFDF6;
+            border-left: 4px solid #1A1A1A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FFE600;
+            border: 3px solid #FFFDF6;
+            border-radius: 0px;
+        }
+        
+        .slide-enter {
+            animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes slideIn {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-brutalBg text-brutalDark font-sans selection:bg-brutalYellow selection:text-brutalDark min-h-screen flex flex-col overflow-x-hidden">
+
+    <!-- Top System Bar -->
+    <header class="brutal-border-sm bg-brutalDark text-white px-4 py-2 flex flex-wrap justify-between items-center text-xs font-mono tracking-wider z-20">
+        <div class="flex items-center space-x-3">
+            <span class="flex h-2 w-2 relative">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brutalGreen opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-brutalGreen"></span>
+            </span>
+            <span>KELONTONGSYNC PROD RUNTIME v1.0.4</span>
+        </div>
+        <div class="hidden sm:flex items-center space-x-6">
+            <span>DATABASE: SUPABASE CONNECTED</span>
+            <span>UAS EVALUATION MODE</span>
+            <span>LATENCY: 12ms</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleSound()" id="sound-btn" class="bg-brutalYellow text-brutalDark font-bold px-2 py-0.5 brutal-border-sm hover:scale-105 transition-transform">
+                🔈 SOUND: ON
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Navigation Bar -->
+    <nav class="bg-brutalBg brutal-border m-4 p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10 brutal-shadow">
+        <div class="flex items-center gap-3">
+            <div class="bg-brutalOrange text-white font-display font-black text-xl p-2 brutal-border brutal-shadow-sm rotate-[-2deg]">
+                KS
+            </div>
+            <div>
+                <h1 class="font-display font-black text-lg sm:text-2xl tracking-tight">KELONTONGSYNC</h1>
+                <p class="text-xs uppercase font-bold text-gray-500">Laporan UAS - VCS &amp; Kolaborasi Tim</p>
+            </div>
+        </div>
+        
+        <!-- Toggle Layout Modes -->
+        <div class="flex items-center gap-2">
+            <button onclick="changeView('slide')" id="view-slide-btn" class="bg-brutalYellow brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active">
+                💻 Slide Mode
+            </button>
+            <button onclick="changeView('document')" id="view-doc-btn" class="bg-white brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active">
+                📄 Doc Mode
+            </button>
+        </div>
+    </nav>
+
+    <!-- MAIN PRESENTATION AREA -->
+    <main class="flex-grow px-4 pb-12 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        
+        <!-- Sidebar Navigation (Active in Slide View) -->
+        <aside id="sidebar-nav" class="lg:col-span-1 bg-brutalCyan brutal-border p-5 brutal-shadow sticky top-4 flex flex-col gap-3">
+            <div class="font-display font-black text-lg uppercase border-b-4 border-brutalDark pb-2 mb-2">
+                Daftar Topik
+            </div>
+            <div class="flex flex-col gap-2 font-bold" id="slides-menu-list">
+                <!-- Dynamically generated navigation menu -->
+            </div>
+            <div class="mt-4 pt-4 border-t-4 border-brutalDark text-xs font-mono">
+                <p>💡 Gunakan <b>Panah Kiri / Kanan</b> untuk berpindah slide dengan cepat.</p>
+            </div>
+        </aside>
+
+        <!-- Dynamic Content Section -->
+        <section id="content-area" class="lg:col-span-3 flex flex-col gap-6">
+            <!-- Slides are dynamically loaded here -->
+        </section>
+
+    </main>
+
+    <script>
+        // Interactive Sound Synthesizer via Web Audio API (No external sound dependencies)
+        let soundEnabled = true;
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'slide') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(250, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.15);
+                } else if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.16); // G5
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch(e) { console.log("Sound error context:", e); }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-btn');
+            if (soundEnabled) {
+                btn.innerHTML = '🔈 SOUND: ON';
+                btn.classList.add('bg-brutalYellow');
+                btn.classList.remove('bg-gray-300');
+                playSound('click');
+            } else {
+                btn.innerHTML = '🔇 SOUND: OFF';
+                btn.classList.remove('bg-brutalYellow');
+                btn.classList.add('bg-gray-300');
+            }
+        }
+
+        // Checklist Data Store (Initial state match the user prompt)
+        const checklistItems = [
+            // Fase 1
+            { id: 'c1', phase: 1, assignee: 'Abdur Rouf', desc: 'Inisialisasi Repositori GitHub & Next.js Boilerplate', completed: true },
+            { id: 'c2', phase: 1, assignee: 'Abdur Rouf', desc: 'Konfigurasi Branching Git (dev, staging, feature/*)', completed: true },
+            { id: 'c3', phase: 1, assignee: 'Abdur Rouf', desc: 'Setup Proyek Supabase & Vercel', completed: true },
+            { id: 'c4', phase: 1, assignee: 'Abdur Rouf', desc: 'Membuat Skema Database (Tabel Toko, Barang, Karyawan, Transaksi) di Supabase', completed: true },
+            { id: 'c5', phase: 1, assignee: 'Semua Anggota', desc: 'Melakukan git clone dan pnpm install di komputer masing-masing', completed: true },
+            { id: 'c6', phase: 1, assignee: 'Semua Anggota', desc: 'Berpindah ke branch modul masing-masing (contoh: git checkout feature/pos)', completed: true },
+            // Fase 2
+            { id: 'c7', phase: 2, assignee: 'Rafi', desc: 'Membuat UI Halaman Kasir (Daftar Barang & Keranjang)', completed: true },
+            { id: 'c8', phase: 2, assignee: 'Rafi', desc: 'Implementasi logika keranjang (Tambah, Kurang, Hapus barang)', completed: true },
+            { id: 'c9', phase: 2, assignee: 'Rafi', desc: 'Implementasi fitur pencarian barang & hitung kembalian', completed: true },
+            { id: 'c10', phase: 2, assignee: 'Akmal', desc: 'Membuat UI Katalog Barang (Tabel & Grid)', completed: true },
+            { id: 'c11', phase: 2, assignee: 'Akmal', desc: 'Membuat Form Tambah/Edit Barang', completed: true },
+            { id: 'c12', phase: 2, assignee: 'Akmal', desc: 'Implementasi fitur kategori dan filter stok', completed: true },
+            { id: 'c13', phase: 2, assignee: 'Adam', desc: 'Membuat UI Dasbor Utama (Ringkasan Angka Laba/Rugi)', completed: true },
+            { id: 'c14', phase: 2, assignee: 'Adam', desc: 'Integrasi library Chart.js/Recharts untuk grafik penjualan', completed: true },
+            { id: 'c15', phase: 2, assignee: 'Adam', desc: 'Membuat layout responsif untuk tampilan mobile/tablet', completed: true },
+            { id: 'c16', phase: 2, assignee: 'Ferdy', desc: 'Membuat UI Pengaturan Profil Toko & Cabang', completed: true },
+            { id: 'c17', phase: 2, assignee: 'Ferdy', desc: 'Membuat halaman manajemen akun karyawan/kasir', completed: true },
+            { id: 'c18', phase: 2, assignee: 'Ferdy', desc: 'Implementasi UI untuk fitur perpindahan antar cabang', completed: true },
+            // Fase 3
+            { id: 'c19', phase: 3, assignee: 'Abdur Rouf', desc: 'Membuat API / Server Actions untuk koneksi ke Supabase', completed: true },
+            { id: 'c20', phase: 3, assignee: 'Semua Anggota', desc: 'Menghubungkan UI Modul ke Database (Fetch & Post data)', completed: true },
+            { id: 'c21', phase: 3, assignee: 'Abdur Rouf', desc: 'Implementasi Row Level Security (RLS) agar data antar toko tidak bocor', completed: false, comment: 'Tertunda/Non-aktif untuk kemudahan testing dev' },
+            { id: 'c22', phase: 3, assignee: 'Abdur Rouf', desc: 'Membuat Trigger SQL untuk pemotongan stok otomatis saat transaksi', completed: true },
+            { id: 'c23', phase: 3, assignee: 'Rafi', desc: 'Implementasi fitur cetak struk (Thermal/PDF)', completed: true },
+            { id: 'c24', phase: 3, assignee: 'Akmal', desc: 'Implementasi notifikasi "Early Warning" jika stok di bawah limit', completed: true },
+            // Fase 4
+            { id: 'c25', phase: 4, assignee: 'Semua Anggota', desc: 'Mengambil, meninjau, dan melakukan merge dari branch feature ke branch dev (secara lokal oleh PM)', completed: true },
+            { id: 'c26', phase: 4, assignee: 'Abdur Rouf', desc: 'Melakukan Code Review secara lokal dan penyelesaian konflik kode tim', completed: true },
+            { id: 'c27', phase: 4, assignee: 'Abdur Rouf & Adam', desc: 'Testing kompilasi build produksi Next.js secara lokal', completed: true },
+            { id: 'c28', phase: 4, assignee: 'Semua Anggota', desc: 'Perbaikan bug TypeScript dan layout hasil peninjauan kode', completed: true },
+            { id: 'c29', phase: 4, assignee: 'Abdur Rouf', desc: 'Final Merge ke branch main dan sinkronisasi ke repositori GitHub', completed: true }
+        ];
+
+        // Slide State
+        let currentSlide = 0;
+        let viewMode = 'slide'; // 'slide' or 'document'
+
+        // Team contribution database
+        const teamData = {
+            rouf: {
+                name: "Abdur Rouf",
+                role: "Project Manager & Lead Backend Developer",
+                color: "bg-brutalYellow",
+                contributions: [
+                    "Menginisialisasi Next.js Boilerplate, struktur repositori Git, dan pipeline CI/CD Vercel.",
+                    "Merancang seluruh skema database PostgreSQL Supabase Cloud (Tabel stores, profiles, products, categories, transactions, dll).",
+                    "Membuat API / Server Actions untuk memfasilitasi transaksi data antara frontend dengan Supabase.",
+                    "Menulis SQL Triggers dan Functions di Supabase untuk kalkulasi pengurangan stok otomatis saat transaksi POS selesai.",
+                    "Memimpin penyelesaian konflik kode secara lokal dan perbaikan error kompilasi TypeScript."
+                ]
+            },
+            rafi: {
+                name: "Rafi Ryuu",
+                role: "Frontend Developer - Modul POS",
+                color: "bg-brutalCyan",
+                contributions: [
+                    "Membangun antarmuka POS Neobrutalism yang interaktif dengan pembagian panel daftar barang dan keranjang belanja.",
+                    "Mengembangkan logika keranjang belanja lengkap (tambah, kurangi nominal, hapus, perhitungan subtotal, diskon, dan pajak secara real-time).",
+                    "Mengimplementasikan fitur pencarian barang berbasis nama/barcode dan perhitungan nominal kembalian pelanggan.",
+                    "Membangun fitur cetak struk digital dalam bentuk struk thermal modern dan PDF ramah cetak."
+                ]
+            },
+            akmal: {
+                name: "Akmal",
+                role: "Frontend Developer - Modul Inventaris",
+                color: "bg-brutalPink",
+                contributions: [
+                    "Membangun katalog barang dengan dual-mode tampilan (Tabel Terstruktur dan Grid Visual).",
+                    "Membuat form modal interaktif untuk penambahan (CRUD) dan pengeditan barang lengkap dengan validasi.",
+                    "Mengembangkan sistem penyaringan berdasarkan kategori dan visualisasi level stok barang (cukup, menipis, habis).",
+                    "Mengimplementasikan notifikasi Early Warning otomatis apabila stok produk berada di bawah batas minimum.",
+                    "Membangun modul impor produk massal cerdas berbasis CSV/Excel/JSON dengan auto-header mapping.",
+                    "Mengoptimalkan visualisasi responsif dengan layout Bento Grid Premium."
+                ]
+            },
+            adam: {
+                name: "Adam",
+                role: "Frontend Developer - Modul Dasbor & Laporan",
+                color: "bg-brutalPurple",
+                contributions: [
+                    "Merancang halaman Dasbor Utama dengan widget ringkasan metrik (Omzet, Margin Laba, Total Transaksi, Produk Terjual).",
+                    "Mengintegrasikan library visualisasi grafik interaktif menggunakan Recharts untuk bagan tren penjualan.",
+                    "Mengembangkan filter periode dinamis (Harian, Mingguan, Bulanan, Tahunan) untuk menyaring data grafik secara instan.",
+                    "Membuat tata letak responsif penuh (mobile-friendly) untuk aksesibilitas tinggi bagi pemilik toko di lapangan."
+                ]
+            },
+            ferdy: {
+                name: "Ferdy",
+                role: "Frontend Developer - Modul Multi-Cabang & Settings",
+                color: "bg-brutalOrange",
+                contributions: [
+                    "Mengembangkan antarmuka pendaftaran toko SaaS Multi-Step (/register) yang interaktif bagi pendaftar bisnis baru.",
+                    "Membangun halaman manajemen utama Super Admin Tenant (/tenant) untuk memonitor ringkasan cabang dan status keaktifan toko.",
+                    "Membuat modul pengaturan profil bisnis, data profil cabang, dan manajemen akun staf/kasir terintegrasi.",
+                    "Menerapkan fitur perpindahan antar cabang aktif (Store Switcher) di header dasbor secara mulus.",
+                    "Mengimplementasikan developer bypass mode dan widget detektor latency database Supabase real-time."
+                ]
+            }
+        };
+
+        // Git events for the VCS Simulator
+        const gitTimeline = [
+            { id: 1, action: "commit", branch: "main", msg: "Initial Commit on main" },
+            { id: 2, action: "checkout", branch: "dev", msg: "Create branch dev from main" },
+            { id: 3, action: "commit", branch: "dev", msg: "Setup Next.js & Supabase Schema" },
+            { id: 4, action: "checkout", branch: "feature/inventory", msg: "Create feature/inventory branch" },
+            { id: 5, action: "commit", branch: "feature/inventory", msg: "UI Katalog & Form CRUD (Akmal)" },
+            { id: 6, action: "checkout", branch: "feature/multi-cabang", msg: "Create feature/multi-cabang branch from dev" },
+            { id: 7, action: "commit", branch: "feature/multi-cabang", msg: "UI Settings & SaaS Signup (Ferdy)" },
+            { id: 8, action: "merge", from: "feature/multi-cabang", to: "dev", msg: "Local PM Merge: feature/multi-cabang into dev" },
+            { id: 9, action: "commit", branch: "feature/inventory", msg: "Notifikasi Early Warning (Akmal)" },
+            { id: 10, action: "merge", from: "feature/inventory", to: "dev", msg: "Local PM Merge: feature/inventory into dev" },
+            { id: 11, action: "checkout", branch: "staging", msg: "Create staging branch from dev" },
+            { id: 12, action: "merge", from: "dev", to: "staging", msg: "UAT / Testing on Staging Success" },
+            { id: 13, action: "merge", from: "staging", to: "main", msg: "Release Production V1.0 - Deploy Vercel (100% Clean)" }
+        ];
+
+        let currentGitStep = gitTimeline.length - 1; // Default to full diagram view
+    </script>
+
+    <script>
+        const slides = [
+            {
+                title: "Cover Laporan",
+                short: "Cover Proyek",
+                bg: "bg-brutalYellow",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow flex flex-col justify-between min-h-[480px]">
+                    <div>
+                        <div class="inline-block bg-brutalDark text-white font-mono text-xs px-3 py-1 uppercase tracking-widest brutal-border-sm mb-4">
+                            LAPORAN AKHIR UAS
+                        </div>
+                        <h2 class="font-display font-black text-4xl sm:text-6xl tracking-tight leading-none mb-4">
+                            KOLABORASI TIM &amp; IMPLEMENTASI <span class="bg-brutalCyan px-2 border-2 border-brutalDark inline-block rotate-[1deg]">VCS SYSTEM</span>
+                        </h2>
+                        <p class="font-display font-black text-2xl text-brutalOrange uppercase tracking-wide mb-2">
+                            Aplikasi: KelontongSync
+                        </p>
+                        <p class="text-sm font-semibold max-w-xl text-gray-700">
+                            SaaS Manajemen Toko Kelontong Modern bernuansa desain Neobrutalism. Proyek dibangun menggunakan ekosistem modern: Next.js (React), Tailwind CSS, TypeScript, pnpm, dan Supabase Cloud (PostgreSQL).
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 border-t-4 border-brutalDark pt-6">
+                        <div>
+                            <span class="text-xs font-bold uppercase text-gray-400">Dosen Pengampu / Kelas</span>
+                            <p class="font-bold text-sm">UAS Praktikum Rekayasa Perangkat Lunak</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center justify-start md:justify-end">
+                            <span class="bg-brutalPink px-3 py-1 font-bold text-xs border-2 border-brutalDark brutal-shadow-sm">Abdur Rouf</span>
+                            <span class="bg-brutalCyan px-3 py-1 font-bold text-xs border-2 border-brutalDark brutal-shadow-sm">Rafi Ryuu</span>
+                            <span class="bg-brutalYellow px-3 py-1 font-bold text-xs border-2 border-brutalDark brutal-shadow-sm">Akmal</span>
+                            <span class="bg-brutalPurple px-3 py-1 font-bold text-xs border-2 border-brutalDark brutal-shadow-sm">Adam</span>
+                            <span class="bg-brutalOrange px-3 py-1 font-bold text-xs border-2 border-brutalDark brutal-shadow-sm">Ferdy</span>
+                        </div>
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Abstraksi Proyek",
+                short: "1. Abstraksi",
+                bg: "bg-brutalPink",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow min-h-[480px]">
+                    <h3 class="font-display font-black text-3xl uppercase tracking-tight mb-4 border-b-4 border-brutalDark pb-2">
+                        📄 1. Abstraksi KelontongSync
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mt-6">
+                        <div class="md:col-span-7 flex flex-col justify-between">
+                            <div>
+                                <p class="text-base leading-relaxed font-semibold text-gray-800 mb-4">
+                                    <b class="text-brutalOrange">KelontongSync</b> adalah platform SaaS (Software-as-a-Service) terintegrasi yang memberdayakan UMKM kelontong tradisional untuk melompat ke digitalisasi operasional secara mandiri, efisien, dan andal.
+                                </p>
+                                <div class="grid grid-cols-2 gap-4 my-4">
+                                    <div class="bg-[#FFF] p-3 border-2 border-brutalDark brutal-shadow-sm">
+                                        <span class="text-xs uppercase font-bold text-brutalOrange">🎨 Tema Visual</span>
+                                        <p class="font-bold text-sm">Neobrutalism (Kontras Tinggi, Tebal, Kokoh)</p>
+                                    </div>
+                                    <div class="bg-[#FFF] p-3 border-2 border-brutalDark brutal-shadow-sm">
+                                        <span class="text-xs uppercase font-bold text-brutalCyan">🚀 Target Utama</span>
+                                        <p class="font-bold text-sm">Kasir (POS), Stok Otomatis, Multi-Cabang</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-brutalYellow p-4 border-4 border-brutalDark brutal-shadow-sm mt-4">
+                                <h4 class="font-black text-xs uppercase mb-2">⚡ Arsitektur &amp; Tech Stack Utama</h4>
+                                <div class="flex flex-wrap gap-2 text-xs font-bold">
+                                    <span class="bg-white border border-black px-2 py-0.5">Next.js (React)</span>
+                                    <span class="bg-white border border-black px-2 py-0.5">Tailwind CSS</span>
+                                    <span class="bg-white border border-black px-2 py-0.5">TypeScript</span>
+                                    <span class="bg-white border border-black px-2 py-0.5">pnpm Package Manager</span>
+                                    <span class="bg-white border border-black px-2 py-0.5">Supabase cloud DB</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Modular Blocks Showcase -->
+                        <div class="md:col-span-5 flex flex-col gap-3">
+                            <div class="font-display font-black text-sm uppercase text-gray-400">4 Modul Inti Aplikasi</div>
+                            
+                            <div class="bg-white brutal-border-sm p-3 hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform flex items-center gap-3">
+                                <div class="bg-brutalYellow p-2 brutal-border-sm font-bold text-xs">01</div>
+                                <div>
+                                    <h5 class="font-bold text-sm">Kasir Pintar (POS)</h5>
+                                    <p class="text-xs text-gray-500">Logika keranjang modular &amp; Cetak struk</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white brutal-border-sm p-3 hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform flex items-center gap-3">
+                                <div class="bg-brutalCyan p-2 brutal-border-sm font-bold text-xs">02</div>
+                                <div>
+                                    <h5 class="font-bold text-sm">Inventaris (Stok)</h5>
+                                    <p class="text-xs text-gray-500">Dual-view, CSV importer, warning limit</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white brutal-border-sm p-3 hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform flex items-center gap-3">
+                                <div class="bg-brutalPink p-2 brutal-border-sm font-bold text-xs">03</div>
+                                <div>
+                                    <h5 class="font-bold text-sm">Dashboard Analitik</h5>
+                                    <p class="text-xs text-gray-500">Grafik Recharts, filter tren periode</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white brutal-border-sm p-3 hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform flex items-center gap-3">
+                                <div class="bg-brutalOrange p-2 brutal-border-sm font-bold text-xs">04</div>
+                                <div>
+                                    <h5 class="font-bold text-sm">Multi-Cabang &amp; Tenant</h5>
+                                    <p class="text-xs text-gray-500">Bypass developer mode, Latency Checker</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Metodologi Kerja",
+                short: "2. Metodologi",
+                bg: "bg-brutalCyan",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow min-h-[480px]">
+                    <h3 class="font-display font-black text-3xl uppercase tracking-tight mb-4 border-b-4 border-brutalDark pb-2">
+                        🛠️ 2. Metodologi Kolaborasi Tim
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <!-- Col 1: Communication -->
+                        <div class="bg-white brutal-border p-5 brutal-shadow-sm">
+                            <span class="bg-brutalYellow border-2 border-brutalDark text-xs font-black px-2 py-1 uppercase tracking-wide">ALUR SINKRONISASI</span>
+                            <h4 class="font-display font-black text-xl mt-3 mb-2">Agile &amp; Scrum Akademik</h4>
+                            <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                                Kolaborasi diselaraskan menggunakan alur iteratif terstruktur untuk memangkas *idle time* pengerjaan.
+                            </p>
+                            <ul class="space-y-3 text-sm font-semibold">
+                                <li class="flex items-start gap-2">
+                                    <span class="bg-brutalDark text-white text-xs px-1.5 py-0.5 font-bold">1</span>
+                                    <span><b>Daily Stand-up Meeting:</b> Digelar berkala 3x seminggu untuk membedah progres harian dan mengidentifikasi blocker secara cepat.</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="bg-brutalDark text-white text-xs px-1.5 py-0.5 font-bold">2</span>
+                                    <span><b>Kanban Task Board:</b> Diatur rapi pada berkas <code>docs/checklist.md</code>. Sistem membatasi beban kerja anggota agar fokus di kualitas fitur (WIP Limit maksimal 2 tugas paralel).</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Col 2: Code Standard -->
+                        <div class="bg-white brutal-border p-5 brutal-shadow-sm">
+                            <span class="bg-brutalPink border-2 border-brutalDark text-xs font-black px-2 py-1 uppercase tracking-wide">CODING CONVENTION</span>
+                            <h4 class="font-display font-black text-xl mt-3 mb-2">Standardisasi Penulisan Kode</h4>
+                            <p class="text-sm text-gray-600 mb-4 leading-relaxed">
+                                Kebijakan ketat diberlakukan untuk menjaga integrasi kode agar tetap bersih dan homogen di setiap modul.
+                            </p>
+                            <div class="space-y-3 text-sm font-semibold">
+                                <div class="bg-brutalBg p-3 border border-gray-400">
+                                    <h5 class="text-xs uppercase font-bold text-brutalOrange">🌐 Bahasa Pemrograman &amp; DB Schema</h5>
+                                    <p class="text-xs text-gray-700">Wajib menggunakan Bahasa Inggris standar penuh untuk entitas kode (contoh: <code>products</code>, <code>selling_price</code>, fungsi <code>fetchCategories()</code>).</p>
+                                </div>
+                                <div class="bg-brutalBg p-3 border border-gray-400">
+                                    <h5 class="text-xs uppercase font-bold text-brutalPurple">🛡️ Formatter &amp; Compiler Linter</h5>
+                                    <p class="text-xs text-gray-700">Setiap dev menggunakan ekstensi formatter <b>Prettier</b> dan linter <b>ESLint</b> di VS Code lokal untuk mencegah error parsing yang fatal.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Strategi Git",
+                short: "3. Strategi Git",
+                bg: "bg-brutalPurple",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow min-h-[480px]">
+                    <h3 class="font-display font-black text-3xl uppercase tracking-tight mb-2 border-b-4 border-brutalDark pb-2">
+                        🐙 3. Strategi Version Control (No-PR Workflow)
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-4">
+                        <!-- Controls and Desc -->
+                        <div class="xl:col-span-4 flex flex-col justify-between">
+                            <div>
+                                <span class="bg-brutalGreen text-brutalDark border-2 border-brutalDark text-xs font-bold px-2 py-0.5 uppercase">LOKAL PM MERGE CONVENTION</span>
+                                <p class="text-xs text-gray-600 mt-2 leading-relaxed">
+                                    Tim meminimalkan *Merge Conflict* dan kegagalan build menggunakan integrasi terpusat oleh Project Manager tanpa sistem Pull Request (PR) GitHub.
+                                </p>
+                                
+                                <div class="bg-white border-2 border-brutalDark p-3 my-3 text-xs">
+                                    <b class="text-brutalOrange">Proses Penggabungan:</b>
+                                    <ol class="list-decimal pl-4 mt-1 space-y-1">
+                                        <li>Developer push ke remote branch fitur masing-masing.</li>
+                                        <li>PM pull kode ke repositori lokal secara mandiri.</li>
+                                        <li>PM uji kompilasi lokal via <code>pnpm build</code>.</li>
+                                        <li>Penyelarasan manual jika konflik, lalu merge lokal dengan <code>--no-ff</code>.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-brutalYellow p-3 border-2 border-brutalDark text-xs font-mono">
+                                <b>Command Utama:</b><br>
+                                <span class="text-red-600 font-bold">git merge --no-ff feature/pos</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Visual Git Flow Emulator -->
+                        <div class="xl:col-span-8 bg-brutalDark text-white p-4 brutal-border brutal-shadow-sm flex flex-col justify-between">
+                            <div class="flex justify-between items-center border-b border-gray-700 pb-2 mb-3">
+                                <span class="text-xs font-bold font-mono tracking-wider text-brutalCyan">SIMULATOR INTERAKTIF BRANCHING KELONTONGSYNC</span>
+                                <div class="flex gap-1">
+                                    <button onclick="stepGit(-1)" class="bg-[#333] hover:bg-brutalOrange border border-gray-600 text-xs px-2 py-0.5">&larr; Back</button>
+                                    <button onclick="stepGit(1)" class="bg-[#333] hover:bg-brutalGreen border border-gray-600 text-xs px-2 py-0.5">Next &rarr;</button>
+                                    <button onclick="resetGit()" class="bg-[#333] hover:bg-brutalPink border border-gray-600 text-xs px-2 py-0.5">Reset</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Git visualization canvas container -->
+                            <div class="h-64 relative overflow-y-auto bg-black p-2 font-mono text-xs border border-gray-800" id="git-graph-container">
+                                <!-- Generated dynamically by renderGitGraph() -->
+                            </div>
+                            
+                            <div class="mt-2 text-center text-xs text-gray-400 font-mono" id="git-status-message">
+                                Menampilkan alur Git lengkap proyek KelontongSync.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Peran & Kontribusi",
+                short: "4. Peran Tim",
+                bg: "bg-brutalOrange",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow min-h-[480px]">
+                    <h3 class="font-display font-black text-3xl uppercase tracking-tight mb-2 border-b-4 border-brutalDark pb-2">
+                        👥 4. Pembagian Peran &amp; Kontribusi Kerja Tim
+                    </h3>
+                    
+                    <p class="text-sm font-semibold text-gray-600 mb-4">
+                        Klik kartu anggota tim di bawah ini untuk melihat penjabaran peran serta kontribusi teknis mereka secara detail:
+                    </p>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+                        <button onclick="showTeam('rouf')" id="btn-team-rouf" class="team-tab bg-brutalYellow p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all">Abdur Rouf</button>
+                        <button onclick="showTeam('rafi')" id="btn-team-rafi" class="team-tab bg-white p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all">Rafi Ryuu</button>
+                        <button onclick="showTeam('akmal')" id="btn-team-akmal" class="team-tab bg-white p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all">Akmal</button>
+                        <button onclick="showTeam('adam')" id="btn-team-adam" class="team-tab bg-white p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all">Adam</button>
+                        <button onclick="showTeam('ferdy')" id="btn-team-ferdy" class="team-tab bg-white p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all">Ferdy</button>
+                    </div>
+                    
+                    <!-- Dynamic Team Card display -->
+                    <div class="bg-white brutal-border p-5 brutal-shadow-sm min-h-[240px]" id="team-content-card">
+                        <!-- Generated by JS showTeam() -->
+                    </div>
+                </div>
+                `
+            },
+            {
+                title: "Evaluasi & Checklist",
+                short: "5. Evaluasi & Progress",
+                bg: "bg-brutalGreen",
+                html: `
+                <div class="p-8 brutal-border bg-[#FFFDF6] brutal-shadow min-h-[480px]">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-4 border-brutalDark pb-2 mb-4 gap-2">
+                        <h3 class="font-display font-black text-3xl uppercase tracking-tight">
+                            📈 5. Evaluasi Progres &amp; Live Checklist
+                        </h3>
+                        <!-- Live Progress Counter Badge -->
+                        <div class="bg-brutalDark text-white px-3 py-1 font-mono text-sm brutal-border-sm flex items-center gap-2">
+                            <span>PROGRESS TOTAL:</span>
+                            <span id="progress-percent" class="text-brutalYellow font-black text-lg">90%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Evaluation analysis text -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-4 flex flex-col gap-3 text-xs leading-relaxed font-semibold">
+                            <div class="bg-brutalYellow/30 p-3 brutal-border-sm">
+                                <h4 class="font-black text-sm uppercase text-brutalOrange">Kondisi Saat Ini (90%)</h4>
+                                <p class="mt-1">Seluruh modul inti (POS, Inventaris, Dashboard, Multi-Cabang Settings) telah selesai didevelop dan terintegrasi di local dev oleh PM dengan status <b>Clean Build (Exit Code 0)</b>.</p>
+                            </div>
+                            <div class="bg-brutalCyan/30 p-3 brutal-border-sm">
+                                <h4 class="font-black text-sm uppercase text-blue-800">Catatan Khusus Multi-Tenant</h4>
+                                <p class="mt-1">Walaupun UI pendaftaran, dasbor super admin, dan Store Switcher telah siap di frontend, <b>fitur isolasi database via Row Level Security (RLS) ditunda/dinonaktifkan sementara</b> demi mempermudah presentasi demo pengujian UAS.</p>
+                            </div>
+                            <div class="bg-brutalPurple/30 p-3 brutal-border-sm">
+                                <span class="font-bold text-gray-500 uppercase">💡 TIPS PRESENTASI UAS:</span>
+                                <p class="mt-1">Anda bisa mengeklik kotak checklist di sebelah kanan secara dinamis untuk menguji simulasi penyesuaian target pengerjaan UAS.</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Real Checklist Box -->
+                        <div class="lg:col-span-8 flex flex-col justify-between">
+                            <div class="flex gap-2 mb-3">
+                                <button onclick="filterChecklist('all')" id="chk-btn-all" class="chk-filter bg-brutalDark text-white px-3 py-1 font-bold text-xs border border-black">Semua</button>
+                                <button onclick="filterChecklist(1)" id="chk-btn-1" class="chk-filter bg-white px-3 py-1 font-bold text-xs border border-black">Fase 1</button>
+                                <button onclick="filterChecklist(2)" id="chk-btn-2" class="chk-filter bg-white px-3 py-1 font-bold text-xs border border-black">Fase 2</button>
+                                <button onclick="filterChecklist(3)" id="chk-btn-3" class="chk-filter bg-white px-3 py-1 font-bold text-xs border border-black">Fase 3</button>
+                                <button onclick="filterChecklist(4)" id="chk-btn-4" class="chk-filter bg-white px-3 py-1 font-bold text-xs border border-black">Fase 4</button>
+                            </div>
+                            
+                            <div class="h-64 overflow-y-auto brutal-border bg-white p-3 space-y-2 text-xs" id="interactive-checklist-box">
+                                <!-- Checklist generated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+            }
+        ];
+    </script>
+
+    <script>
+        // Set view mode
+        function changeView(mode) {
+            playSound('click');
+            viewMode = mode;
+            
+            const slideBtn = document.getElementById('view-slide-btn');
+            const docBtn = document.getElementById('view-doc-btn');
+            const sidebar = document.getElementById('sidebar-nav');
+            
+            if (mode === 'slide') {
+                slideBtn.className = 'bg-brutalYellow brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active';
+                docBtn.className = 'bg-white brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active';
+                sidebar.classList.remove('hidden');
+                document.getElementById('content-area').className = 'lg:col-span-3 flex flex-col gap-6';
+                renderSlide();
+            } else {
+                docBtn.className = 'bg-brutalYellow brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active';
+                slideBtn.className = 'bg-white brutal-border px-4 py-2 font-black uppercase text-xs tracking-wider brutal-shadow-sm hover:translate-x-[-1px] hover:translate-y-[-1px] transition-transform brutal-btn-active';
+                sidebar.classList.add('hidden');
+                document.getElementById('content-area').className = 'lg:col-span-4 flex flex-col gap-6';
+                renderAllDocuments();
+            }
+        }
+
+        // Generate Sidebar Navigation List
+        function buildSidebarMenu() {
+            const menu = document.getElementById('slides-menu-list');
+            menu.innerHTML = '';
+            slides.forEach((slide, idx) => {
+                const btn = document.createElement('button');
+                btn.id = `menu-item-${idx}`;
+                btn.className = `w-full text-left p-2 border-2 border-brutalDark brutal-shadow-sm text-xs font-black uppercase tracking-wide transition-all ${idx === currentSlide ? 'bg-brutalYellow' : 'bg-white'}`;
+                btn.innerText = slide.short;
+                btn.onclick = () => {
+                    goToSlide(idx);
+                };
+                menu.appendChild(btn);
+            });
+        }
+
+        // Load specific slide
+        function goToSlide(idx) {
+            if (idx < 0 || idx >= slides.length) return;
+            playSound('slide');
+            currentSlide = idx;
+            
+            // Update active sidebar style
+            slides.forEach((_, i) => {
+                const item = document.getElementById(`menu-item-${i}`);
+                if (item) {
+                    if (i === currentSlide) {
+                        item.classList.add('bg-brutalYellow');
+                        item.classList.remove('bg-white');
+                    } else {
+                        item.classList.remove('bg-brutalYellow');
+                        item.classList.add('bg-white');
+                    }
+                }
+            });
+            renderSlide();
+        }
+
+        // Render current slide in Slide Mode
+        function renderSlide() {
+            const area = document.getElementById('content-area');
+            const data = slides[currentSlide];
+            
+            area.innerHTML = `
+                <div class="slide-enter">
+                    ${data.html}
+                </div>
+                <!-- Mini controls for navigation inside slides -->
+                <div class="flex justify-between items-center bg-brutalBg brutal-border p-4 brutal-shadow">
+                    <button onclick="goToSlide(currentSlide - 1)" class="bg-white hover:bg-brutalYellow border-2 border-brutalDark p-2 font-bold text-xs uppercase brutal-shadow-sm brutal-btn-active ${currentSlide === 0 ? 'opacity-50 pointer-events-none' : ''}">
+                        &larr; Slide Sebelumnya
+                    </button>
+                    <span class="font-mono text-xs font-black">SLIDE ${currentSlide + 1} / ${slides.length}</span>
+                    <button onclick="goToSlide(currentSlide + 1)" class="bg-white hover:bg-brutalYellow border-2 border-brutalDark p-2 font-bold text-xs uppercase brutal-shadow-sm brutal-btn-active ${currentSlide === slides.length - 1 ? 'opacity-50 pointer-events-none' : ''}">
+                        Slide Berikutnya &rarr;
+                    </button>
+                </div>
+            `;
+            
+            // Post render initialization based on current slide
+            initSlideSpecialInteractions();
+        }
+
+        // Render all slides as standard long document for print or review
+        function renderAllDocuments() {
+            const area = document.getElementById('content-area');
+            area.innerHTML = '';
+            
+            slides.forEach((data, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'mb-6';
+                wrapper.innerHTML = `
+                    <div class="relative">
+                        <div class="absolute right-4 top-4 bg-brutalDark text-white font-mono px-2 py-0.5 text-xs z-10">PAGE ${index + 1}</div>
+                        ${data.html}
+                    </div>
+                `;
+                area.appendChild(wrapper);
+            });
+            
+            // Init all special scripts so they work in scroll mode too
+            initSlideSpecialInteractions();
+        }
+
+        // Trigger individual custom functions depending on what slide/page is active
+        function initSlideSpecialInteractions() {
+            renderGitGraph();
+            showTeam('rouf');
+            filterChecklist('all');
+            calculateProgress();
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (viewMode === 'slide') {
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    goToSlide(currentSlide + 1);
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    goToSlide(currentSlide - 1);
+                }
+            }
+        });
+    </script>
+
+    <script>
+        // Git Graph Visual Simulator
+        function stepGit(direction) {
+            playSound('click');
+            currentGitStep = Math.max(0, Math.min(gitTimeline.length - 1, currentGitStep + direction));
+            renderGitGraph();
+        }
+
+        function resetGit() {
+            playSound('click');
+            currentGitStep = 0;
+            renderGitGraph();
+        }
+
+        function renderGitGraph() {
+            const wrapper = document.getElementById('git-graph-container');
+            const msg = document.getElementById('git-status-message');
+            if (!wrapper) return; // Guard for viewMode changes
+            
+            wrapper.innerHTML = '';
+            
+            // Current list of active branches to display columns
+            const branches = ['main', 'staging', 'dev', 'feature/inventory', 'feature/multi-cabang'];
+            const colors = {
+                'main': '#FF6B35',              // Orange
+                'staging': '#FF7EE2',           // Pink
+                'dev': '#3FE5FF',               // Cyan
+                'feature/inventory': '#FFE600',  // Yellow
+                'feature/multi-cabang': '#39e38e' // Green
+            };
+
+            // Render Header Columns
+            let colHeader = document.createElement('div');
+            colHeader.className = 'grid grid-cols-12 gap-2 border-b border-gray-800 pb-2 mb-2 text-[10px] font-bold text-gray-400';
+            colHeader.innerHTML = `
+                <div class="col-span-1">Tipe</div>
+                <div class="col-span-6 flex gap-4">
+                    ${branches.map(b => `<span style="color: ${colors[b]}">${b.toUpperCase()}</span>`).join('')}
+                </div>
+                <div class="col-span-5">Deskripsi Commit / Aksi</div>
+            `;
+            wrapper.appendChild(colHeader);
+
+            // Render Commit Steps Up To currentGitStep
+            for (let i = 0; i <= currentGitStep; i++) {
+                const step = gitTimeline[i];
+                const row = document.createElement('div');
+                row.className = `grid grid-cols-12 gap-2 items-center py-1 border-b border-[#222] ${i === currentGitStep ? 'bg-[#222] text-white font-bold' : 'text-gray-400'}`;
+                
+                // Column 1: Action Type Badge
+                let badgeColor = "bg-gray-600";
+                if (step.action === "checkout") badgeColor = "bg-blue-600";
+                if (step.action === "merge") badgeColor = "bg-red-600";
+                if (step.action === "commit") badgeColor = "bg-green-600";
+                
+                let badge = `<span class="px-1.5 py-0.5 rounded text-[8px] text-white ${badgeColor}">${step.action.toUpperCase()}</span>`;
+                
+                // Column 2: Visual Branch Dots & Lines
+                let visual = `<div class="flex gap-4 items-center pl-1 font-mono">`;
+                branches.forEach(b => {
+                    const isTargetBranch = (step.branch === b) || (step.action === 'merge' && (step.from === b || step.to === b));
+                    if (isTargetBranch) {
+                        visual += `<span class="h-3 w-3 rounded-full border border-white inline-block" style="background-color: ${colors[b]}"></span>`;
+                    } else {
+                        visual += `<span class="h-3 w-3 inline-block text-gray-800">|</span>`;
+                    }
+                });
+                visual += `</div>`;
+                
+                // Column 3: Commit Message
+                let desc = `<span class="truncate">${step.msg}</span>`;
+                
+                row.innerHTML = `
+                    <div class="col-span-1">${badge}</div>
+                    <div class="col-span-6">${visual}</div>
+                    <div class="col-span-5 text-[10px]">${desc}</div>
+                `;
+                wrapper.appendChild(row);
+            }
+            
+            // Auto scroll container to bottom
+            wrapper.scrollTop = wrapper.scrollHeight;
+            
+            // Update explanatory text
+            if (msg) {
+                const currentAct = gitTimeline[currentGitStep];
+                msg.innerHTML = `Langkah ${currentGitStep + 1} dari ${gitTimeline.length}: <b>[${currentAct.action.toUpperCase()}]</b> ${currentAct.msg}`;
+            }
+        }
+    </script>
+
+    <script>
+        // Interactive Team Profile Card Manager
+        function showTeam(memberKey) {
+            playSound('click');
+            const data = teamData[memberKey];
+            const display = document.getElementById('team-content-card');
+            if (!display) return;
+            
+            // Set active class to selected tab button
+            document.querySelectorAll('.team-tab').forEach(btn => {
+                btn.className = 'team-tab p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all bg-white';
+            });
+            const activeBtn = document.getElementById(`btn-team-${memberKey}`);
+            if (activeBtn) {
+                activeBtn.className = `team-tab p-3 brutal-border brutal-shadow-sm font-black text-xs uppercase text-center transition-all ${data.color}`;
+            }
+            
+            // Generate contributions bullet list HTML
+            const itemsHtml = data.contributions.map(item => `
+                <li class="flex items-start gap-2 border-b border-gray-100 pb-2">
+                    <span class="text-brutalOrange font-black">&bull;</span>
+                    <span class="text-sm text-gray-800 font-semibold">${item}</span>
+                </li>
+            `).join('');
+
+            display.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start slide-enter">
+                    <div class="md:col-span-4 p-4 brutal-border ${data.color} brutal-shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-[10px] uppercase font-mono tracking-widest bg-brutalDark text-white px-2 py-0.5">TEAM MEMBER</span>
+                            <h4 class="font-display font-black text-2xl mt-2 leading-none">${data.name}</h4>
+                            <p class="text-xs uppercase font-bold text-gray-700 mt-1">${data.role}</p>
+                        </div>
+                        <div class="mt-6 font-mono text-[10px] border-t border-black/20 pt-2">
+                            <span>MEMBER ID: #0${Object.keys(teamData).indexOf(memberKey)+1}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="md:col-span-8">
+                        <h5 class="font-display font-black text-sm uppercase tracking-wide text-gray-400 mb-3">Kontribusi Teknis Utama:</h5>
+                        <ul class="space-y-3">
+                            ${itemsHtml}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+
+    <script>
+        // Interactive Checklist Filter & Logic Builder
+        let activeChecklistFilter = 'all';
+
+        function filterChecklist(filter) {
+            playSound('click');
+            activeChecklistFilter = filter;
+            
+            // Update filter buttons style
+            document.querySelectorAll('.chk-filter').forEach(btn => {
+                btn.className = "chk-filter bg-white text-brutalDark px-3 py-1 font-bold text-xs border border-black";
+            });
+            const activeBtn = document.getElementById(`chk-btn-${filter}`);
+            if (activeBtn) {
+                activeBtn.className = "chk-filter bg-brutalDark text-white px-3 py-1 font-bold text-xs border border-black";
+            }
+            
+            renderChecklist();
+        }
+
+        function toggleChecklistTask(id) {
+            const task = checklistItems.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                if (task.completed) {
+                    playSound('success');
+                } else {
+                    playSound('slide');
+                }
+                calculateProgress();
+                renderChecklist();
+            }
+        }
+
+        function calculateProgress() {
+            const total = checklistItems.length;
+            const completed = checklistItems.filter(t => t.completed).length;
+            const percent = Math.round((completed / total) * 100);
+            
+            const badge = document.getElementById('progress-percent');
+            if (badge) {
+                badge.innerText = `${percent}%`;
+                // Soft animation highlight
+                badge.classList.add('animate-bounce');
+                setTimeout(() => badge.classList.remove('animate-bounce'), 1000);
+            }
+        }
+
+        function renderChecklist() {
+            const container = document.getElementById('interactive-checklist-box');
+            if (!container) return; // Guard for viewMode changes
+            
+            container.innerHTML = '';
+            
+            const filtered = checklistItems.filter(task => {
+                if (activeChecklistFilter === 'all') return true;
+                return task.phase === parseInt(activeChecklistFilter);
+            });
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-6">Tidak ada tugas pada fase ini.</p>`;
+                return;
+            }
+            
+            // Sort to keep unfinished ones at bottom or grouped nicely
+            filtered.forEach(task => {
+                const el = document.createElement('div');
+                el.className = `flex items-start gap-3 p-2 border border-gray-200 transition-colors ${task.completed ? 'bg-gray-50/50' : 'bg-[#FFFDF6] border-l-4 border-l-brutalOrange'}`;
+                
+                const checkedAttr = task.completed ? 'checked' : '';
+                const titleStyle = task.completed ? 'line-through text-gray-400' : 'text-brutalDark font-semibold';
+                const phaseLabels = ['Zero', 'Fase 1: Inisiasi', 'Fase 2: Core Dev', 'Fase 3: Integrasi', 'Fase 4: Final Release'];
+                
+                el.innerHTML = `
+                    <input type="checkbox" ${checkedAttr} onclick="toggleChecklistTask('${task.id}')" class="mt-1 h-4 w-4 brutal-border-sm accent-brutalOrange cursor-pointer">
+                    <div class="flex-grow">
+                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                            <span class="bg-gray-100 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-tight">${phaseLabels[task.phase]}</span>
+                            <span class="bg-brutalCyan/20 text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-tight text-blue-700">${task.assignee}</span>
+                            ${task.comment ? `<span class="bg-brutalOrange/20 text-[9px] font-bold px-1.5 py-0.5 text-brutalOrange">${task.comment}</span>` : ''}
+                        </div>
+                        <p class="${titleStyle} leading-tight">${task.desc}</p>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+    </script>
+
+    <script>
+        // Start presentation on load
+        window.onload = function() {
+            buildSidebarMenu();
+            renderSlide();
+            calculateProgress();
+        };
+    </script>
+
+</body>
+</html>

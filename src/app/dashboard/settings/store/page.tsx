@@ -44,15 +44,17 @@ export default function StoreProfilePage() {
         // 3. Tarik profil cabang/toko yang sesuai dengan current_store_id
         if (profile) {
           setUserContext(profile);
-          const { data, error } = await supabase
-            .from('stores')
-            .select('*')
-            .eq('id', profile.current_store_id)
-            .single();
+          if (profile.current_store_id) {
+            const { data, error } = await supabase
+              .from('stores')
+              .select('*')
+              .eq('id', profile.current_store_id)
+              .single();
 
-          if (error) throw error;
-          if (data) {
-            setStoreData(data);
+            if (error) throw error;
+            if (data) {
+              setStoreData(data);
+            }
           }
         }
       } catch (error) {
