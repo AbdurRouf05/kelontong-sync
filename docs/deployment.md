@@ -1,10 +1,10 @@
-# 🚀 Panduan Deployment KelontongSync
+# Panduan Deployment KelontongSync
 
 > Panduan lengkap untuk men-deploy aplikasi KelontongSync dari development lokal hingga production di Vercel.
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Pastikan semua tools berikut sudah terinstall dan akun berikut sudah dimiliki sebelum memulai proses deployment:
 
@@ -26,7 +26,7 @@ Pastikan semua tools berikut sudah terinstall dan akun berikut sudah dimiliki se
 
 ---
 
-## 1. 🗄️ Setup Supabase
+## 1. Setup Supabase
 
 ### 1.1 Buat Project Baru
 
@@ -40,10 +40,10 @@ Pastikan semua tools berikut sudah terinstall dan akun berikut sudah dimiliki se
 
 1. Di dashboard Supabase, buka **Settings → API**
 2. Catat dua nilai berikut:
-   - **Project URL** — format: `https://xxxxx.supabase.co`
-   - **anon/public key** — string panjang dimulai dengan `eyJ...`
+ - **Project URL** — format: `https://xxxxx.supabase.co`
+ - **anon/public key** — string panjang dimulai dengan `eyJ...`
 
-> ⚠️ Jangan bagikan `service_role` key ke siapapun. Key yang kita butuhkan hanyalah **anon/public key**.
+> Jangan bagikan `service_role` key ke siapapun. Key yang kita butuhkan hanyalah **anon/public key**.
 
 
 ### 1.3 Jalankan SQL Schema Database
@@ -73,7 +73,7 @@ Script SQL ini akan:
 
 ### 1.5 (Untuk Production) Aktifkan RLS
 
-> ⚠️ Langkah ini opsional untuk development, tapi **wajib** untuk production agar data antar tenant tidak bocor.
+> Langkah ini opsional untuk development, tapi **wajib** untuk production agar data antar tenant tidak bocor.
 
 Jalankan SQL berikut di SQL Editor untuk mengaktifkan Row Level Security:
 ```sql
@@ -92,7 +92,7 @@ Kemudian buat RLS Policies sesuai kebutuhan akses per role.
 
 ---
 
-## 2. 🔧 Setup Environment Variables
+## 2. Setup Environment Variables
 
 Buat file `.env.local` di root project dengan menyalin dari `.env.example`:
 
@@ -107,12 +107,12 @@ NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-> 🔒 File `.env.local` sudah ada di `.gitignore` dan **tidak akan ter-commit** ke repository. Jangan pernah commit file yang berisi kredensial.
+> File `.env.local` sudah ada di `.gitignore` dan **tidak akan ter-commit** ke repository. Jangan pernah commit file yang berisi kredensial.
 
 
 ---
 
-## 3. 💻 Jalankan Lokal (Local Development)
+## 3. Jalankan Lokal (Local Development)
 
 ```bash
 # Clone repository
@@ -142,7 +142,7 @@ Jika `pnpm build` berhasil tanpa error, kode siap untuk di-deploy ke Vercel.
 
 ---
 
-## 4. 👑 Buat Akun Superadmin
+## 4. Buat Akun Superadmin
 
 Akun superadmin tidak bisa dibuat melalui halaman register biasa. Gunakan script yang tersedia:
 
@@ -159,7 +159,7 @@ Simpan kredensial yang ditampilkan. Gunakan untuk login di `/admin`.
 
 ---
 
-## 5. 🌱 Seed Data Demo (Opsional)
+## 5. Seed Data Demo (Opsional)
 
 Jika ingin mengisi database dengan data contoh yang realistis untuk keperluan demo atau testing:
 
@@ -172,7 +172,7 @@ Script ini akan mengisi database dengan:
 - **Riwayat 300 hari transaksi** — data penjualan historis selama 10 bulan ke belakang
 - Stok produk yang bervariasi
 
-> ⏳ Proses seeder membutuhkan waktu beberapa menit. Biarkan berjalan hingga selesai.
+> Proses seeder membutuhkan waktu beberapa menit. Biarkan berjalan hingga selesai.
 
 Untuk seed data tenant tambahan:
 ```bash
@@ -181,7 +181,7 @@ node scripts/seed-tenant.js
 
 ---
 
-## 6. ☁️ Deploy ke Vercel
+## 6. Deploy ke Vercel
 
 ### Cara A: Via GitHub (Direkomendasikan)
 
@@ -190,35 +190,35 @@ Ini adalah cara yang paling mudah dan memungkinkan CI/CD otomatis.
 **Langkah-langkah:**
 
 1. **Push kode ke GitHub**
-   ```bash
-   git add .
-   git commit -m "chore: ready for production deployment"
-   git push origin main
-   ```
+ ```bash
+ git add .
+ git commit -m "chore: ready for production deployment"
+ git push origin main
+ ```
 
 2. **Import ke Vercel**
-   - Buka [vercel.com](https://vercel.com) dan login
-   - Klik **"Add New... → Project"**
-   - Pilih **"Import Git Repository"**
-   - Authorize Vercel untuk mengakses GitHub Anda
-   - Cari dan pilih repository `kelontong-sync`
+ - Buka [vercel.com](https://vercel.com) dan login
+ - Klik **"Add New... → Project"**
+ - Pilih **"Import Git Repository"**
+ - Authorize Vercel untuk mengakses GitHub Anda
+ - Cari dan pilih repository `kelontong-sync`
 
 3. **Konfigurasi Project**
-   - **Framework Preset:** Next.js (biasanya terdeteksi otomatis)
-   - **Root Directory:** `.` (root)
-   - **Build Command:** `pnpm build`
-   - **Install Command:** `pnpm install`
+ - **Framework Preset:** Next.js (biasanya terdeteksi otomatis)
+ - **Root Directory:** `.` (root)
+ - **Build Command:** `pnpm build`
+ - **Install Command:** `pnpm install`
 
 4. **Tambahkan Environment Variables**
-   - Di bagian **"Environment Variables"**, tambahkan:
-     - `NEXT_PUBLIC_SUPABASE_URL` → nilai URL Supabase Anda
-     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → nilai anon key Supabase Anda
-   - Pastikan keduanya di-set untuk environment **Production**, **Preview**, dan **Development**
+ - Di bagian **"Environment Variables"**, tambahkan:
+ - `NEXT_PUBLIC_SUPABASE_URL` → nilai URL Supabase Anda
+ - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → nilai anon key Supabase Anda
+ - Pastikan keduanya di-set untuk environment **Production**, **Preview**, dan **Development**
 
 5. **Deploy**
-   - Klik tombol **"Deploy"**
-   - Tunggu proses build selesai (biasanya 2-5 menit)
-   - Setelah selesai, Vercel akan memberikan URL production seperti `https://kelontong-sync.vercel.app`
+ - Klik tombol **"Deploy"**
+ - Tunggu proses build selesai (biasanya 2-5 menit)
+ - Setelah selesai, Vercel akan memberikan URL production seperti `https://kelontong-sync.vercel.app`
 
 
 ### Cara B: Via Vercel CLI
@@ -243,7 +243,7 @@ pnpm dlx vercel --prod
 
 ---
 
-## 7. 🌐 Konfigurasi Domain Custom (Opsional)
+## 7. Konfigurasi Domain Custom (Opsional)
 
 Jika Anda punya domain sendiri (misal: `kelontong.mybusiness.com`):
 
@@ -251,8 +251,8 @@ Jika Anda punya domain sendiri (misal: `kelontong.mybusiness.com`):
 2. Buka tab **"Settings" → "Domains"**
 3. Klik **"Add"** dan masukkan domain Anda
 4. Vercel akan menampilkan DNS record yang perlu dikonfigurasi:
-   - Biasanya berupa **CNAME record** yang mengarah ke `cname.vercel-dns.com`
-   - Atau **A record** yang mengarah ke IP Vercel
+ - Biasanya berupa **CNAME record** yang mengarah ke `cname.vercel-dns.com`
+ - Atau **A record** yang mengarah ke IP Vercel
 5. Login ke provider domain Anda (Niagahoster, Cloudflare, GoDaddy, dsb.)
 6. Tambahkan DNS record sesuai instruksi Vercel
 7. Tunggu propagasi DNS (bisa memakan waktu 5 menit hingga 48 jam)
@@ -260,7 +260,7 @@ Jika Anda punya domain sendiri (misal: `kelontong.mybusiness.com`):
 
 ---
 
-## 8. 🔄 CI/CD Pipeline
+## 8. CI/CD Pipeline
 
 KelontongSync menggunakan Vercel sebagai platform CI/CD. Setiap push ke repository akan otomatis memicu deployment.
 
@@ -275,10 +275,10 @@ KelontongSync menggunakan Vercel sebagai platform CI/CD. Setiap push ke reposito
 ### Branch Strategy
 
 ```
-main          ← Production (live)
-  └── staging ← UAT / Testing
-        └── dev ← Integration
-              └── feature/* ← Individual development
+main ← Production (live)
+ └── staging ← UAT / Testing
+ └── dev ← Integration
+ └── feature/* ← Individual development
 ```
 
 **Alur kerja tim:**
@@ -299,7 +299,7 @@ Setelah deployment selesai:
 
 ---
 
-## 🛠️ Troubleshooting Deployment
+## Troubleshooting Deployment
 
 | Problem | Kemungkinan Penyebab | Solusi |
 |---------|----------------------|--------|
@@ -314,7 +314,7 @@ Setelah deployment selesai:
 
 ---
 
-## 📊 Monitoring & Maintenance
+## Monitoring & Maintenance
 
 ### Memantau Performa di Vercel
 

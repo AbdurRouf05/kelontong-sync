@@ -1,10 +1,10 @@
 # Persiapan Database Supabase (SQL) — Arsitektur Multi-Branch SaaS
 
-> ⚠️ **PENTING**: Salin **seluruh** kode SQL di bawah ini ke dalam **SQL Editor** di dashboard Supabase Anda, lalu klik **Run**. Kode ini akan menghapus tabel lama dan membuat ulang semuanya dari nol sesuai arsitektur Multi-Branch SaaS.
+> **PENTING**: Salin **seluruh** kode SQL di bawah ini ke dalam **SQL Editor** di dashboard Supabase Anda, lalu klik **Run**. Kode ini akan menghapus tabel lama dan membuat ulang semuanya dari nol sesuai arsitektur Multi-Branch SaaS.
 
 ---
 
-## 🚀 SQL Lengkap (Jalankan Sekaligus di SQL Editor Supabase)
+## SQL Lengkap (Jalankan Sekaligus di SQL Editor Supabase)
 
 ```sql
 -- ============================================================
@@ -13,7 +13,7 @@
 -- ============================================================
 
 -- ┌──────────────────────────────────────────────────────────┐
--- │  LANGKAH 1: BERSIHKAN TABEL LAMA (RESET DATABASE)       │
+-- │ LANGKAH 1: BERSIHKAN TABEL LAMA (RESET DATABASE) │
 -- └──────────────────────────────────────────────────────────┘
 
 DROP TRIGGER IF EXISTS trg_reduce_stock ON transaction_items;
@@ -31,124 +31,124 @@ DROP TABLE IF EXISTS stores CASCADE;
 DROP TABLE IF EXISTS businesses CASCADE;
 
 -- ┌──────────────────────────────────────────────────────────┐
--- │  LANGKAH 2: BUAT TABEL SESUAI ARSITEKTUR SaaS           │
+-- │ LANGKAH 2: BUAT TABEL SESUAI ARSITEKTUR SaaS │
 -- └──────────────────────────────────────────────────────────┘
 
 -- 1. Tabel Bisnis (Tenant Utama / Top-Level Entity)
 -- Setiap pendaftaran user baru akan menghasilkan 1 entitas bisnis.
 -- Semua data (cabang, produk, transaksi) terikat ke bisnis ini.
 CREATE TABLE businesses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ name TEXT NOT NULL,
+ owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 2. Tabel Cabang / Toko (Store / Branch)
 -- Satu bisnis bisa memiliki banyak cabang.
 CREATE TABLE stores (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  address TEXT,
-  phone TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+ name TEXT NOT NULL,
+ address TEXT,
+ phone TEXT,
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 3. Tabel Profil Pengguna (Owner / Kasir / Super Admin)
 -- Menghubungkan Supabase Auth User dengan entitas bisnis.
 -- `current_store_id` menunjukkan cabang yang sedang aktif digunakan user.
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
-  current_store_id UUID REFERENCES stores(id) ON DELETE SET NULL,
-  full_name TEXT,
-  role TEXT CHECK (role IN ('superadmin', 'owner', 'kasir')),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+ business_id UUID REFERENCES businesses(id) ON DELETE CASCADE,
+ current_store_id UUID REFERENCES stores(id) ON DELETE SET NULL,
+ full_name TEXT,
+ role TEXT CHECK (role IN ('superadmin', 'owner', 'kasir')),
+ updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 4. Tabel Kategori Barang (Global per Bisnis)
 -- Kategori bersifat global: berlaku untuk semua cabang dalam satu bisnis.
 CREATE TABLE categories (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  icon TEXT DEFAULT '📦',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+ name TEXT NOT NULL,
+ icon TEXT DEFAULT '',
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 5. Tabel Katalog Produk (Global per Bisnis)
 -- Katalog produk bersifat global: berlaku untuk semua cabang.
 -- Stok per cabang dicatat terpisah di tabel `product_stocks`.
 CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
-  name TEXT NOT NULL,
-  barcode TEXT,
-  cost_price NUMERIC NOT NULL DEFAULT 0,
-  selling_price NUMERIC NOT NULL DEFAULT 0,
-  image_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+ category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
+ name TEXT NOT NULL,
+ barcode TEXT,
+ cost_price NUMERIC NOT NULL DEFAULT 0,
+ selling_price NUMERIC NOT NULL DEFAULT 0,
+ image_url TEXT,
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 6. Tabel Stok Per Cabang (Branch-Specific Inventory)
 -- Mencatat jumlah stok setiap produk di masing-masing cabang.
 CREATE TABLE product_stocks (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  stock INTEGER NOT NULL DEFAULT 0,
-  min_stock INTEGER DEFAULT 5,
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(product_id, store_id)
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+ store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+ stock INTEGER NOT NULL DEFAULT 0,
+ min_stock INTEGER DEFAULT 5,
+ updated_at TIMESTAMPTZ DEFAULT NOW(),
+ UNIQUE(product_id, store_id)
 );
 
 -- 7. Tabel Transaksi Penjualan
 CREATE TABLE transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-  store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
-  cashier_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  total_amount NUMERIC NOT NULL DEFAULT 0,
-  payment_amount NUMERIC NOT NULL DEFAULT 0,
-  change_amount NUMERIC NOT NULL DEFAULT 0,
-  payment_method TEXT DEFAULT 'CASH',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+ store_id UUID NOT NULL REFERENCES stores(id) ON DELETE CASCADE,
+ cashier_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+ total_amount NUMERIC NOT NULL DEFAULT 0,
+ payment_amount NUMERIC NOT NULL DEFAULT 0,
+ change_amount NUMERIC NOT NULL DEFAULT 0,
+ payment_method TEXT DEFAULT 'CASH',
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 8. Tabel Detail Item Transaksi
 CREATE TABLE transaction_items (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
-  product_id UUID REFERENCES products(id) ON DELETE SET NULL,
-  quantity INTEGER NOT NULL CHECK (quantity > 0),
-  unit_price NUMERIC NOT NULL,
-  subtotal NUMERIC NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ transaction_id UUID NOT NULL REFERENCES transactions(id) ON DELETE CASCADE,
+ product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+ quantity INTEGER NOT NULL CHECK (quantity > 0),
+ unit_price NUMERIC NOT NULL,
+ subtotal NUMERIC NOT NULL,
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 9. Tabel Log Perubahan Stok (Audit Trail)
 CREATE TABLE stock_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-  change_amount INTEGER NOT NULL,
-  type TEXT CHECK (type IN ('initial', 'restock', 'sale', 'adjustment', 'return')),
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+ change_amount INTEGER NOT NULL,
+ type TEXT CHECK (type IN ('initial', 'restock', 'sale', 'adjustment', 'return')),
+ notes TEXT,
+ created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- 10. Tabel Pengaturan Toko (Per Cabang)
 CREATE TABLE store_settings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
-  receipt_footer TEXT DEFAULT 'Terima kasih atas kunjungan Anda!',
-  low_stock_threshold INTEGER DEFAULT 5,
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+ id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+ store_id UUID REFERENCES stores(id) ON DELETE CASCADE,
+ receipt_footer TEXT DEFAULT 'Terima kasih atas kunjungan Anda!',
+ low_stock_threshold INTEGER DEFAULT 5,
+ updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ┌──────────────────────────────────────────────────────────┐
--- │  LANGKAH 3: TRIGGER OTOMASI STOK                        │
+-- │ LANGKAH 3: TRIGGER OTOMASI STOK │
 -- └──────────────────────────────────────────────────────────┘
 
 -- Trigger ini TIDAK dipakai di arsitektur baru karena stok dikelola
@@ -158,10 +158,10 @@ CREATE TABLE store_settings (
 -- CREATE OR REPLACE FUNCTION reduce_stock_after_transaction()
 -- RETURNS TRIGGER AS $$
 -- BEGIN
---   UPDATE product_stocks
---   SET stock = stock - NEW.quantity
---   WHERE product_id = NEW.product_id;
---   RETURN NEW;
+-- UPDATE product_stocks
+-- SET stock = stock - NEW.quantity
+-- WHERE product_id = NEW.product_id;
+-- RETURN NEW;
 -- END;
 -- $$ LANGUAGE plpgsql;
 
@@ -171,7 +171,7 @@ CREATE TABLE store_settings (
 -- EXECUTE FUNCTION reduce_stock_after_transaction();
 
 -- ┌──────────────────────────────────────────────────────────┐
--- │  LANGKAH 4: MATIKAN RLS (MODE DEVELOPMENT)              │
+-- │ LANGKAH 4: MATIKAN RLS (MODE DEVELOPMENT) │
 -- └──────────────────────────────────────────────────────────┘
 
 ALTER TABLE businesses DISABLE ROW LEVEL SECURITY;
@@ -188,7 +188,7 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 
 ---
 
-## 📋 Referensi Cepat: Ringkasan Tabel
+## Referensi Cepat: Ringkasan Tabel
 
 | # | Tabel | Fungsi | Relasi Utama |
 |---|-------|--------|--------------|
@@ -205,32 +205,32 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 
 ---
 
-## 📊 Diagram Relasi (ERD Sederhana)
+## Diagram Relasi (ERD Sederhana)
 
 ```
 ┌─────────────┐
-│ auth.users  │  (Supabase Built-in)
+│ auth.users │ (Supabase Built-in)
 └──────┬──────┘
-       │
-       │ owner_id
-       ▼
-┌─────────────┐     ┌─────────────┐
-│ businesses  │────▶│   stores    │
-└──────┬──────┘     └──────┬──────┘
-       │                   │
-       │  business_id      │  store_id
-       ▼                   ▼
-┌─────────────┐     ┌──────────────┐
-│  profiles   │     │product_stocks│
-│  categories │     │store_settings│
-│  products   │     └──────────────┘
+ │
+ │ owner_id
+ ▼
+┌─────────────┐ ┌─────────────┐
+│ businesses │────│ stores │
+└──────┬──────┘ └──────┬──────┘
+ │ │
+ │ business_id │ store_id
+ ▼ ▼
+┌─────────────┐ ┌──────────────┐
+│ profiles │ │product_stocks│
+│ categories │ │store_settings│
+│ products │ └──────────────┘
 │ transactions│
 └─────────────┘
 ```
 
 ---
 
-## 📝 Catatan Penting
+## Catatan Penting
 
 1. **Storage Bucket**: Buat bucket `product-images` secara **manual** di dashboard Supabase Storage dan set ke **Public**.
 2. **RLS Dinonaktifkan**: Semua tabel memiliki RLS yang dimatikan untuk kemudahan development. Aktifkan kembali sebelum deployment produksi.
@@ -244,9 +244,9 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `name` | `text` |  |
-| `owner_id` | `uuid` |  |
-| `created_at` | `timestamptz` |  Nullable |
+| `name` | `text` | |
+| `owner_id` | `uuid` | |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `categories`
 
@@ -255,10 +255,10 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `business_id` | `uuid` |  |
-| `name` | `text` |  |
-| `icon` | `text` |  Nullable |
-| `created_at` | `timestamptz` |  Nullable |
+| `business_id` | `uuid` | |
+| `name` | `text` | |
+| `icon` | `text` | Nullable |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `product_stocks`
 
@@ -267,11 +267,11 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `product_id` | `uuid` |  |
-| `store_id` | `uuid` |  |
-| `stock` | `int4` |  |
-| `min_stock` | `int4` |  Nullable |
-| `updated_at` | `timestamptz` |  Nullable |
+| `product_id` | `uuid` | |
+| `store_id` | `uuid` | |
+| `stock` | `int4` | |
+| `min_stock` | `int4` | Nullable |
+| `updated_at` | `timestamptz` | Nullable |
 
 ## Table `products`
 
@@ -280,13 +280,13 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `business_id` | `uuid` |  |
-| `category_id` | `uuid` |  Nullable |
-| `name` | `text` |  |
-| `barcode` | `text` |  Nullable |
-| `cost_price` | `numeric` |  |
-| `selling_price` | `numeric` |  |
-| `created_at` | `timestamptz` |  Nullable |
+| `business_id` | `uuid` | |
+| `category_id` | `uuid` | Nullable |
+| `name` | `text` | |
+| `barcode` | `text` | Nullable |
+| `cost_price` | `numeric` | |
+| `selling_price` | `numeric` | |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `profiles`
 
@@ -295,11 +295,11 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `business_id` | `uuid` |  Nullable |
-| `current_store_id` | `uuid` |  Nullable |
-| `full_name` | `text` |  Nullable |
-| `role` | `text` |  Nullable |
-| `updated_at` | `timestamptz` |  Nullable |
+| `business_id` | `uuid` | Nullable |
+| `current_store_id` | `uuid` | Nullable |
+| `full_name` | `text` | Nullable |
+| `role` | `text` | Nullable |
+| `updated_at` | `timestamptz` | Nullable |
 
 ## Table `stock_logs`
 
@@ -308,11 +308,11 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `product_id` | `uuid` |  Nullable |
-| `change_amount` | `int4` |  |
-| `type` | `text` |  Nullable |
-| `notes` | `text` |  Nullable |
-| `created_at` | `timestamptz` |  Nullable |
+| `product_id` | `uuid` | Nullable |
+| `change_amount` | `int4` | |
+| `type` | `text` | Nullable |
+| `notes` | `text` | Nullable |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `stores`
 
@@ -321,11 +321,11 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `business_id` | `uuid` |  |
-| `name` | `text` |  |
-| `address` | `text` |  Nullable |
-| `phone` | `text` |  Nullable |
-| `created_at` | `timestamptz` |  Nullable |
+| `business_id` | `uuid` | |
+| `name` | `text` | |
+| `address` | `text` | Nullable |
+| `phone` | `text` | Nullable |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `transaction_items`
 
@@ -334,12 +334,12 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `transaction_id` | `uuid` |  |
-| `product_id` | `uuid` |  Nullable |
-| `quantity` | `int4` |  |
-| `unit_price` | `numeric` |  |
-| `subtotal` | `numeric` |  |
-| `created_at` | `timestamptz` |  Nullable |
+| `transaction_id` | `uuid` | |
+| `product_id` | `uuid` | Nullable |
+| `quantity` | `int4` | |
+| `unit_price` | `numeric` | |
+| `subtotal` | `numeric` | |
+| `created_at` | `timestamptz` | Nullable |
 
 ## Table `transactions`
 
@@ -348,12 +348,12 @@ ALTER TABLE store_settings DISABLE ROW LEVEL SECURITY;
 | Name | Type | Constraints |
 |------|------|-------------|
 | `id` | `uuid` | Primary |
-| `business_id` | `uuid` |  |
-| `store_id` | `uuid` |  |
-| `cashier_id` | `uuid` |  |
-| `total_amount` | `numeric` |  |
-| `payment_amount` | `numeric` |  |
-| `change_amount` | `numeric` |  |
-| `payment_method` | `text` |  Nullable |
-| `created_at` | `timestamptz` |  Nullable |
+| `business_id` | `uuid` | |
+| `store_id` | `uuid` | |
+| `cashier_id` | `uuid` | |
+| `total_amount` | `numeric` | |
+| `payment_amount` | `numeric` | |
+| `change_amount` | `numeric` | |
+| `payment_method` | `text` | Nullable |
+| `created_at` | `timestamptz` | Nullable |
 

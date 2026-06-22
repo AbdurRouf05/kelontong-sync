@@ -1,4 +1,4 @@
-# 🛒 KelontongSync
+# KelontongSync
 
 > **SaaS Manajemen Toko Kelontong Modern — Cepat, Pintar, dan Skalabel**
 
@@ -10,11 +10,11 @@
 
 ---
 
-## 🚀 Live Demo & Akses Aplikasi
+## Live Demo & Akses Aplikasi
 
 Anda dapat langsung mencoba aplikasi KelontongSync yang telah di-deploy ke Vercel:
 
-👉 **[Buka Aplikasi KelontongSync](https://kelontong-sync.vercel.app/)**
+ **[Buka Aplikasi KelontongSync](https://kelontong-sync.vercel.app/)**
 
 **Gunakan Kredensial Login Demo berikut untuk mencoba aplikasi:**
 - **Email:** `toko@coba.com`
@@ -22,7 +22,7 @@ Anda dapat langsung mencoba aplikasi KelontongSync yang telah di-deploy ke Verce
 
 ---
 
-## 📸 Tampilan Aplikasi & Panduan Singkat
+## Tampilan Aplikasi & Panduan Singkat
 
 ### 1. Halaman Login
 Silakan buka aplikasi dan login menggunakan kredensial di atas.
@@ -32,23 +32,23 @@ Silakan buka aplikasi dan login menggunakan kredensial di atas.
 Setelah login, Anda akan melihat ringkasan omzet, transaksi, dan grafik interaktif penjualan.
 ![Dashboard Overview](./docs/images/3-dashboard.png)
 
-> **💡 Panduan Lengkap:** Untuk detail penggunaan Kasir (POS) dan Inventaris, silakan baca **[Panduan Penggunaan Lengkap (User Guide)](./docs/user-guide.md)**.
+> ** Panduan Lengkap:** Untuk detail penggunaan Kasir (POS) dan Inventaris, silakan baca **[Panduan Penggunaan Lengkap (User Guide)](./docs/user-guide.md)**.
 
 ---
 
-## ✨ Fitur Utama
+## Fitur Utama
 
 | Fitur | Deskripsi |
 |-------|-----------|
-| 🧾 **Kasir Cepat (POS)** | Transaksi dengan pencarian/scan barcode, manajemen keranjang belanja, kalkulasi kembalian otomatis, dan cetak struk PDF/thermal |
-| 📦 **Manajemen Inventaris** | CRUD produk lengkap, manajemen kategori dengan emoji icon, alert stok menipis, dan import massal via CSV/Excel/JSON |
-| 📊 **Dashboard Analitik** | Grafik tren penjualan interaktif, laporan harian/mingguan/bulanan/tahunan, pie chart kategori terpopuler, dan top produk terlaris |
-| 🏪 **Multi-Cabang** | Kelola banyak toko dari satu akun, store switcher cepat, dan isolasi data penuh per cabang |
-| 👥 **Manajemen User** | Sistem role bertingkat (superadmin/owner/kasir), manajemen staf, dan assign kasir ke cabang tertentu |
+| **Kasir Cepat (POS)** | Transaksi dengan pencarian/scan barcode, manajemen keranjang belanja, kalkulasi kembalian otomatis, dan cetak struk PDF/thermal |
+| **Manajemen Inventaris** | CRUD produk lengkap, manajemen kategori dengan emoji icon, alert stok menipis, dan import massal via CSV/Excel/JSON |
+| **Dashboard Analitik** | Grafik tren penjualan interaktif, laporan harian/mingguan/bulanan/tahunan, pie chart kategori terpopuler, dan top produk terlaris |
+| **Multi-Cabang** | Kelola banyak toko dari satu akun, store switcher cepat, dan isolasi data penuh per cabang |
+| **Manajemen User** | Sistem role bertingkat (superadmin/owner/kasir), manajemen staf, dan assign kasir ke cabang tertentu |
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 | Teknologi | Versi | Keterangan |
@@ -89,54 +89,54 @@ Setelah login, Anda akan melihat ringkasan omzet, transaksi, dan grafik interakt
 
 ---
 
-## 📁 Struktur Folder
+## Struktur Folder
 
 ```
 kelontong-sync/
 ├── src/
-│   ├── app/
-│   │   ├── page.tsx                  # Landing page (halaman marketing)
-│   │   ├── layout.tsx                # Root layout
-│   │   ├── not-found.tsx             # Halaman 404
-│   │   ├── login/                    # Halaman login
-│   │   ├── register/                 # Halaman registrasi multi-step
-│   │   ├── dashboard/                # Modul utama aplikasi
-│   │   │   ├── page.tsx              # Dashboard overview
-│   │   │   ├── layout.tsx            # Layout sidebar dashboard
-│   │   │   ├── actions.ts            # Server Actions Supabase
-│   │   │   ├── pos/                  # Modul kasir POS
-│   │   │   ├── inventory/            # Manajemen inventaris & produk
-│   │   │   ├── reports/              # Laporan & analitik
-│   │   │   ├── management/           # Manajemen multi-cabang
-│   │   │   └── settings/             # Pengaturan toko & profil
-│   │   ├── admin/                    # Portal superadmin
-│   │   └── tenant/                   # Monitoring tenant SaaS
-│   ├── components/
-│   │   └── dashboard/               # Komponen UI reusable
-│   └── lib/                         # Supabase client & helper functions
-├── docs/                            # Dokumentasi proyek
-│   ├── database.md                  # Skema SQL database lengkap
-│   ├── rencana.md                   # Rencana pembangunan proyek
-│   ├── checklist.md                 # Checklist progres tim
-│   ├── user-guide.md                # Panduan pengguna
-│   └── deployment.md                # Panduan deployment
-├── scripts/                         # Skrip utilitas & seeder
-│   ├── create-superadmin.js         # Buat akun superadmin
-│   ├── seed-data.ts                 # Seeder 100 produk + 300 hari transaksi
-│   ├── seed-tenant.js               # Seeder data tenant
-│   └── diagnose-db.ts               # Diagnostik koneksi database
-├── public/                          # Aset statis
-├── contoh_import.csv                # Contoh file CSV untuk import produk
-├── contoh_import.json               # Contoh file JSON untuk import produk
-├── .env.example                     # Template environment variables
-├── next.config.ts                   # Konfigurasi Next.js
-├── tailwind.config.ts               # Konfigurasi Tailwind CSS
+│ ├── app/
+│ │ ├── page.tsx # Landing page (halaman marketing)
+│ │ ├── layout.tsx # Root layout
+│ │ ├── not-found.tsx # Halaman 404
+│ │ ├── login/ # Halaman login
+│ │ ├── register/ # Halaman registrasi multi-step
+│ │ ├── dashboard/ # Modul utama aplikasi
+│ │ │ ├── page.tsx # Dashboard overview
+│ │ │ ├── layout.tsx # Layout sidebar dashboard
+│ │ │ ├── actions.ts # Server Actions Supabase
+│ │ │ ├── pos/ # Modul kasir POS
+│ │ │ ├── inventory/ # Manajemen inventaris & produk
+│ │ │ ├── reports/ # Laporan & analitik
+│ │ │ ├── management/ # Manajemen multi-cabang
+│ │ │ └── settings/ # Pengaturan toko & profil
+│ │ ├── admin/ # Portal superadmin
+│ │ └── tenant/ # Monitoring tenant SaaS
+│ ├── components/
+│ │ └── dashboard/ # Komponen UI reusable
+│ └── lib/ # Supabase client & helper functions
+├── docs/ # Dokumentasi proyek
+│ ├── database.md # Skema SQL database lengkap
+│ ├── rencana.md # Rencana pembangunan proyek
+│ ├── checklist.md # Checklist progres tim
+│ ├── user-guide.md # Panduan pengguna
+│ └── deployment.md # Panduan deployment
+├── scripts/ # Skrip utilitas & seeder
+│ ├── create-superadmin.js # Buat akun superadmin
+│ ├── seed-data.ts # Seeder 100 produk + 300 hari transaksi
+│ ├── seed-tenant.js # Seeder data tenant
+│ └── diagnose-db.ts # Diagnostik koneksi database
+├── public/ # Aset statis
+├── contoh_import.csv # Contoh file CSV untuk import produk
+├── contoh_import.json # Contoh file JSON untuk import produk
+├── .env.example # Template environment variables
+├── next.config.ts # Konfigurasi Next.js
+├── tailwind.config.ts # Konfigurasi Tailwind CSS
 └── package.json
 ```
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -202,18 +202,18 @@ Buka [http://localhost:3000](http://localhost:3000) di browser Anda.
 
 ---
 
-## 🔐 Environment Variables
+## Environment Variables
 
 | Variable | Keterangan | Wajib |
 |----------|------------|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase Anda (format: `https://xxxxx.supabase.co`) | ✅ Ya |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon/public key dari Supabase project Anda | ✅ Ya |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL project Supabase Anda (format: `https://xxxxx.supabase.co`) | Ya |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon/public key dari Supabase project Anda | Ya |
 
 Kedua nilai ini bisa ditemukan di **Supabase Dashboard → Settings → API → Project URL & Project API Keys**.
 
 ---
 
-## 👨‍💻 Tim Pengembang
+## ‍ Tim Pengembang
 
 Proyek ini dikerjakan oleh tim mahasiswa dalam mata kuliah **Pemrograman Perangkat Lunak (PPL)**.
 
@@ -227,7 +227,7 @@ Proyek ini dikerjakan oleh tim mahasiswa dalam mata kuliah **Pemrograman Perangk
 
 ---
 
-## 📚 Dokumentasi Lengkap
+## Dokumentasi Lengkap
 
 | Dokumen | Deskripsi |
 |---------|-----------|
@@ -239,7 +239,7 @@ Proyek ini dikerjakan oleh tim mahasiswa dalam mata kuliah **Pemrograman Perangk
 
 ---
 
-## 📄 Lisensi
+## Lisensi
 
 Proyek ini dilisensikan di bawah **MIT License**.
 
@@ -267,6 +267,6 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 <div align="center">
 
-Dibuat dengan ❤️ oleh Tim KelontongSync · Mata Kuliah PPL
+Dibuat dengan oleh Tim KelontongSync · Mata Kuliah PPL
 
 </div>

@@ -1,8 +1,9 @@
+
 # Checklist Pembangunan KelontongSync
 
 Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim hanya diperbolehkan memberi tanda centang `[x]` pada tugas yang sudah selesai. Perubahan struktur tugas hanya boleh dilakukan oleh **Abdur Rouf**.
 
-## 🟢 FASE 1: Inisiasi & Persiapan (Pondasi)
+## FASE 1: Inisiasi & Persiapan (Pondasi)
 *Target: Infrastruktur siap digunakan oleh semua developer.*
 
 - [x] **Abdur Rouf**: Inisialisasi Repositori GitHub & Next.js Boilerplate.
@@ -14,7 +15,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 
 ---
 
-## 🟡 FASE 2: Core Development (Pengerjaan Modul)
+## FASE 2: Core Development (Pengerjaan Modul)
 *Target: Antarmuka dan logika utama modul selesai di masing-masing branch.*
 
 ### Modul POS (Rafi)
@@ -47,7 +48,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 
 ---
 
-## 🔵 FASE 3: Integrasi & Fitur Lanjutan
+## FASE 3: Integrasi & Fitur Lanjutan
 *Target: Frontend terhubung ke Supabase dan fitur lintas modul berfungsi.*
 
 - [x] **Abdur Rouf**: Membuat API / Server Actions untuk koneksi aman ke Supabase.
@@ -63,7 +64,7 @@ Dokumen ini digunakan untuk memantau progres pengerjaan setiap fase. Anggota tim
 
 ---
 
-## 🔴 FASE 4: Testing & Deployment Final
+## FASE 4: Testing & Deployment Final
 *Target: Aplikasi stabil dan siap rilis.*
 
 - [x] **Semua Anggota**: Mengambil, meninjau, dan melakukan merge dari branch feature ke branch `dev` secara lokal oleh PM.
