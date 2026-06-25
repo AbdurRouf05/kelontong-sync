@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi KelontongSync</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f4f5;
+            --text-color: #18181b;
+            --primary: #fbbf24; /* Kuning Neobrutalism */
+            --primary-hover: #f59e0b;
+            --accent: #22c55e;
+            --border-color: #000000;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 3px solid var(--border-color);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            width: 250px;
+            position: sticky;
+            top: 100px;
+            height: fit-content;
+            background: #ffffff;
+            border: 3px solid var(--border-color);
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .sidebar h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            margin-bottom: 0.75rem;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .sidebar a:hover {
+            color: var(--primary-hover);
+            padding-left: 5px;
+        }
+
+        .content {
+            flex: 1;
+            background: #ffffff;
+            border: 3px solid var(--border-color);
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+            padding: 2rem 3rem;
+            border-radius: 8px;
+        }
+
+        .hero-section {
+            background-color: var(--primary);
+            padding: 2rem;
+            border: 3px solid var(--border-color);
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+
+        .hero-section h2 {
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            margin-top: 1.5rem;
+        }
+
+        p, ul {
+            font-size: 1rem;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 3px solid var(--border-color);
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .team-member {
+            background: #fef08a;
+            border: 3px solid var(--border-color);
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .team-member span {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            font-weight: bold;
+            border-top: 3px solid var(--border-color);
+            margin-top: 3rem;
+            background: white;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: auto;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <h1>📦 KelontongSync Docs</h1>
+        <a href="#umum" style="text-decoration: none; color: black; font-weight: bold; border: 2px solid black; padding: 5px 15px; border-radius: 4px; box-shadow: 2px 2px 0 0 black; background: #fbbf24;">Mulai Membaca</a>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <h3>Daftar Isi</h3>
+            <ul>
+                <li><a href="#umum">1. Gambaran Umum</a></li>
+                <li><a href="#panduan">2. Panduan Fitur</a></li>
+                <ul>
+                    <li><a href="#login">2.1 Halaman Login</a></li>
+                    <li><a href="#dashboard">2.2 Dashboard</a></li>
+                    <li><a href="#inventaris">2.3 Inventaris</a></li>
+                    <li><a href="#pos">2.4 Kasir (POS)</a></li>
+                    <li><a href="#laporan">2.5 Laporan</a></li>
+                    <li><a href="#pengaturan">2.6 Cabang & Pengaturan</a></li>
+                </ul>
+                <li><a href="#tim">3. Tim Pengembang</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            
+            <section id="umum" class="hero-section">
+                <h2>Dokumentasi KelontongSync</h2>
+                <p>Aplikasi Point of Sales (POS) dan manajemen toko yang dirancang khusus untuk toko kelontong dan usaha mikro dengan konsep desain <strong>Neobrutalism</strong>.</p>
+                <div>
+                    <span class="tag">#POS</span>
+                    <span class="tag">#ManajemenToko</span>
+                    <span class="tag">#MultiCabang</span>
+                </div>
+            </section>
+
+            <section>
+                <h3>Tujuan dan Manfaat</h3>
+                <p>Memudahkan pemilik toko dan kasir dalam melakukan transaksi, memonitor stok barang (inventaris), serta menganalisis laporan penjualan dari berbagai cabang secara real-time dan terpusat.</p>
+
+                <h3>Target Pengguna</h3>
+                <ul>
+                    <li><strong>Pemilik Bisnis / Toko:</strong> Memonitor penjualan, inventaris, dan mengatur cabang.</li>
+                    <li><strong>Pegawai Toko / Kasir:</strong> Melayani transaksi pelanggan sehari-hari secara langsung.</li>
+                </ul>
+            </section>
+
+            <section id="panduan">
+                <h2>2. Panduan Penggunaan Fitur</h2>
+                <p>Berikut adalah panduan penggunaan fitur-fitur KelontongSync secara berurutan sesuai dengan alur penggunaan sistem:</p>
+
+                <div id="login">
+                    <h3>2.1 Halaman Login</h3>
+                    <img src="./images/guide-login.png" alt="Halaman Login">
+                    <p><strong>Fungsi:</strong> Gerbang masuk utama ke dalam aplikasi.</p>
+                    <p><strong>Langkah:</strong> Masukkan email dan kata sandi yang telah terdaftar, kemudian tekan tombol <strong>Masuk</strong> untuk diarahkan ke Dashboard.</p>
+                </div>
+
+                <div id="dashboard">
+                    <h3>2.2 Dashboard Utama</h3>
+                    <img src="./images/guide-dashboard.png" alt="Dashboard Utama">
+                    <p><strong>Fungsi:</strong> Pusat informasi real-time performa bisnis.</p>
+                    <p><strong>Langkah:</strong></p>
+                    <ul>
+                        <li>Setelah login, Anda akan langsung melihat Dashboard.</li>
+                        <li>Analisis <strong>Total Omzet</strong> dan <strong>Total Transaksi</strong> hari ini.</li>
+                        <li>Pantau grafik pergerakan penjualan selama 7 hari terakhir.</li>
+                    </ul>
+                </div>
+
+                <div id="inventaris">
+                    <h3>2.3 Manajemen Inventaris</h3>
+                    <img src="./images/guide-inventory.png" alt="Manajemen Inventaris">
+                    <p><strong>Fungsi:</strong> Memasukkan dan mengelola data produk sebelum dijual.</p>
+                    <p><strong>Langkah:</strong></p>
+                    <ul>
+                        <li>Buka menu <strong>Inventaris</strong>.</li>
+                        <li>Untuk menambah barang, klik <strong>Tambah Produk</strong> lalu isi Nama, Harga, Stok Awal, dan Kategori.</li>
+                        <li>Pantau peringatan warna merah pada produk yang stoknya sudah mulai menipis agar segera di-restock.</li>
+                        <li>Klik ikon edit untuk menyesuaikan harga atau koreksi stok jika diperlukan.</li>
+                    </ul>
+                </div>
+
+                <div id="pos">
+                    <h3>2.4 Kasir (Point of Sales)</h3>
+                    <img src="./images/guide-pos.png" alt="Kasir POS">
+                    <p><strong>Fungsi:</strong> Modul untuk melayani transaksi pelanggan.</p>
+                    <p><strong>Langkah:</strong></p>
+                    <ul>
+                        <li>Klik atau cari produk yang diinginkan dari daftar, produk akan masuk ke panel <strong>Keranjang</strong> di sisi kanan.</li>
+                        <li>Sesuaikan kuantitas setiap item (<code>+</code> atau <code>-</code>).</li>
+                        <li>Masukkan nominal uang yang diterima dari pelanggan.</li>
+                        <li>Sistem otomatis menghitung kembalian. Klik <strong>Bayar</strong> untuk menyelesaikan transaksi dan mencetak struk belanja.</li>
+                    </ul>
+                </div>
+
+                <div id="laporan">
+                    <h3>2.5 Laporan dan Analisis</h3>
+                    <img src="./images/guide-reports.png" alt="Laporan dan Analisis">
+                    <p><strong>Fungsi:</strong> Melihat rekapitulasi data penjualan.</p>
+                    <p><strong>Langkah:</strong></p>
+                    <ul>
+                        <li>Masuk ke halaman <strong>Laporan</strong>.</li>
+                        <li>Sesuaikan rentang waktu (harian, mingguan, bulanan) di pojok kanan atas.</li>
+                        <li>Lihat riwayat semua transaksi yang pernah terjadi. Anda dapat mencetak kembali struk jika dibutuhkan.</li>
+                        <li>Ekspor laporan dalam format yang dibutuhkan untuk keperluan pembukuan eksternal.</li>
+                    </ul>
+                </div>
+
+                <div id="pengaturan">
+                    <h3>2.6 Manajemen Cabang & Pengaturan Toko</h3>
+                    <img src="./images/guide-management.png" alt="Manajemen Cabang">
+                    <p><strong>Fungsi:</strong> Mengelola multi-lokasi dan identitas bisnis.</p>
+                    <p><strong>Langkah:</strong></p>
+                    <ul>
+                        <li>Gunakan menu dropdown pemilih cabang untuk melihat data cabang lain (jika memiliki multi-cabang).</li>
+                        <li>Buka menu <strong>Pengaturan</strong> untuk memperbarui Nama Toko, Alamat, dan Telepon. Data ini yang akan muncul di <em>header</em> struk yang tercetak untuk pelanggan.</li>
+                        <li>Atur nominal/persentase PPN (jika ada) di halaman pengaturan.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="tim">
+                <h2>3. Tim Pengembang</h2>
+                <p>Aplikasi KelontongSync dikembangkan secara kolaboratif oleh tim berikut:</p>
+                <div class="team-list">
+                    <div class="team-member">
+                        Abdur Rouf
+                        <span>Project Manager / Dev</span>
+                    </div>
+                    <div class="team-member">
+                        Ferdy
+                        <span>Developer</span>
+                    </div>
+                    <div class="team-member">
+                        Rafi
+                        <span>Developer</span>
+                    </div>
+                    <div class="team-member">
+                        Akmal
+                        <span>Developer</span>
+                    </div>
+                    <div class="team-member">
+                        Adam
+                        <span>Quality Assurance</span>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 KelontongSync Team. Built with ❤️ for Mikro Bisnis.
+    </div>
+
+</body>
+</html>
